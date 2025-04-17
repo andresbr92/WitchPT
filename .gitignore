@@ -1,0 +1,21 @@
+Binaries
+DerivedDataCache
+Intermediate
+Saved
+Build
+
+.vscode
+.vs
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+*.xcodeproj
+*.xcworkspace
+# ignore all related to .idea
+.idea
+
+.codebuddy/.gitignore
+.idea/.idea.Aura.dir/.idea/workspace.xml
