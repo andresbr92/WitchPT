@@ -3,14 +3,27 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
 #include "WitchPTPlayerState.generated.h"
-
+class UAbilitySystemComponent;
+class UAttributeSet;
 /**
  * 
  */
 UCLASS()
-class WITCHPT_API AWitchPTPlayerState : public APlayerState
+class WITCHPT_API AWitchPTPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
+	AWitchPTPlayerState();
+public:
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAttributeSet> AttributeSet;
+	
 };

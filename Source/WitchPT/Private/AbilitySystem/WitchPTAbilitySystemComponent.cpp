@@ -3,34 +3,65 @@
 
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 
+#include "AbilitySystem/GameplayAbilities/WitchPTGameplayAbility.h"
 
-// Sets default values for this component's properties
-UWitchPTAbilitySystemComponent::UWitchPTAbilitySystemComponent()
+
+void UWitchPTAbilitySystemComponent::GrantStartupAbilities(
+	const TArray<TSubclassOf<UGameplayAbility>>& AbilitiesToGrant)
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	if (!AbilitiesToGrant.IsEmpty())
+	{
+		for (const TSubclassOf<UGameplayAbility> AbilityClass: AbilitiesToGrant)
+		{
+			if (!AbilityClass)
+			{
+				continue;
+			}
+			
+			// Obtener la clase de habilidad para acceder a la propiedad StartupInputTag
+			UWitchPTGameplayAbility* AbilityCDO = AbilityClass->GetDefaultObject<UWitchPTGameplayAbility>();
+			if (!AbilityCDO)
+			{
+				continue;
+			}
+			
+			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+			// Source of the ability is the ASC
+			AbilitySpec.SourceObject = this;
+			// Add the startup input tag to the ability spec
+			AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityCDO->StartupInputTag);
+			// Give the ability to the ASC
+			FGameplayAbilitySpecHandle AbilitySpecHandle = GiveAbility(AbilitySpec);
+			// Store the handle of the ability
+			GrantedAbilities.Add(AbilitySpecHandle);
+		}
+	}
 }
 
-
-// Called when the game starts
-void UWitchPTAbilitySystemComponent::BeginPlay()
+void UWitchPTAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
 {
-	Super::BeginPlay();
-
-	// ...
-	
+	if (!InputTag.IsValid()) return;
+	for (FGameplayAbilitySpec& AbilitySpec: GetActivatableAbilities())
+	{
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		{
+			AbilitySpecInputPressed(AbilitySpec);
+			if (!AbilitySpec.IsActive())
+			{
+				TryActivateAbility(AbilitySpec.Handle);
+			}
+		}
+	}
 }
 
-
-// Called every frame
-void UWitchPTAbilitySystemComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                                   FActorComponentTickFunction* ThisTickFunction)
+void UWitchPTAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InputTag)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	if (!InputTag.IsValid()) return;
+	for (FGameplayAbilitySpec& AbilitySpec: GetActivatableAbilities())
+	{
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		{
+			AbilitySpecInputReleased(AbilitySpec);
+		}
+	}
 }
-

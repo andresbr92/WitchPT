@@ -13,4 +13,7 @@ UCLASS()
 class WITCHPT_API UWitchPTGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	FGameplayTag StartupInputTag;
 };

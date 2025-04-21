@@ -37,6 +37,7 @@ void AWitchPTPlayerController::SetupInputComponent()
 	UWitchPTInputComponent* WitchPtInputComponent = CastChecked<UWitchPTInputComponent>(InputComponent);
 	WitchPtInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWitchPTPlayerController::Move);
 	WitchPtInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWitchPTPlayerController::Look);
+	WitchPtInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 	
 }
 
@@ -67,6 +68,26 @@ void AWitchPTPlayerController::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		ControlledPawn->AddControllerYawInput(LookAxisVector.X);
 		ControlledPawn->AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void AWitchPTPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
+{
+}
+
+void AWitchPTPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	if (GetASC())
+	{
+		GetASC()->AbilityInputTagReleased(InputTag);
+	}
+}
+
+void AWitchPTPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
+{
+	if (GetASC())
+	{
+		GetASC()->AbilityInputTagHeld(InputTag);
 	}
 }
 

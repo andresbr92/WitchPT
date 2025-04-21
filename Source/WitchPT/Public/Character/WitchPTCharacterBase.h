@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "WitchPTCharacterBase.generated.h"
 
+class UGameplayAbility;
 class UGameplayEffect;
 class UAttributeSet;
 
@@ -17,7 +18,7 @@ class WITCHPT_API AWitchPTCharacterBase : public ACharacter, public IAbilitySyst
 
 public:
 	// Sets default values for this character's properties
-	AWitchPTCharacterBase();
+	AWitchPTCharacterBase(const class FObjectInitializer& ObjectInitializer);
 
 	// Getter for ASC Main Components
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -32,10 +33,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultAttributes;
-	UPROPERTY(EditDefaultsOnly, Category = "Attributes")
-	TSubclassOf<UGameplayEffect> DefaultAbilities;
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
+	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
 
 	virtual void InitializeDefaultAttributes();
+	
+	virtual void GrantStartupAbilities();
+
+	virtual void InitAbilityActorInfo();
+private:
 	virtual void ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass);
 
 };

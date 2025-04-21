@@ -13,15 +13,10 @@ class WITCHPT_API UWitchPTAbilitySystemComponent : public UAbilitySystemComponen
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
-	UWitchPTAbilitySystemComponent();
+	void GrantStartupAbilities(const TArray<TSubclassOf<UGameplayAbility>>& AbilitiesToGrant);
+	void AbilityInputTagHeld(const FGameplayTag& InputTag);
+	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+	TArray<FGameplayAbilitySpecHandle> GrantedAbilities;
 
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
 };

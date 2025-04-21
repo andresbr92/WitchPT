@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "WitchPTPlayerController.generated.h"
 
+struct FGameplayTag;
 class UWitchPTAbilitySystemComponent;
 class UWitchPTInputConfig;
 struct FInputActionValue;
@@ -47,6 +48,10 @@ private:
 	void Move(const FInputActionValue& InputActionValue);
 
 	void Look(const FInputActionValue& Value);
+
+	void AbilityInputTagPressed(FGameplayTag InputTag);
+	void AbilityInputTagReleased(FGameplayTag InputTag);
+	void AbilityInputTagHeld(FGameplayTag InputTag);
 	
 };
 

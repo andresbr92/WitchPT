@@ -13,7 +13,7 @@ class WITCHPT_API AWitchPTEnemy : public AWitchPTCharacterBase
 
 public:
 	// Sets default values for this character's properties
-	AWitchPTEnemy();
+	AWitchPTEnemy(const class FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts or when spawned
