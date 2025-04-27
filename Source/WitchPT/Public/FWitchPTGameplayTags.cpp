@@ -16,6 +16,7 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.State_Sprinting = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Sprinting"));
 	GameplayTags.State_Crouching = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Crouching"));
 	GameplayTags.State_Dead = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Dead"));
+	GameplayTags.State_Aim = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Aim"));
 
 
 

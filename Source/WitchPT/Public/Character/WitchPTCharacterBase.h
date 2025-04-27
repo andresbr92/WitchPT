@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "WitchPTCharacterBase.generated.h"
 
+class UWitchPTAbilitySystemComponent;
+class UWitchPTAttributeSet;
 class UGameplayAbility;
 class UGameplayEffect;
 class UAttributeSet;
@@ -22,13 +24,13 @@ public:
 
 	// Getter for ASC Main Components
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	UAttributeSet* GetAttributeSet() { return AttributeSet; }
+	UWitchPTAttributeSet* GetAttributeSet() { return AttributeSet; }
 
 protected:
 	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<UWitchPTAbilitySystemComponent> AbilitySystemComponent;
 	UPROPERTY()
-	TObjectPtr<UAttributeSet> AttributeSet;
+	TObjectPtr<UWitchPTAttributeSet> AttributeSet;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attributes")
@@ -36,12 +38,63 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
 
+	// These effects are only applied one time on startup
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "GASDocumentation|Abilities")
+	TArray<TSubclassOf<class UGameplayEffect>> StartupEffects;
+
 	virtual void InitializeDefaultAttributes();
 	
 	virtual void GrantStartupAbilities();
 
+	virtual void AddStartupEffects();
+
 	virtual void InitAbilityActorInfo();
 private:
 	virtual void ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass);
+
+
+
+public:
+	/**
+	* Getters for attributes from GDAttributeSetBase
+	**/
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetMaxHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetStamina() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetMaxStamina() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetAge() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetMaxAge() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetMana() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetMaxMana() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetSpeedMultiplier() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetMoveSpeed() const;
+
+	UFUNCTION(BlueprintCallable, Category = "WitchPT|WitchPTCharacter|Attributes")
+	float GetMaxMoveSpeed() const;
+
+	
+
+	
+
+	
 
 };

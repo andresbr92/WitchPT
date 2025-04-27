@@ -79,7 +79,19 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxSpeedMultiplier, Category= "Vital Attributes")
 	FGameplayAttributeData MaxSpeedMultiplier;
-	ATTRIBUTE_ACCESSORS(UWitchPTAttributeSet, MaxSpeedMultiplier);	
+	ATTRIBUTE_ACCESSORS(UWitchPTAttributeSet, MaxSpeedMultiplier);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MoveSpeed, Category= "Vital Attributes")
+	FGameplayAttributeData MoveSpeed;
+	ATTRIBUTE_ACCESSORS(UWitchPTAttributeSet, MoveSpeed);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxMoveSpeed, Category= "Vital Attributes")
+	FGameplayAttributeData MaxMoveSpeed;
+	ATTRIBUTE_ACCESSORS(UWitchPTAttributeSet, MaxMoveSpeed);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MinMoveSpeed, Category= "Vital Attributes")
+	FGameplayAttributeData MinMoveSpeed;
+	ATTRIBUTE_ACCESSORS(UWitchPTAttributeSet, MinMoveSpeed);
 
 	
 
@@ -109,6 +121,12 @@ public:
 	void OnRep_SpeedMultiplier(const FGameplayAttributeData& OldSpeedMultiplier) const;
 	UFUNCTION()
 	void OnRep_MaxSpeedMultiplier(const FGameplayAttributeData& OldMaxSpeedMultiplier) const;
+	UFUNCTION()
+	void OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed) const;
+	UFUNCTION()
+	void OnRep_MaxMoveSpeed(const FGameplayAttributeData& OldMaxMoveSpeed) const;
+	UFUNCTION()
+	void OnRep_MinMoveSpeed(const FGameplayAttributeData& OldMinMoveSpeed) const;
 };
 
 

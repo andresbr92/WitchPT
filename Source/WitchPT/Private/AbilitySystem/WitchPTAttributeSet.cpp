@@ -30,7 +30,9 @@ void UWitchPTAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProp
 	DOREPLIFETIME_CONDITION_NOTIFY(UWitchPTAttributeSet, SpeedMultiplier, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UWitchPTAttributeSet, MaxSpeedMultiplier, COND_None, REPNOTIFY_Always)
 
-	
+	DOREPLIFETIME_CONDITION_NOTIFY(UWitchPTAttributeSet, MoveSpeed, COND_None, REPNOTIFY_Always)
+	DOREPLIFETIME_CONDITION_NOTIFY(UWitchPTAttributeSet, MaxMoveSpeed, COND_None, REPNOTIFY_Always)
+	DOREPLIFETIME_CONDITION_NOTIFY(UWitchPTAttributeSet, MinMoveSpeed, COND_None, REPNOTIFY_Always)
 
 
 }
@@ -47,9 +49,13 @@ void UWitchPTAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribut
 void UWitchPTAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
-	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	if (Data.EvaluatedData.Attribute == GetMoveSpeedAttribute())
 	{
-		CONSOLE_LOG("Health value: %f", GetHealth());
+		// SetMoveSpeed(FMath::Clamp(GetMoveSpeed(), 0.f, GetMaxMoveSpeed()));
+	}
+	if (Data.EvaluatedData.Attribute == GetAgeAttribute())
+	{
+		SetAge(FMath::Clamp(GetAge(), 0.f, GetMaxAge()));
 	}
 }
 
@@ -110,5 +116,20 @@ void UWitchPTAttributeSet::OnRep_SpeedMultiplier(const FGameplayAttributeData& O
 void UWitchPTAttributeSet::OnRep_MaxSpeedMultiplier(const FGameplayAttributeData& OldMaxSpeedMultiplier) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UWitchPTAttributeSet, MaxSpeedMultiplier, OldMaxSpeedMultiplier);
+}
+
+void UWitchPTAttributeSet::OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UWitchPTAttributeSet, MoveSpeed, OldMoveSpeed);
+}
+
+void UWitchPTAttributeSet::OnRep_MaxMoveSpeed(const FGameplayAttributeData& OldMaxMoveSpeed) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UWitchPTAttributeSet, MaxMoveSpeed, OldMaxMoveSpeed);
+}
+
+void UWitchPTAttributeSet::OnRep_MinMoveSpeed(const FGameplayAttributeData& OldMinMoveSpeed) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UWitchPTAttributeSet, MinMoveSpeed, OldMinMoveSpeed);
 }
 

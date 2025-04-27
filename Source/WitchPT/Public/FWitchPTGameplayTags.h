@@ -34,6 +34,7 @@ public:
 	FGameplayTag State_Sprinting;
 	FGameplayTag State_Crouching;
 	FGameplayTag State_Dead;
+	FGameplayTag State_Aim;
 
 	// Input Tags
 	FGameplayTag InputTag_LMB;

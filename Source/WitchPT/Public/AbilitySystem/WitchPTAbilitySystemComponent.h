@@ -18,6 +18,9 @@ public:
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
+	
+	bool bCharacterAbilitiesGiven = false;
+	bool bStartupEffectsApplied = false;
 
 	TArray<FGameplayAbilitySpecHandle> GrantedAbilities;
 

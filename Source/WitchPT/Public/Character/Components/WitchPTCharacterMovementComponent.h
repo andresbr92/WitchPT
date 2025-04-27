@@ -24,6 +24,7 @@ public:
 	void StartSprinting();
 	UFUNCTION(BlueprintCallable, Category = "Sprint")
 	void StopSprinting();
+	
 
 	// Aim Down Sights
 	UFUNCTION(BlueprintCallable, Category = "Aim Down Sights")

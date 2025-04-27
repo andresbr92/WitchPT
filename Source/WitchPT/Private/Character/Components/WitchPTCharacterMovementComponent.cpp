@@ -3,20 +3,54 @@
 
 #include "Character/Components/WitchPTCharacterMovementComponent.h"
 
+#include "AbilitySystemComponent.h"
+#include "GameplayTagContainer.h"
+#include "Character/WitchPTCharacterBase.h"
 
-// Sets default values for this component's properties
+
+
 UWitchPTCharacterMovementComponent::UWitchPTCharacterMovementComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+	
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+
 }
 
 float UWitchPTCharacterMovementComponent::GetMaxSpeed() const
 {
-	return Super::GetMaxSpeed();
+	
+	AWitchPTCharacterBase* Owner = Cast<AWitchPTCharacterBase>(GetOwner());
+
+	if (!Owner)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
+		return Super::GetMaxSpeed();
+	}
+
+	
+	UE_LOG(LogTemp, Warning, TEXT("GetMaxSpeed - Character: %s, Base Speed: %f"), *GetOwner()->GetName(), Owner->GetMoveSpeed());
+	
+	if (Owner->GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.Status.Blocked"))))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Character %s is Blocked - Speed set to 0"), *GetOwner()->GetName());
+		return 0.0f;
+	}
+
+	float FinalSpeed = Owner->GetMoveSpeed();
+	if (RequestToStartSprinting)
+	{
+		FinalSpeed = Owner->GetMoveSpeed() * Owner->GetSpeedMultiplier();
+		UE_LOG(LogTemp, Warning, TEXT("Character %s is Sprinting - Speed: %f"), *GetOwner()->GetName(), FinalSpeed);
+	}
+	// else if (RequestToStartCrouching)
+	// {
+	// 	// FinalSpeed = Owner->GetMoveSpeed() * CrouchSpeedMultiplier;
+	// 	// UE_LOG(LogTemp, Warning, TEXT("Character %s is Crouching - Speed: %f"), *GetOwner()->GetName(), FinalSpeed);
+	// }
+
+	UE_LOG(LogTemp, Warning, TEXT("Final Speed for %s: %f"), *GetOwner()->GetName(), FinalSpeed);
+	return FinalSpeed;
 }
 
 void UWitchPTCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
@@ -48,4 +82,5 @@ void UWitchPTCharacterMovementComponent::StartAimDownSights()
 void UWitchPTCharacterMovementComponent::StopAimDownSights()
 {
 	RequestToStartADS = false;
+	
 }
