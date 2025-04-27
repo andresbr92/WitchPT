@@ -43,6 +43,13 @@ public:
 	FGameplayTag InputTag_3;
 	FGameplayTag InputTag_4;
 	FGameplayTag InputTag_5;
+	FGameplayTag InputTag_6;
+	FGameplayTag InputTag_7;
+	FGameplayTag InputTag_8;
+	FGameplayTag InputTag_9;
+	FGameplayTag InputTag_0;
+	FGameplayTag InputTag_Ctrl;
+	FGameplayTag InputTag_Alt;
 	FGameplayTag InputTag_Shift;
 
 private:

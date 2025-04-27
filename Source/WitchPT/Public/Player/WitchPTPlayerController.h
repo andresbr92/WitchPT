@@ -22,6 +22,8 @@ class WITCHPT_API AWitchPTPlayerController : public APlayerController
 public:
 	AWitchPTPlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
+	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
+	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

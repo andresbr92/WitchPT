@@ -20,6 +20,20 @@ void AWitchPTPlayerController::PlayerTick(float DeltaTime)
 	Super::PlayerTick(DeltaTime);
 }
 
+void AWitchPTPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)
+{
+	Super::PreProcessInput(DeltaTime, bGamePaused);
+}
+
+void AWitchPTPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
+{
+	if (WitchPtAbilitySystemComponent)
+	{
+		WitchPtAbilitySystemComponent->ProcessAbilityInput(DeltaTime, bGamePaused);
+	}
+	Super::PostProcessInput(DeltaTime, bGamePaused);
+}
+
 void AWitchPTPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -73,6 +87,10 @@ void AWitchPTPlayerController::Look(const FInputActionValue& Value)
 
 void AWitchPTPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
+	if (GetASC())
+	{
+		GetASC()->AbilityInputTagPressed(InputTag);
+	}
 }
 
 void AWitchPTPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
