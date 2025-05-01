@@ -24,16 +24,15 @@ float UWitchPTCharacterMovementComponent::GetMaxSpeed() const
 
 	if (!Owner)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
+		
 		return Super::GetMaxSpeed();
 	}
 
 	
-	UE_LOG(LogTemp, Warning, TEXT("GetMaxSpeed - Character: %s, Base Speed: %f"), *GetOwner()->GetName(), Owner->GetMoveSpeed());
 	
 	if (Owner->GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.Status.Blocked"))))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Character %s is Blocked - Speed set to 0"), *GetOwner()->GetName());
+		
 		return 0.0f;
 	}
 
@@ -41,7 +40,7 @@ float UWitchPTCharacterMovementComponent::GetMaxSpeed() const
 	if (RequestToStartSprinting)
 	{
 		FinalSpeed = Owner->GetMoveSpeed() * Owner->GetSpeedMultiplier();
-		UE_LOG(LogTemp, Warning, TEXT("Character %s is Sprinting - Speed: %f"), *GetOwner()->GetName(), FinalSpeed);
+		
 	}
 	// else if (RequestToStartCrouching)
 	// {
@@ -49,7 +48,7 @@ float UWitchPTCharacterMovementComponent::GetMaxSpeed() const
 	// 	// UE_LOG(LogTemp, Warning, TEXT("Character %s is Crouching - Speed: %f"), *GetOwner()->GetName(), FinalSpeed);
 	// }
 
-	UE_LOG(LogTemp, Warning, TEXT("Final Speed for %s: %f"), *GetOwner()->GetName(), FinalSpeed);
+	
 	return FinalSpeed;
 }
 

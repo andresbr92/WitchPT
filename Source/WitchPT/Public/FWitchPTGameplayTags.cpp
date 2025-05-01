@@ -13,10 +13,11 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Ability_Sprint = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Sprint"));
 	GameplayTags.Ability_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Jump"));
 	GameplayTags.Ability_Crouch = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Crouch"));
-	GameplayTags.State_Sprinting = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Sprinting"));
-	GameplayTags.State_Crouching = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Crouching"));
-	GameplayTags.State_Dead = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Dead"));
-	GameplayTags.State_Aim = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Aim"));
+	GameplayTags.Character_State_Sprinting = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Sprinting"));
+	GameplayTags.Character_State_Crouching = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Crouching"));
+	GameplayTags.Character_State_Dead = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Dead"));
+	GameplayTags.Character_State_Aim = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Aim"));
+	GameplayTags.Character_State_Blocked = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Blocked"));
 
 
 
@@ -38,4 +39,25 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.InputTag_Ctrl = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Ctrl"));
 	GameplayTags.InputTag_Alt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Alt"));
 	GameplayTags.InputTag_Shift = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Shift"));
+	// Ritual
+	GameplayTags.Ritual_Position_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.1"));
+	GameplayTags.Ritual_Position_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.2"));
+	GameplayTags.Ritual_Position_3 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.3"));
+	GameplayTags.Ritual_Position_4 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.4"));
+
+	GameplayTags.Ritual_Input_Up = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Input.Up"));
+	GameplayTags.Ritual_Input_Down = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Input.Down"));
+	GameplayTags.Ritual_Input_Left = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Input.Left"));
+	GameplayTags.Ritual_Input_Right = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Input.Right"));
+
+	GameplayTags.State_Ritual_OccupyingPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Ritual.OccupyingPosition"));
+
+	GameplayTags.Event_Interaction_OccupyRitualPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Interaction.OccupyRitualPosition"));
+	GameplayTags.Event_Ritual_InputReceived = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.InputReceived"));
+	GameplayTags.Event_Ritual_TurnAdvanced = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.TurnAdvanced"));
+	GameplayTags.Event_Ritual_SequenceSuccess = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.SequenceSuccess"));
+	GameplayTags.Event_Ritual_SequenceFail = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.SequenceFail"));
+	GameplayTags.Event_Ritual_CatastrophicFail = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.CatastrophicFail"));
+
+	
 }

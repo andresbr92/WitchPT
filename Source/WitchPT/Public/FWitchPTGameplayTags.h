@@ -31,10 +31,11 @@ public:
 	FGameplayTag Ability_Crouch;
 
 	// State Tags
-	FGameplayTag State_Sprinting;
-	FGameplayTag State_Crouching;
-	FGameplayTag State_Dead;
-	FGameplayTag State_Aim;
+	FGameplayTag Character_State_Sprinting;
+	FGameplayTag Character_State_Crouching;
+	FGameplayTag Character_State_Dead;
+	FGameplayTag Character_State_Aim;
+	FGameplayTag Character_State_Blocked;
 
 	// Input Tags
 	FGameplayTag InputTag_LMB;
@@ -52,6 +53,31 @@ public:
 	FGameplayTag InputTag_Ctrl;
 	FGameplayTag InputTag_Alt;
 	FGameplayTag InputTag_Shift;
+
+
+	// --- Ritual Tags ---
+	FGameplayTag Ritual_Position_1;
+	FGameplayTag Ritual_Position_2;
+	FGameplayTag Ritual_Position_3;
+	FGameplayTag Ritual_Position_4;
+
+	FGameplayTag Ritual_Input_Up;
+	FGameplayTag Ritual_Input_Down;
+	FGameplayTag Ritual_Input_Left;
+	FGameplayTag Ritual_Input_Right;
+
+	// --- Player State Tags (Added Ritual Specific) ---
+	FGameplayTag State_Ritual_OccupyingPosition;
+
+	// --- Event Tags ---
+	FGameplayTag Event_Interaction_OccupyRitualPosition;
+	FGameplayTag Event_Ritual_InputReceived; // Generic event when altar receives an input GE
+	FGameplayTag Event_Ritual_TurnAdvanced;
+	FGameplayTag Event_Ritual_SequenceSuccess;
+	FGameplayTag Event_Ritual_SequenceFail;
+	FGameplayTag Event_Ritual_CatastrophicFail;
+
+
 
 private:
 	static FWitchPTGameplayTags GameplayTags;
