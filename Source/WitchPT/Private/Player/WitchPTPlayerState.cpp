@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAttributeSet.h"
+#include "Item/RitualPosition.h"
 
 AWitchPTPlayerState::AWitchPTPlayerState()
 {
@@ -22,4 +23,13 @@ AWitchPTPlayerState::AWitchPTPlayerState()
 UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+void AWitchPTPlayerState::SetRitualAltarInteractingWith(ARitualPosition* RitualPosition)
+{
+	if (RitualPosition)
+	{
+		RitualPositionInteractingWith = RitualPosition;
+		RitualAltarInteractingWith = RitualPosition->GetRitualAltar();
+	}
 }

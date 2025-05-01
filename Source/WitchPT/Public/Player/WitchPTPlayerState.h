@@ -6,6 +6,8 @@
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
 #include "WitchPTPlayerState.generated.h"
+class ARitualPosition;
+class ARitualAltar;
 class UAbilitySystemComponent;
 class UAttributeSet;
 /**
@@ -20,10 +22,19 @@ public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
+
+	// Setters
+	UFUNCTION(BlueprintCallable)
+	void SetRitualAltarInteractingWith(ARitualPosition* RitualPosition);
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<ARitualAltar> RitualAltarInteractingWith;
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<ARitualPosition> RitualPositionInteractingWith;
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAttributeSet> AttributeSet;
+	
 	
 };

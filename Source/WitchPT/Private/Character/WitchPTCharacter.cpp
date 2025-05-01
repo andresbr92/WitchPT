@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAttributeSet.h"
+#include "Item/RitualAltar.h"
 #include "Player/WitchPTPlayerState.h"
 
 
@@ -22,6 +23,7 @@ void AWitchPTCharacter::PossessedBy(AController* NewController)
 
 	// Init ability actor info for the Server
 	InitAbilityActorInfo();
+	
 
 	// Solo conceder habilidades si AbilitySystemComponent fue inicializado correctamente
 	if (AbilitySystemComponent)
@@ -64,6 +66,18 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 	AttributeSet = Cast<UWitchPTAttributeSet>( WitchPtPlayerState->GetAttributeSet());
 	// We can call this ONLY in the server because attributes are marked as replicated. But is ok doing it here.
 	InitializeDefaultAttributes();
+}
+
+bool AWitchPTCharacter::StartRitual(ACharacter* Character)
+{
+	AWitchPTPlayerState* WitchPtPlayerState = Cast<AWitchPTPlayerState>(GetPlayerState());
+	if (!WitchPtPlayerState)
+	{
+		return false;
+	}
+	WitchPtPlayerState->RitualAltarInteractingWith->StartRitual(this);
+	return IRitualInterface::StartRitual(Character);
+	
 }
 
 

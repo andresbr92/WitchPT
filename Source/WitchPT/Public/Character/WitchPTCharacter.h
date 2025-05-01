@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "WitchPTCharacterBase.h"
+#include "Item/RitualInterface.h"
 #include "WitchPTCharacter.generated.h"
 
 UCLASS()
-class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase
+class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase, public IRitualInterface
 {
 	GENERATED_BODY()
 
@@ -18,6 +19,9 @@ public:
 	virtual void OnRep_PlayerState() override;
 	
 	virtual void InitAbilityActorInfo() override;
+	
+	UFUNCTION(BlueprintCallable)
+	virtual bool StartRitual(ACharacter* Character) override;
 
 
 };

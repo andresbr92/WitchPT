@@ -63,8 +63,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetRitualAltar(ARitualAltar* Altar) { RitualAltar = Altar; }
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBoxComponent> InteractionVolume; // Explicit interaction volume
+	
 
 	// Reference to the parent altar, should be set on spawn or in BeginPlay
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Ritual", meta = (AllowPrivateAccess = "true"))

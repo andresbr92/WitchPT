@@ -1,12 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Item/RitualPosition.h"
-#include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
 #include "Item/RitualAltar.h" // Include the Altar header
-#include "AbilitySystemComponent.h" // For interaction query
-#include "AbilitySystemBlueprintLibrary.h" // For granting abilities or sending events (if needed)
 #include "GameplayTagContainer.h" // For tags
 
 // Sets default values
@@ -18,10 +15,9 @@ ARitualPosition::ARitualPosition()
 	bReplicates = true;
 	
 
-	InteractionVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionVolume"));
-	SetRootComponent(InteractionVolume); // Make the volume the root
-	InteractionVolume->SetCollisionResponseToAllChannels(ECR_Ignore);
-	InteractionVolume->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); // Or your interaction channel
+	
+
+	
 
 	// Default values for replicated properties
 	bIsOccupied = false;
@@ -152,6 +148,7 @@ void ARitualPosition::SetCharacterToPosition(ACharacter* Character)
 		// Force OnReps if needed immediately on server
 		OnRep_IsOccupied();
 		OnRep_OccupyingCharacter();
+		OccupyingCharacter = Character; // Set the character occupying this position
 		UE_LOG(LogTemp, Log, TEXT("Position %s set to Occupied by %s"), *GetName(), *Character->GetName());
 		RitualAltar->Server_OccupyPosition(Character, this);
 	}
