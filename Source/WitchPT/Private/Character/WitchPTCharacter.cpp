@@ -76,7 +76,7 @@ bool AWitchPTCharacter::StartRitual(ACharacter* Character)
 		return false;
 	}
 	WitchPtPlayerState->RitualAltarInteractingWith->StartRitual(this);
-	return IRitualInterface::StartRitual(Character);
+	return true;
 	
 }
 

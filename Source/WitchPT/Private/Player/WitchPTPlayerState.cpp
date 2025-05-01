@@ -10,6 +10,8 @@
 
 AWitchPTPlayerState::AWitchPTPlayerState()
 {
+	SetNetUpdateFrequency(100.f);
+	
 	AbilitySystemComponent = CreateDefaultSubobject<UWitchPTAbilitySystemComponent>("AbilitySystemComponent");
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
@@ -17,7 +19,6 @@ AWitchPTPlayerState::AWitchPTPlayerState()
 	AttributeSet = CreateDefaultSubobject<UWitchPTAttributeSet>("AttributeSet");
 
 
-	SetNetUpdateFrequency(100.f);
 }
 
 UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const

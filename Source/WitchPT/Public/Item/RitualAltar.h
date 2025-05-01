@@ -24,7 +24,7 @@ enum class ERitualInput : uint8
 UENUM(BlueprintType)
 enum class ERitualState : uint8
 {
-	Inactive	UMETA(DisplayName = "Inavtive"),
+	Inactive	UMETA(DisplayName = "Inactive"),
 	Preparing	UMETA(DisplayName = "Preparing"), // Players occupying positions
 	Active		UMETA(DisplayName = "Active"), // Ritual sequence running
 	Succeeded	UMETA(DisplayName = "Succeeded"),
@@ -32,7 +32,8 @@ enum class ERitualState : uint8
 	FailedCatastrophically UMETA(DisplayName = "Failed Catastrophically")
 };
 
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceCompleted, bool, bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputReceived, const FGameplayTag&, ReceivedTag, bool, bWasCorrect);
 UCLASS()
 class WITCHPT_API ARitualAltar : public AActor, public IRitualInterface
 {
@@ -42,55 +43,149 @@ public:
 	// Sets default values for this actor's properties
 	ARitualAltar();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	// Current ritual state
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentRitualState, BlueprintReadOnly, Category = "Ritual|State")
+	ERitualState CurrentRitualState = ERitualState::Inactive;
+	
+	// Current sequence of inputs required for the ritual
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual")
 	TArray<FGameplayTag> InputSequence;
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual")
-	int32 CurrentSequenceIndex;
+	// Current index in the sequence
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentSequenceIndex, BlueprintReadOnly, Category = "Ritual")
+	int32 CurrentSequenceIndex = 0;
 
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Portal")
+	// List of players participating in the ritual
+	UPROPERTY(ReplicatedUsing = OnRep_ParticipatingPlayers, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
 	TArray<TObjectPtr<ACharacter>> ParticipatingPlayers;
 	
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Portal")
+	// Current player whose turn it is to input
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentActivePlayer, BlueprintReadOnly, Category = "Ritual|State")
+	TObjectPtr<ACharacter> CurrentActivePlayer;
+	
+	// Timer for the current input
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentInputTimer, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
 	float CurrentInputTimer;
 	
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Portal")
-	float CorruptionAmount;
+	// Current corruption level
+	UPROPERTY(ReplicatedUsing = OnRep_CorruptionAmount, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
+	float CorruptionAmount = 0.0f;
 
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Portal")
-	float CorruptionIncreasePerFail;
+	// Maximum corruption allowed before catastrophic failure
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	float MaxCorruption = 100.0f;
 	
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Portal")
-	float BaseInputTimeWindow;
+	// Corruption increase per failure
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	float CorruptionIncreasePerFail = 10.0f;
 	
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Portal")
-	float DifficultyScalingMultiplier;
+	// Base time window for inputs
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	float BaseInputTimeWindow = 5.0f;
 	
+	// Scaling multiplier for difficulty
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	float DifficultyScalingMultiplier = 1.0f;
+	
+	// Positions for the ritual
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ritual|Setup")
+	TArray<TObjectPtr<ARitualPosition>> RitualPositions;
+	
+	// RPCs for client-server communication
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void Server_StartRitual(ACharacter* InitiatingPlayer);
 	
-	UFUNCTION(Server, Reliable)
-	void Server_HandlePlayerInput(ACharacter* Character,const  FGameplayTag& InputTag);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void Server_HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
+	
 	UFUNCTION(Server, Reliable)
 	void Server_OccupyPosition(ACharacter* Player, ARitualPosition* Position);
+	
+	// Multicast RPCs for notifications
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualStateChanged(ERitualState NewState);
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnInputSuccess(ACharacter* Player);
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnInputFailed(ACharacter* Player);
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualSucceeded();
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualCatastrophicFail();
-
 
 	// Interface Implementation
 	UFUNCTION(BlueprintCallable)
 	virtual bool StartRitual(ACharacter* Character) override;
 	
+	// Getters for Blueprint/HUD access
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	ERitualState GetCurrentRitualState() const { return CurrentRitualState; }
+	
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	ACharacter* GetCurrentActivePlayer() const { return CurrentActivePlayer; }
+	
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	float GetCorruptionPercentage() const { return MaxCorruption > 0.0f ? (CorruptionAmount / MaxCorruption) * 100.0f : 0.0f; }
+	
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	float GetCurrentInputTimeRemaining() const { return CurrentInputTimer; }
+	
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	int32 GetCurrentSequenceProgress() const { return InputSequence.Num() > 0 ? (CurrentSequenceIndex * 100) / InputSequence.Num() : 0; }
+	
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	FGameplayTag GetCurrentExpectedInput() const;
+
+	// Delegates
+	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+	FOnSequenceCompleted OnSequenceCompleted;
+	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+	FOnInputReceived OnInputReceived;
 
 protected:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	
-
+	// OnRep functions for replicated properties
+	UFUNCTION()
+	void OnRep_CurrentRitualState();
+	
+	UFUNCTION()
+	void OnRep_CurrentSequenceIndex();
+	
+	UFUNCTION()
+	void OnRep_ParticipatingPlayers();
+	
+	UFUNCTION()
+	void OnRep_CurrentActivePlayer();
+	
+	UFUNCTION()
+	void OnRep_CurrentInputTimer();
+	
+	UFUNCTION()
+	void OnRep_CorruptionAmount();
+	
+	// Timer handles
+	FTimerHandle InputTimerHandle;
+	
+	// Helper functions
+	void GenerateInputSequence();
+	void AdvanceToNextPlayer();
+	void HandleInputSuccess(ACharacter* Player);
+	void HandleInputFailure(ACharacter* Player);
+	void ApplyAgePenalty(ACharacter* Player, bool bCatastrophic = false);
+	void StartInputTimer();
+	void OnInputTimerExpired();
+	void CheckRitualState();
+	FGameplayTag ConvertERitualInputToTag(ERitualInput Input);
+	ERitualInput ConvertTagToERitualInput(const FGameplayTag& Tag);
+	void CleanupRitual();
+	void SpawnReward();
+	void SpawnDemon();
+	bool IsPlayerEligibleForTurn(ACharacter* Player) const;
 };

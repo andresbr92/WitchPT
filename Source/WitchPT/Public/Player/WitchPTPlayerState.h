@@ -26,9 +26,9 @@ public:
 	// Setters
 	UFUNCTION(BlueprintCallable)
 	void SetRitualAltarInteractingWith(ARitualPosition* RitualPosition);
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	TObjectPtr<ARitualAltar> RitualAltarInteractingWith;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	TObjectPtr<ARitualPosition> RitualPositionInteractingWith;
 protected:
 	UPROPERTY(VisibleAnywhere)
