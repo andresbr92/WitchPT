@@ -19,7 +19,7 @@ class UBoxComponent;
 class ACharacter;
 
 UCLASS()
-class WITCHPT_API ARitualPosition : public AItem, public IRitualInterface
+class WITCHPT_API ARitualPosition : public AItem
 {
 	GENERATED_BODY()
 
@@ -68,8 +68,7 @@ public:
 	/**
 	 * Interface functions
 	 */
-	virtual void HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter) override;
-	virtual void HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
+
 protected:
 	
 

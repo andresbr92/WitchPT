@@ -30,7 +30,7 @@ float UWitchPTCharacterMovementComponent::GetMaxSpeed() const
 
 	
 	
-	if (Owner->GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.Status.Blocked"))))
+	if (Owner->GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.State.Blocked"))))
 	{
 		
 		return 0.0f;

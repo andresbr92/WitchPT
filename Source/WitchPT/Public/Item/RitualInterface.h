@@ -7,6 +7,7 @@
 #include "UObject/Interface.h"
 #include "RitualInterface.generated.h"
 
+class ARitualPosition;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class URitualInterface : public UInterface
@@ -24,11 +25,31 @@ class WITCHPT_API IRitualInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 	
 public:
-	// Función que la GA del jugador llamará para intentar iniciar el ritual
+	/***
+	 * Ritual Altar interface functions
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
 	void HandleStartRitualRequest(ACharacter* RequestingCharacter);
 
-	// Función que la GA del jugador llamará para enviar un input
+	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
 	void HandlePlayerInput(ACharacter* InputCharacter, const FGameplayTag& InputTag);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
+	void HandleSetRitualPosition(ARitualPosition* InRitualPosition);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
+	ARitualPosition* GetRitualPosition() const;
+
+	
+
+	/**
+	 * Ritual Position interface functions
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
+	bool IsRitualPositionOccupied() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
+	void SetRitualPositionOccupied(ACharacter* OccupyingCharacter);
+	
 };

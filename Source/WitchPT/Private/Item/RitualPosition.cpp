@@ -173,22 +173,6 @@ void ARitualPosition::SetPositionTag(const FGameplayTag& NewTag)
 	PositionTag = NewTag;
 }
 
-void ARitualPosition::HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
-{
-	if (IsValid(RequestingCharacter) && IsValid(RitualAltar) && HasAuthority())
-	{
-		RitualAltar->Server_StartRitual(RequestingCharacter);
-	}
-}
-
-void ARitualPosition::HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
-{
-	if (IsValid(InputCharacter) && IsValid(RitualAltar) && HasAuthority())
-	{
-		RitualAltar->Server_HandlePlayerInput(InputCharacter, InputTag);
-	}
-	
-}
 
 // Called on the Server by the Altar (or potentially a GA)
 void ARitualPosition::SetCharacterToPosition(ACharacter* Character)

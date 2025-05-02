@@ -7,6 +7,7 @@
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAttributeSet.h"
 #include "Item/RitualAltar.h"
+#include "Item/RitualPosition.h"
 #include "Player/WitchPTPlayerState.h"
 
 
@@ -66,5 +67,46 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 	AttributeSet = Cast<UWitchPTAttributeSet>( WitchPtPlayerState->GetAttributeSet());
 	// We can call this ONLY in the server because attributes are marked as replicated. But is ok doing it here.
 	InitializeDefaultAttributes();
+}
+
+void AWitchPTCharacter::HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
+{
+	if (RitualPosition)
+	{
+		RitualPosition->GetRitualAltar()->Server_StartRitual(RequestingCharacter);
+	}
+}
+
+void AWitchPTCharacter::HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
+{
+	if (RitualPosition)
+	{
+		RitualPosition->GetRitualAltar()->Server_HandlePlayerInput(InputCharacter, InputTag);
+	}
+}
+
+void AWitchPTCharacter::HandleSetRitualPosition_Implementation(ARitualPosition* InRitualPosition)
+{
+	if (InRitualPosition)
+	{
+		this->RitualPosition = InRitualPosition;
+	}
+}
+
+bool AWitchPTCharacter::IsRitualPositionOccupied_Implementation() const
+{
+	if (RitualPosition)
+	{
+		return RitualPosition->IsOccupied();
+	}
+	return false;
+}
+
+void AWitchPTCharacter::SetRitualPositionOccupied_Implementation(ACharacter* OccupyingCharacter)
+{
+	if (RitualPosition)
+	{
+		RitualPosition->SetOccupied(OccupyingCharacter);
+	}
 }
 

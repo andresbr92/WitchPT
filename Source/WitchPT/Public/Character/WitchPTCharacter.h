@@ -7,8 +7,10 @@
 #include "Item/RitualInterface.h"
 #include "WitchPTCharacter.generated.h"
 
+class ARitualPosition;
+
 UCLASS()
-class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase
+class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase, public IRitualInterface
 {
 	GENERATED_BODY()
 
@@ -19,6 +21,28 @@ public:
 	virtual void OnRep_PlayerState() override;
 	
 	virtual void InitAbilityActorInfo() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ritual")
+	TObjectPtr<ARitualPosition> RitualPosition;
+
+
+
+	/***
+	 * IRitualInterface implementation
+	 */
+	/***
+	 * Ritual Altar interface functions
+	 */
+	virtual void HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter) override;
+	virtual void HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
+	virtual void HandleSetRitualPosition_Implementation(ARitualPosition* InRitualPosition) override;
+	/***
+	 * Ritual Position interface functions
+	 */
+	virtual bool IsRitualPositionOccupied_Implementation() const override;
+	virtual void SetRitualPositionOccupied_Implementation(ACharacter* OccupyingCharacter) override;
+	virtual ARitualPosition* GetRitualPosition_Implementation() const override { return RitualPosition;  }
+	
 
 
 };
