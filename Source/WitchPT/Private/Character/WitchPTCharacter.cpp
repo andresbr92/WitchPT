@@ -68,17 +68,3 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 	InitializeDefaultAttributes();
 }
 
-bool AWitchPTCharacter::StartRitual(ACharacter* Character)
-{
-	AWitchPTPlayerState* WitchPtPlayerState = Cast<AWitchPTPlayerState>(GetPlayerState());
-	if (!WitchPtPlayerState)
-	{
-		return false;
-	}
-	WitchPtPlayerState->RitualAltarInteractingWith->StartRitual(this);
-	return true;
-	
-}
-
-
-

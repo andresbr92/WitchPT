@@ -25,12 +25,3 @@ UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
-
-void AWitchPTPlayerState::SetRitualAltarInteractingWith(ARitualPosition* RitualPosition)
-{
-	if (RitualPosition)
-	{
-		RitualPositionInteractingWith = RitualPosition;
-		RitualAltarInteractingWith = RitualPosition->GetRitualAltar();
-	}
-}

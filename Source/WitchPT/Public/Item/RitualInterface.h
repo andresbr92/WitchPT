@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/Interface.h"
 #include "RitualInterface.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI, NotBlueprintable)
+UINTERFACE(MinimalAPI)
 class URitualInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -23,6 +24,11 @@ class WITCHPT_API IRitualInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 	
 public:
-	UFUNCTION(BlueprintCallable)
-	virtual bool StartRitual(ACharacter* Character);
+	// Función que la GA del jugador llamará para intentar iniciar el ritual
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
+	void HandleStartRitualRequest(ACharacter* RequestingCharacter);
+
+	// Función que la GA del jugador llamará para enviar un input
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
+	void HandlePlayerInput(ACharacter* InputCharacter, const FGameplayTag& InputTag);
 };

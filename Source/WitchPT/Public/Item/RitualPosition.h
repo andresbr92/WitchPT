@@ -6,6 +6,7 @@
 #include "Item/Item.h"
 #include "AbilitySystem/Interaction/InteractionOption.h"
 #include "GameplayTagContainer.h" // Added for FGameplayTag
+#include "RitualInterface.h"
 #include "RitualPosition.generated.h"
 
 // Forward Declarations
@@ -18,7 +19,7 @@ class UBoxComponent;
 class ACharacter;
 
 UCLASS()
-class WITCHPT_API ARitualPosition : public AItem
+class WITCHPT_API ARitualPosition : public AItem, public IRitualInterface
 {
 	GENERATED_BODY()
 
@@ -62,6 +63,13 @@ public:
 	void SetPositionTag(const FGameplayTag& NewTag);
 	UFUNCTION(BlueprintCallable)
 	void SetRitualAltar(ARitualAltar* Altar) { RitualAltar = Altar; }
+
+
+	/**
+	 * Interface functions
+	 */
+	virtual void HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter) override;
+	virtual void HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
 protected:
 	
 

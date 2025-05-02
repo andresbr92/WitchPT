@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h" // Include for FGameplayTag
-#include "RitualInterface.h"
 #include "RitualAltar.generated.h"
 
 
@@ -35,7 +34,7 @@ enum class ERitualState : uint8
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceCompleted, bool, bWasSuccessful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputReceived, const FGameplayTag&, ReceivedTag, bool, bWasCorrect);
 UCLASS()
-class WITCHPT_API ARitualAltar : public AActor, public IRitualInterface
+class WITCHPT_API ARitualAltar : public AActor
 {
 	GENERATED_BODY()
 
@@ -118,9 +117,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualCatastrophicFail();
 
-	// Interface Implementation
-	UFUNCTION(BlueprintCallable)
-	virtual bool StartRitual(ACharacter* Character) override;
+	
+
 	
 	// Getters for Blueprint/HUD access
 	UFUNCTION(BlueprintPure, Category = "Ritual")

@@ -84,11 +84,6 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 	DOREPLIFETIME(ARitualAltar, DifficultyScalingMultiplier);
 }
 
-bool ARitualAltar::StartRitual(ACharacter* Character)
-{
-	Server_StartRitual(Character);
-	return true;
-}
 
 void ARitualAltar::Server_StartRitual_Implementation(ACharacter* InitiatingPlayer)
 {

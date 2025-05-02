@@ -23,13 +23,6 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
-	// Setters
-	UFUNCTION(BlueprintCallable)
-	void SetRitualAltarInteractingWith(ARitualPosition* RitualPosition);
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	TObjectPtr<ARitualAltar> RitualAltarInteractingWith;
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	TObjectPtr<ARitualPosition> RitualPositionInteractingWith;
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
