@@ -52,7 +52,7 @@ public:
 
 	//~ Setters (Called by Altar or GA) - Ensure proper authority checks if needed
 	// These should likely only be called on the server
-	UFUNCTION(Server, Reliable, BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void SetOccupied(ACharacter* Character);
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
@@ -109,7 +109,7 @@ protected:
 	// Interaction Logic Helper (Called from GatherInteractionOptions or a specific interaction GA)
 	void HandleInteraction(ACharacter* InteractingCharacter);
 private:
-	void SetCharacterToPosition(ACharacter* Character);
+	
 	void RemoveCharacterFromPosition();
 
 };

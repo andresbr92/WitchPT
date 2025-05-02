@@ -32,7 +32,7 @@ enum class ERitualState : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceCompleted, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputReceived, const FGameplayTag&, ReceivedTag, bool, bWasCorrect);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputReceived, ACharacter*, Character, bool, bWasCorrect);
 UCLASS()
 class WITCHPT_API ARitualAltar : public AActor
 {
@@ -81,7 +81,7 @@ public:
 	
 	// Base time window for inputs
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
-	float BaseInputTimeWindow = 5.0f;
+	float BaseInputTimeWindow = 10.0f;
 	
 	// Scaling multiplier for difficulty
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
@@ -90,26 +90,29 @@ public:
 	// Positions for the ritual
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ritual|Setup")
 	TArray<TObjectPtr<ARitualPosition>> RitualPositions;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Ritual|Setup")
+	TMap<TObjectPtr<ACharacter>, FGameplayTag> PlayerPositionTags;
 	
 	// RPCs for client-server communication
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void Server_StartRitual(ACharacter* InitiatingPlayer);
+	UFUNCTION(BlueprintCallable)
+	void StartRitual(ACharacter* InitiatingPlayer);
 	
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void Server_HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
+	UFUNCTION(BlueprintCallable)
+	bool HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
 	
-	UFUNCTION(Server, Reliable)
-	void Server_OccupyPosition(ACharacter* Player, ARitualPosition* Position);
+	UFUNCTION(BlueprintCallable)
+	void OccupyPosition(ACharacter* Player, ARitualPosition* Position);
 	
 	// Multicast RPCs for notifications
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualStateChanged(ERitualState NewState);
 	
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnInputSuccess(ACharacter* Player);
+	void Multicast_OnInputSuccess(ACharacter* Character);
 	
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnInputFailed(ACharacter* Player);
+	void Multicast_OnInputFailed(ACharacter* Character);
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualSucceeded();

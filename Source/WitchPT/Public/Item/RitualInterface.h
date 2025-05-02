@@ -41,6 +41,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
 	ARitualPosition* GetRitualPosition() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
+	void GetRitualPositionTag(FGameplayTag& OutPositionTag) const;
+
+	
 	
 
 	/**
@@ -51,5 +55,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
 	void SetRitualPositionOccupied(ACharacter* OccupyingCharacter);
+	
 	
 };

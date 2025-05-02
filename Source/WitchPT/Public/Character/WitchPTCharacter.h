@@ -45,4 +45,20 @@ public:
 	
 
 
+	//RPC
+	UFUNCTION(Server, Reliable)
+	void Server_HandleStartRitualRequest(ACharacter* RequestingCharacter);
+
+	UFUNCTION(Server, Reliable)
+	void Server_HandlePlayerInput(ACharacter* InputCharacter, const FGameplayTag& InputTag);
+
+	UFUNCTION(Server, Reliable)
+	void Server_SetRitualPositionOccupied(ACharacter* Player, ARitualPosition* Position);
+
+	
+
+
+	
+
+
 };

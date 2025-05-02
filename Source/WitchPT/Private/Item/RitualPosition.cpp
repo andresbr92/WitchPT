@@ -174,8 +174,14 @@ void ARitualPosition::SetPositionTag(const FGameplayTag& NewTag)
 }
 
 
-// Called on the Server by the Altar (or potentially a GA)
-void ARitualPosition::SetCharacterToPosition(ACharacter* Character)
+
+
+void ARitualPosition::SetUnoccupied_Implementation()
+{
+	RemoveCharacterFromPosition();
+}
+
+void ARitualPosition::SetOccupied(ACharacter* Character)
 {
 	if (!HasAuthority())
 	{
@@ -204,71 +210,9 @@ void ARitualPosition::SetCharacterToPosition(ACharacter* Character)
 	OnRep_IsOccupied();
 	OnRep_OccupyingCharacter();
 	
-	// // Apply the occupying position tag to the character
-	// UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Character);
-	// if (ASC)
-	// {
-	// 	const FWitchPTGameplayTags& witchPtGameplayTags = FWitchPTGameplayTags::Get();
-	// 	
-	// 	// Apply GE_Ritual_OccupyingPosition to the player
-	// 	// This would typically be a GameplayEffect that applies the tag and any other effects
-	// 	// The client should see this automatically via replication
-	// 	
-	// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Applied State.Ritual.OccupyingPosition tag to %s"), *Character->GetName());
-	// }
-	//
-	// // Move character to the position (can be smoothed in the GA)
-	// FVector TargetLocation = GetActorLocation();
-	// FRotator TargetRotation = GetActorRotation();
-	//
-	// UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Moving %s to position %s at %s"), 
-	// 	*Character->GetName(), *GetName(), *TargetLocation.ToString());
-	//
-	// // If the character has a movement component, disable collisions during positioning
-	// UCharacterMovementComponent* MovementComp = Character->FindComponentByClass<UCharacterMovementComponent>();
-	// UCapsuleComponent* CapsuleComp = Character->FindComponentByClass<UCapsuleComponent>();
-	//
-	// // Temporarily disable collisions to avoid getting stuck
-	// if (CapsuleComp)
-	// {
-	// 	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Temporarily disabled collisions for %s"), *Character->GetName());
-	// }
-	//
-	// // Move the character
-	// Character->SetActorLocation(TargetLocation);
-	// Character->SetActorRotation(TargetRotation);
-	//
-	// // Re-enable collisions
-	// if (CapsuleComp)
-	// {
-	// 	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Re-enabled collisions for %s"), *Character->GetName());
-	// }
-	
-	// Notify altar
-	if (RitualAltar)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Notifying altar %s that position is now occupied by %s"), 
-			*RitualAltar->GetName(), *Character->GetName());
-		RitualAltar->Server_OccupyPosition(Character, this);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] Cannot notify altar: no altar reference set for position %s"), *GetName());
-	}
+
 	
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s set to Occupied by %s"), *GetName(), *Character->GetName());
-}
-
-void ARitualPosition::SetUnoccupied_Implementation()
-{
-	RemoveCharacterFromPosition();
-}
-
-void ARitualPosition::SetOccupied_Implementation(ACharacter* Character)
-{
-	SetCharacterToPosition(Character);
 }
 
 // Called on the Server by the Altar (or potentially a GA)

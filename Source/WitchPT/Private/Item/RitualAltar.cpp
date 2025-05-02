@@ -30,7 +30,7 @@ ARitualAltar::ARitualAltar()
 	CorruptionAmount = 0.0f;
 	MaxCorruption = 100.0f;
 	CorruptionIncreasePerFail = 10.0f;
-	BaseInputTimeWindow = 5.0f;
+	BaseInputTimeWindow = 20.f;
 	DifficultyScalingMultiplier = 1.0f;
 }
 
@@ -85,7 +85,10 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 }
 
 
-void ARitualAltar::Server_StartRitual_Implementation(ACharacter* InitiatingPlayer)
+
+
+
+void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 {
 	if (!HasAuthority() || !InitiatingPlayer)
 	{
@@ -196,12 +199,12 @@ void ARitualAltar::GenerateInputSequence()
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Generated sequence with %d inputs: %s"), InputSequence.Num(), *SequenceStr);
 }
 
-void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character, const FGameplayTag& InputTag)
+bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag)
 {
-	if (!HasAuthority() || !Character)
+	if (!Character)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input: no authority or invalid character"));
-		return;
+		return false;
 	}
 	
 	// Check if the ritual is active
@@ -209,7 +212,7 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input from %s: ritual not active (state=%d)"), 
 			*Character->GetName(), static_cast<int32>(CurrentRitualState));
-		return;
+		return false;
 	}
 	
 	// Check if it's this player's turn
@@ -217,7 +220,7 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input from %s: not their turn (current active=%s)"), 
 			*Character->GetName(), CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"));
-		return;
+		return false;
 	}
 	
 	// Check if we have a valid input to match against
@@ -225,7 +228,7 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 	{
 		UE_LOG(LogTemp, Error, TEXT("[DEBUG-RITUAL] Input validation error: invalid sequence state (index=%d, sequence length=%d)"), 
 			CurrentSequenceIndex, InputSequence.Num());
-		return;
+		return false;
 	}
 	
 	// Get the expected input for the current step
@@ -241,7 +244,8 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Input CORRECT! Player: %s, Input: %s, Index: %d/%d"), 
 			*Character->GetName(), *InputTag.ToString(), CurrentSequenceIndex, InputSequence.Num()-1);
 		HandleInputSuccess(Character);
-		OnInputReceived.Broadcast(InputTag, true);
+		return true;
+
 	}
 	else
 	{
@@ -249,7 +253,7 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Input INCORRECT! Player: %s, Received: %s, Expected: %s"), 
 			*Character->GetName(), *InputTag.ToString(), *ExpectedInput.ToString());
 		HandleInputFailure(Character);
-		OnInputReceived.Broadcast(InputTag, false);
+		return false;
 	}
 }
 
@@ -584,13 +588,14 @@ void ARitualAltar::CleanupRitual()
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up"));
 }
 
-void ARitualAltar::Server_OccupyPosition_Implementation(ACharacter* Player, ARitualPosition* Position)
+void ARitualAltar::OccupyPosition(ACharacter* Player, ARitualPosition* Position)
 {
 	if (!HasAuthority() || !Player || !Position)
 	{
 		return;
 	}
-	
+
+	PlayerPositionTags.Add(Player, Position->GetPositionTag());
 	// This is called by RitualPosition when a player occupies it
 	// We might want to track which positions are occupied or update UI
 	
@@ -646,32 +651,34 @@ ERitualInput ARitualAltar::ConvertTagToERitualInput(const FGameplayTag& Tag)
 	return ERitualInput::None;
 }
 
-void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Player)
+void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character)
 {
 	// Client-side feedback for successful input
 	// This would typically play sounds, particle effects, etc.
 	
-	if (Player)
+	if (Character)
 	{
 		// Example: Play sound at player location
 		// UGameplayStatics::PlaySoundAtLocation(this, SuccessSound, Player->GetActorLocation());
 		
-		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input success feedback for player %s"), *Player->GetName());
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input success feedback for player %s"), *Character->GetName());
 	}
 }
 
-void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Player)
+void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 {
 	// Client-side feedback for failed input
 	// This would typically play sounds, particle effects, etc.
 	
-	if (Player)
+	if (Character)
 	{
 		// Example: Play sound at player location
 		// UGameplayStatics::PlaySoundAtLocation(this, FailureSound, Player->GetActorLocation());
 		
-		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input failed feedback for player %s"), *Player->GetName());
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input failed feedback for player %s"), *Character->GetName());
 	}
+	
+	
 }
 
 void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()

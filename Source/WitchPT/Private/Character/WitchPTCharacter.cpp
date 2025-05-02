@@ -9,6 +9,7 @@
 #include "Item/RitualAltar.h"
 #include "Item/RitualPosition.h"
 #include "Player/WitchPTPlayerState.h"
+#include "WitchPT/WitchPT.h"
 
 
 // Sets default values
@@ -71,18 +72,12 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 
 void AWitchPTCharacter::HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
 {
-	if (RitualPosition)
-	{
-		RitualPosition->GetRitualAltar()->Server_StartRitual(RequestingCharacter);
-	}
+	Server_HandleStartRitualRequest_Implementation(RequestingCharacter);
 }
 
 void AWitchPTCharacter::HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
 {
-	if (RitualPosition)
-	{
-		RitualPosition->GetRitualAltar()->Server_HandlePlayerInput(InputCharacter, InputTag);
-	}
+	Server_HandlePlayerInput_Implementation(InputCharacter, InputTag);
 }
 
 void AWitchPTCharacter::HandleSetRitualPosition_Implementation(ARitualPosition* InRitualPosition)
@@ -107,6 +102,40 @@ void AWitchPTCharacter::SetRitualPositionOccupied_Implementation(ACharacter* Occ
 	if (RitualPosition)
 	{
 		RitualPosition->SetOccupied(OccupyingCharacter);
+		Server_SetRitualPositionOccupied_Implementation(OccupyingCharacter, RitualPosition);
 	}
 }
+
+
+
+
+void AWitchPTCharacter::Server_HandlePlayerInput_Implementation(ACharacter* InputCharacter,
+                                                                const FGameplayTag& InputTag)
+{
+	if (RitualPosition)
+	{
+		RitualPosition->GetRitualAltar()->HandlePlayerInput(InputCharacter, InputTag);
+	}
+}
+
+void AWitchPTCharacter::Server_HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
+{
+	if (RitualPosition)
+	{
+		RitualPosition->GetRitualAltar()->StartRitual(RequestingCharacter);
+	}
+	
+}
+
+
+void AWitchPTCharacter::Server_SetRitualPositionOccupied_Implementation(ACharacter* Player, ARitualPosition* Position)
+{
+	if (Player && Position)
+	{
+		RitualPosition->GetRitualAltar()->OccupyPosition(Player, Position);
+	}
+}
+
+
+
 
