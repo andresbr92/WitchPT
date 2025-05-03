@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Item/BaseInteractableAltar.h"
 #include "GameplayTagContainer.h" // Include for FGameplayTag
+#include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
 class ACauldronPosition;
@@ -43,84 +44,96 @@ enum ECauldronPhysicState
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
  */
 UCLASS()
-class WITCHPT_API ACauldronAltar : public ABaseInteractableAltar
+class WITCHPT_API ACauldronAltar : public ABaseInteractableAltar, public IInteractableTarget
 {
     GENERATED_BODY()
 
 public:
     // Sets default values for this actor's properties
     ACauldronAltar();
+    virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
+    UPROPERTY(EditAnywhere)
+    FInteractionOption Option;
+    
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
     
-    // Map of player to their assigned input sequence
-    UPROPERTY(BlueprintReadOnly, Category = "Cauldron")
-    TMap<TObjectPtr<ACharacter>, FIngredientSequence> PlayerInputSequences;
-    
-    // Map of player to their current sequence progress
-    UPROPERTY(BlueprintReadOnly, Category = "Cauldron")
-    TMap<TObjectPtr<ACharacter>, int32> PlayerSequenceIndices;
-    
-    // Time window for adding ingredients
-    UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron")
-    float IngredientTimeWindow = 30.0f;
-    
-    // Timer for the overall cauldron brewing
-    UPROPERTY(ReplicatedUsing = OnRep_CauldronTimer, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
-    float CauldronTimer;
-
-    UPROPERTY(ReplicatedUsing = OnRep_CauldronTimer, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
+    UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
-    
-    // Positions for the cauldron (override the base class property with the correct type)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cauldron|Setup")
-    TArray<TObjectPtr<ACauldronPosition>> CauldronPositions;
 
+    // --- New functions for interaction ---
+    
+    /**
+     * Function called when the player performs a quick interaction with the cauldron
+     * This will position the player for potion making
+     * @param InteractingCharacter The character that is interacting with the cauldron
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
+    void OnPressInteraction(ACharacter* InteractingCharacter);
+    
+    /**
+     * Function called when the player performs a hold interaction with the cauldron
+     * This will allow the player to carry the cauldron on their back
+     * @param InteractingCharacter The character that is interacting with the cauldron
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
+    void OnHoldInteraction(ACharacter* InteractingCharacter);
+    
+    /**
+     * Attaches the cauldron to the player's back
+     * @param Character The character to attach the cauldron to
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Movement")
+    void AttachToCharacter(ACharacter* Character);
+    
+    /**
+     * Detaches the cauldron from the player and places it in the world
+     * @param Character The character the cauldron is currently attached to
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Movement")
+    void DetachFromCharacter(ACharacter* Character);
+    
+    /**
+     * Positions the character at one of the cauldron positions for brewing
+     * @param Character The character to position at the cauldron
+     * @return Whether the character was successfully positioned
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
+    bool PositionCharacterForBrewing(ACharacter* Character);
+    
+    /**
+     * Checks if the cauldron can be picked up
+     * @return True if the cauldron can be picked up
+     */
+    UFUNCTION(BlueprintPure, Category = "Cauldron|State")
+    bool CanBePickedUp() const;
+    
+    /**
+     * Checks if the cauldron is currently being carried
+     * @return True if the cauldron is being carried
+     */
+    UFUNCTION(BlueprintPure, Category = "Cauldron|State")
+    bool IsBeingCarried() const;
+    
+    /**
+     * Gets the character currently carrying the cauldron
+     * @return The character carrying the cauldron, or nullptr if not being carried
+     */
+    UFUNCTION(BlueprintPure, Category = "Cauldron|State")
+    ACharacter* GetCarryingCharacter() const;
 
-    
-    
-    // RPCs for client-server communication
-    UFUNCTION(BlueprintCallable)
-    void StartBrewing(ACharacter* InitiatingPlayer);
-    
-    UFUNCTION(BlueprintCallable)
-    bool HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
-    
-    // Getters for Blueprint/HUD access
-    UFUNCTION(BlueprintPure, Category = "Cauldron")
-    float GetCauldronTimeRemaining() const { return CauldronTimer; }
-    
-    UFUNCTION(BlueprintPure, Category = "Cauldron")
-    int32 GetPlayerSequenceProgress(ACharacter* Player) const;
-    
-    UFUNCTION(BlueprintPure, Category = "Cauldron")
-    TArray<FGameplayTag> GetPlayerSequence(ACharacter* Player) const;
-    
-    UFUNCTION(BlueprintPure, Category = "Cauldron")
-    FGameplayTag GetCurrentExpectedInputForPlayer(ACharacter* Player) const;
-
-protected:
-    virtual void BeginPlay() override;
-    virtual void Tick(float DeltaTime) override;
-    
-    // OnRep functions for replicated properties
     UFUNCTION()
-    void OnRep_CauldronTimer();
+    void OnRep_CauldronPhysicState();
     
-    // Timer handles
-    FTimerHandle CauldronTimerHandle;
+private:
+    // Character currently carrying the cauldron
+    UPROPERTY(Replicated)
+    TObjectPtr<ACharacter> CarryingCharacter;
     
-    // Helper functions
-    void GeneratePlayerSequences();
-    virtual void HandleInputSuccess(ACharacter* Player) override;
-    virtual void HandleInputFailure(ACharacter* Player) override;
-    void StartCauldronTimer();
-    void OnCauldronTimerExpired();
-    FGameplayTag ConvertECauldronInputToTag(ECauldronInput Input);
-    ECauldronInput ConvertTagToECauldronInput(const FGameplayTag& Tag);
-    virtual bool IsPlayerEligibleForInteraction(ACharacter* Player) const override;
-    bool AreAllPlayersDone() const;
+    // Socket name for attaching the cauldron to the character
+    UPROPERTY(EditDefaultsOnly, Category = "Cauldron|Movement")
+    FName BackAttachSocketName = "BackpackSocket";
     
-    // Animation montages
-    UPROPERTY(EditDefaultsOnly)
-    TObjectPtr<UAnimMontage> BrewingAnimMontage;
+    // Offset for placing the cauldron when detached
+    UPROPERTY(EditDefaultsOnly, Category = "Cauldron|Movement")
+    FVector DetachmentOffset = FVector(100.0f, 0.0f, 0.0f);
 }; 

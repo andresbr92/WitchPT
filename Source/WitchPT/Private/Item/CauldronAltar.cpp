@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ACauldronAltar::ACauldronAltar()
@@ -14,428 +16,637 @@ ACauldronAltar::ACauldronAltar()
     // Make sure it replicates
     bReplicates = true;
     bAlwaysRelevant = true;
-    CauldronTimer = 0.0f;
+    CauldronPhysicState = ECauldronPhysicState::Static;
+    CarryingCharacter = nullptr;
+}
+
+void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery,
+    FInteractionOptionBuilder& OptionBuilder)
+{
+    // Set up the interaction option based on the cauldron state
+    FInteractionOption InteractionOption = Option;
+    
+    // Configure the interaction option to support hold interaction
+    InteractionOption.bSupportsHoldInteraction = true;
+    
+    // Add the interaction option to the builder
+    OptionBuilder.AddInteractionOption(InteractionOption);
 }
 
 void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    //
-    DOREPLIFETIME(ACauldronAltar, PlayerInputSequences);
-    DOREPLIFETIME(ACauldronAltar, PlayerSequenceIndices);
-    DOREPLIFETIME(ACauldronAltar, IngredientTimeWindow);
-    DOREPLIFETIME(ACauldronAltar, CauldronTimer);
+    
+    DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
+    DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
 }
 
-// Called when the game starts or when spawned
-void ACauldronAltar::BeginPlay()
+void ACauldronAltar::OnRep_CauldronPhysicState()
 {
-    // Super::BeginPlay();
-    //
-    // // Initialize cauldron positions
-    // for (auto Position : CauldronPositions)
-    // {
-    //     if (Position)
-    //     {
-    //         // Setup the position
-    //         Position->SetCauldronAltar(this);
-    //     }
-    // }
+    // Update visual representation based on the new state
+    if (CauldronPhysicState == ECauldronPhysicState::Moving)
+    {
+        // Cauldron is being carried - update visuals if needed
+        SetActorEnableCollision(false);
+    }
+    else
+    {
+        // Cauldron is stationary - update visuals if needed
+        SetActorEnableCollision(true);
+    }
 }
 
-// Called every frame
-void ACauldronAltar::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
+// --- Interaction Functions ---
 
-    // // Update cauldron timer if active
-    // if (CurrentState == EInteractionState::Active && GetLocalRole() == ROLE_Authority)
-    // {
-    //     CauldronTimer -= DeltaTime;
-    //     if (CauldronTimer <= 0.0f)
-    //     {
-    //         // Time's up!
-    //         OnCauldronTimerExpired();
-    //     }
-    // }
+void ACauldronAltar::OnPressInteraction(ACharacter* InteractingCharacter)
+{
+    if (!InteractingCharacter)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnPressInteraction: Invalid character"));
+        return;
+    }
+    
+    // If the cauldron is being carried by this character, detach it
+    if (IsBeingCarried() && CarryingCharacter == InteractingCharacter)
+    {
+        DetachFromCharacter(InteractingCharacter);
+        return;
+    }
+    
+    // Otherwise, try to position the character for brewing
+    bool bSuccess = PositionCharacterForBrewing(InteractingCharacter);
+    if (!bSuccess)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnPressInteraction: Failed to position character for brewing"));
+    }
 }
 
-void ACauldronAltar::StartBrewing(ACharacter* InitiatingPlayer)
+void ACauldronAltar::OnHoldInteraction(ACharacter* InteractingCharacter)
 {
-    // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Inactive)
-    // {
-    //     return;
-    // }
-    //
-    // // Make sure we have at least one player
-    // if (ParticipatingPlayers.Num() == 0)
-    // {
-    //     // Can't start with no players
-    //     UE_LOG(LogTemp, Warning, TEXT("[CauldronAltar] Cannot start brewing with no participating players"));
-    //     return;
-    // }
-    //
-    // // Change state to preparing
-    // CurrentState = EInteractionState::Preparing;
-    // Multicast_OnStateChanged(CurrentState);
-    //
-    // // Generate sequences for each player
-    // GeneratePlayerSequences();
-    //
-    // // Transition to active state
-    // CurrentState = EInteractionState::Active;
-    // Multicast_OnStateChanged(CurrentState);
-    //
-    // // Start the brewing timer
-    // StartCauldronTimer();
-    //
-    // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing started with %d players"), ParticipatingPlayers.Num());
+    if (!InteractingCharacter)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnHoldInteraction: Invalid character"));
+        return;
+    }
+    
+    // Check if the cauldron can be picked up
+    if (!CanBePickedUp())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnHoldInteraction: Cauldron cannot be picked up"));
+        return;
+    }
+    
+    // Attach the cauldron to the character
+    AttachToCharacter(InteractingCharacter);
 }
 
-bool ACauldronAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag)
+bool ACauldronAltar::CanBePickedUp() const
 {
-    // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Active || !Character)
-    // {
-    //     return false;
-    // }
-    //
-    // // Check if this player is participating
-    // if (!IsPlayerEligibleForInteraction(Character))
-    // {
-    //     UE_LOG(LogTemp, Warning, TEXT("[CauldronAltar] Player %s tried to input but is not eligible"), 
-    //         *Character->GetName());
-    //     return false;
-    // }
-    //
-    // // Get the player's expected input
-    // FGameplayTag ExpectedInput = GetCurrentExpectedInputForPlayer(Character);
-    //
-    // // Check if the input matches what's expected
-    // bool bInputCorrect = (InputTag == ExpectedInput);
-    //
-    // if (bInputCorrect)
-    // {
-    //     // Handle successful input
-    //     HandleInputSuccess(Character);
-    //     
-    //     // Update the player's sequence index
-    //     int32& CurrentIndex = PlayerSequenceIndices.FindOrAdd(Character);
-    //     CurrentIndex++;
-    //     
-    //     // If this player has completed their sequence, check if all players are done
-    //     if (CurrentIndex >= PlayerInputSequences[Character].Ingredients.Num())
-    //     {
-    //         if (AreAllPlayersDone())
-    //         {
-    //             // All players have completed their sequences!
-    //             CurrentState = EInteractionState::Succeeded;
-    //             Multicast_OnStateChanged(CurrentState);
-    //             
-    //             // Spawn reward
-    //             SpawnReward();
-    //             
-    //             // Clean up
-    //             CleanupInteraction();
-    //         }
-    //     }
-    //     
-    //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s input correct. Index now %d of %d"), 
-    //         *Character->GetName(), CurrentIndex, PlayerInputSequences[Character].Ingredients.Num());
-    //     
-    //     // Broadcast the delegate
-    //     OnInputReceived.Broadcast(Character, true);
-    //     
-    //     return true;
-    // }
-    // else
-    // {
-    //     // Handle failed input
-    //     HandleInputFailure(Character);
-    //     
-    //     // Broadcast the delegate
-    //     OnInputReceived.Broadcast(Character, false);
-    //     
-    //     return false;
-    // }
-    return false;
-}
-
-// void ACauldronAltar::OccupyPosition(ACharacter* Player, ACauldronPosition* Position)
-// {
-//     if (!Player || !Position || GetLocalRole() != ROLE_Authority)
-//     {
-//         return;
-//     }
-//
-//     // Call the base class implementation first
-//     Super::OccupyPosition(Player, Position);
-//     
-//     // Initialize player sequence data if not already present
-//     if (!PlayerInputSequences.Contains(Player))
-//     {
-//         FIngredientSequence NewSequence;
-//         PlayerInputSequences.Add(Player, NewSequence);
-//         PlayerSequenceIndices.Add(Player, 0);
-//     }
-//     
-//     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s occupied position %s"),
-//         *Player->GetName(), *Position->GetName());
-// }
-
-int32 ACauldronAltar::GetPlayerSequenceProgress(ACharacter* Player) const
-{
-    // if (!Player || !PlayerInputSequences.Contains(Player) || PlayerInputSequences[Player].Ingredients.Num() == 0)
-    // {
-    //     return 0;
-    // }
-    //
-    // int32 CurrentIndex = PlayerSequenceIndices.Contains(Player) ? PlayerSequenceIndices[Player] : 0;
-    // return (CurrentIndex * 100) / PlayerInputSequences[Player].Ingredients.Num();
-    return 1;
-}
-
-TArray<FGameplayTag> ACauldronAltar::GetPlayerSequence(ACharacter* Player) const
-{
-    // if (!Player || !PlayerInputSequences.Contains(Player))
-    // {
-    //     return TArray<FGameplayTag>();
-    // }
-    //
-    // return PlayerInputSequences[Player].Ingredients;
-    FGameplayTag Tag = FGameplayTag();
-    return TArray<FGameplayTag>({Tag});
-}
-
-FGameplayTag ACauldronAltar::GetCurrentExpectedInputForPlayer(ACharacter* Player) const
-{
-    // if (!Player || !PlayerInputSequences.Contains(Player))
-    // {
-    //     return FGameplayTag();
-    // }
-    //
-    // const TArray<FGameplayTag>& Sequence = PlayerInputSequences[Player].Ingredients;
-    // int32 CurrentIndex = PlayerSequenceIndices.Contains(Player) ? PlayerSequenceIndices[Player] : 0;
-    //
-    // // Check if the player has completed their sequence
-    // if (CurrentIndex >= Sequence.Num())
-    // {
-    //     return FGameplayTag();
-    // }
-    //
-    // return Sequence[CurrentIndex];
-    FGameplayTag Tag = FGameplayTag();
-    return Tag;
-}
-
-void ACauldronAltar::OnRep_CauldronTimer()
-{
-    // Update UI or visuals based on timer
-}
-
-void ACauldronAltar::GeneratePlayerSequences()
-{
-    // PlayerInputSequences.Empty();
-    // PlayerSequenceIndices.Empty();
-    //
-    // // Generate a random sequence for each player
-    // for (ACharacter* Player : ParticipatingPlayers)
-    // {
-    //     if (!Player)
-    //     {
-    //         continue;
-    //     }
-    //     
-    //     FIngredientSequence NewSequence;
-    //     
-    //     // Generate 3-5 random ingredients for each player
-    //     int32 NumIngredients = FMath::RandRange(3, 5);
-    //     for (int32 i = 0; i < NumIngredients; ++i)
-    //     {
-    //         ECauldronInput RandomInput = static_cast<ECauldronInput>(FMath::RandRange(0, static_cast<int32>(ECauldronInput::Ingredient5)));
-    //         FGameplayTag InputTag = ConvertECauldronInputToTag(RandomInput);
-    //         NewSequence.Ingredients.Add(InputTag);
-    //     }
-    //     
-    //     // Store the sequence for this player
-    //     PlayerInputSequences.Add(Player, NewSequence);
-    //     PlayerSequenceIndices.Add(Player, 0);
-    //     
-    //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Generated sequence for player %s with %d ingredients"), 
-    //         *Player->GetName(), NewSequence.Ingredients.Num());
-    // }
-}
-
-void ACauldronAltar::HandleInputSuccess(ACharacter* Player)
-{
-    // Super::HandleInputSuccess(Player);
-    //
-    // // Play success effects
-    // Multicast_OnInputSuccess(Player);
-    //
-    // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s successfully added an ingredient"), *Player->GetName());
-}
-
-void ACauldronAltar::HandleInputFailure(ACharacter* Player)
-{
-    // Super::HandleInputFailure(Player);
-    //
-    // // Play failure effects
-    // Multicast_OnInputFailed(Player);
-    //
-    // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s failed to add the correct ingredient"), *Player->GetName());
-}
-
-void ACauldronAltar::StartCauldronTimer()
-{
-    // // Set the timer duration
-    // CauldronTimer = IngredientTimeWindow;
-    //
-    // // Start the timer
-    // GetWorldTimerManager().SetTimer(
-    //     CauldronTimerHandle,
-    //     this,
-    //     &ACauldronAltar::OnCauldronTimerExpired,
-    //     CauldronTimer,
-    //     false
-    // );
-    //
-    // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Started brewing timer: %.1f seconds"), CauldronTimer);
-}
-
-void ACauldronAltar::OnCauldronTimerExpired()
-{
-    // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Active)
-    // {
-    //     return;
-    // }
-    //
-    // // Check if all players have completed their sequences
-    // if (AreAllPlayersDone())
-    // {
-    //     // Success!
-    //     CurrentState = EInteractionState::Succeeded;
-    //     Multicast_OnStateChanged(CurrentState);
-    //     
-    //     // Spawn reward
-    //     SpawnReward();
-    //     
-    //     // Clean up
-    //     CleanupInteraction();
-    //     
-    //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing succeeded - all players completed in time"));
-    // }
-    // else
-    // {
-    //     // Failure - time ran out
-    //     CurrentState = EInteractionState::Failed;
-    //     Multicast_OnStateChanged(CurrentState);
-    //     
-    //     // Apply aging penalties to all players who didn't complete
-    //     for (ACharacter* Player : ParticipatingPlayers)
-    //     {
-    //         if (Player && PlayerSequenceIndices.Contains(Player))
-    //         {
-    //             int32 CurrentIndex = PlayerSequenceIndices[Player];
-    //             TArray<FGameplayTag> Sequence = PlayerInputSequences[Player].Ingredients;
-    //             
-    //             // Check if this player didn't complete their sequence
-    //             if (CurrentIndex < Sequence.Num())
-    //             {
-    //                 ApplyAgePenalty(Player, false);
-    //             }
-    //         }
-    //     }
-    //     
-    //     // Clean up
-    //     CleanupInteraction();
-    //     
-    //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing failed - time ran out"));
-    // }
-}
-
-FGameplayTag ACauldronAltar::ConvertECauldronInputToTag(ECauldronInput Input)
-{
-    // FString TagString;
-    //
-    // switch (Input)
-    // {
-    // case ECauldronInput::Ingredient1:
-    //     TagString = "Input.Cauldron.Ingredient1";
-    //     break;
-    // case ECauldronInput::Ingredient2:
-    //     TagString = "Input.Cauldron.Ingredient2";
-    //     break;
-    // case ECauldronInput::Ingredient3:
-    //     TagString = "Input.Cauldron.Ingredient3";
-    //     break;
-    // case ECauldronInput::Ingredient4:
-    //     TagString = "Input.Cauldron.Ingredient4";
-    //     break;
-    // case ECauldronInput::Ingredient5:
-    //     TagString = "Input.Cauldron.Ingredient5";
-    //     break;
-    // default:
-    //     TagString = "Input.Cauldron.None";
-    //     break;
-    // }
-    //
-    FGameplayTag Tag = FGameplayTag();
-    return Tag;
-}
-
-ECauldronInput ACauldronAltar::ConvertTagToECauldronInput(const FGameplayTag& Tag)
-{
-    // FString TagString = Tag.ToString();
-    //
-    // if (TagString.Contains("Ingredient1"))
-    // {
-    //     return ECauldronInput::Ingredient1;
-    // }
-    // else if (TagString.Contains("Ingredient2"))
-    // {
-    //     return ECauldronInput::Ingredient2;
-    // }
-    // else if (TagString.Contains("Ingredient3"))
-    // {
-    //     return ECauldronInput::Ingredient3;
-    // }
-    // else if (TagString.Contains("Ingredient4"))
-    // {
-    //     return ECauldronInput::Ingredient4;
-    // }
-    // else if (TagString.Contains("Ingredient5"))
-    // {
-    //     return ECauldronInput::Ingredient5;
-    // }
-    //
-    return ECauldronInput::None;
-}
-
-bool ACauldronAltar::IsPlayerEligibleForInteraction(ACharacter* Player) const
-{
-    return Super::IsPlayerEligibleForInteraction(Player) && PlayerInputSequences.Contains(Player);
-}
-
-bool ACauldronAltar::AreAllPlayersDone() const
-{
-    // for (ACharacter* Player : ParticipatingPlayers)
-    // {
-    //     if (!Player || !PlayerInputSequences.Contains(Player) || !PlayerSequenceIndices.Contains(Player))
-    //     {
-    //         continue;
-    //     }
-    //     
-    //     int32 CurrentIndex = PlayerSequenceIndices[Player];
-    //     int32 SequenceLength = PlayerInputSequences[Player].Ingredients.Num();
-    //     
-    //     // If any player hasn't completed their sequence, return false
-    //     if (CurrentIndex < SequenceLength)
-    //     {
-    //         return false;
-    //     }
-    // }
-    //
-    // // All players have completed their sequences
-    // return true;
+    // Check if the cauldron is already being carried
+    if (IsBeingCarried())
+    {
+        return false;
+    }
+    
+    // Add any additional conditions here (e.g., cauldron is empty, not brewing, etc.)
+    
     return true;
-} 
+}
+
+bool ACauldronAltar::IsBeingCarried() const
+{
+    return CauldronPhysicState == ECauldronPhysicState::Moving && CarryingCharacter != nullptr;
+}
+
+ACharacter* ACauldronAltar::GetCarryingCharacter() const
+{
+    return CarryingCharacter;
+}
+
+void ACauldronAltar::AttachToCharacter(ACharacter* Character)
+{
+    if (!Character || !HasAuthority())
+    {
+        return;
+    }
+    
+    // Set the cauldron state to moving
+    CauldronPhysicState = ECauldronPhysicState::Moving;
+    CarryingCharacter = Character;
+    
+    // Attach the cauldron to the character's back
+    FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, 
+                                          EAttachmentRule::KeepWorld, true);
+    
+    // Find the socket to attach to
+    USkeletalMeshComponent* CharacterMesh = Character->GetMesh();
+    if (CharacterMesh && CharacterMesh->DoesSocketExist(BackAttachSocketName))
+    {
+        // Attach to the socket
+        AttachToComponent(CharacterMesh, AttachRules, BackAttachSocketName);
+        
+        // Disable collision
+        SetActorEnableCollision(false);
+
+        // Reduce de Scale of the Cauldron
+        SetActorScale3D(FVector(0.5f, 0.5f, 0.5f));
+        
+        UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::AttachToCharacter: Cauldron attached to %s"), *Character->GetName());
+    }
+    else
+    {
+        // If no socket exists, just attach to the character's root
+        AttachToComponent(Character->GetRootComponent(), AttachRules);
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::AttachToCharacter: Socket %s not found, attached to root"), 
+               *BackAttachSocketName.ToString());
+    }
+    
+    // Play pickup sound or effects
+    // PlayPickupEffects();
+}
+
+void ACauldronAltar::DetachFromCharacter(ACharacter* Character)
+{
+    if (!Character || !HasAuthority() || Character != CarryingCharacter)
+    {
+        return;
+    }
+    
+    // Detach from the character
+    DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+    
+    // Place the cauldron in front of the character
+    FVector CharacterLocation = Character->GetActorLocation();
+    FRotator CharacterRotation = Character->GetActorRotation();
+    FVector PlacementOffset = CharacterRotation.RotateVector(DetachmentOffset);
+    
+    // Set the cauldron's location
+    SetActorLocation(CharacterLocation + PlacementOffset);
+    
+    // Reset the cauldron state
+    CauldronPhysicState = ECauldronPhysicState::Static;
+    CarryingCharacter = nullptr;
+    
+    // Enable collision
+    SetActorEnableCollision(true);
+    
+    UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::DetachFromCharacter: Cauldron detached from %s"), *Character->GetName());
+    
+    // Play placement sound or effects
+    // PlayPlacementEffects();
+}
+
+bool ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
+{
+    if (!Character || !HasAuthority())
+    {
+        return false;
+    }
+    
+    // Check if the cauldron is static (not being carried)
+    if (CauldronPhysicState != ECauldronPhysicState::Static)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::PositionCharacterForBrewing: Cauldron is not in a static state"));
+        return false;
+    }
+    
+    // Calculate position around the cauldron
+    float Radius = 150.0f; // Distance from the cauldron center
+    float Angle = 0.0f;    // Starting angle
+    
+    FVector CauldronLocation = GetActorLocation();
+    FVector PositionOffset = FVector(FMath::Cos(Angle) * Radius, FMath::Sin(Angle) * Radius, 0.0f);
+    FVector TargetLocation = CauldronLocation + PositionOffset;
+    
+    // Calculate rotation to face the cauldron
+    FVector DirectionToCauldron = CauldronLocation - TargetLocation;
+    DirectionToCauldron.Z = 0.0f; // Keep the rotation on the XY plane
+    FRotator TargetRotation = DirectionToCauldron.Rotation();
+    
+    // Move the character to the position
+    bool bSuccess = Character->SetActorLocationAndRotation(TargetLocation, TargetRotation);
+    
+    if (bSuccess)
+    {
+        UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::PositionCharacterForBrewing: Character positioned successfully"));
+        
+        // Additional setup for brewing (e.g., play animations, setup UI, etc.)
+        // SetupBrewingState(Character);
+    }
+    
+    return bSuccess;
+}
+
+//
+// // Called when the game starts or when spawned
+// void ACauldronAltar::BeginPlay()
+// {
+//     // Super::BeginPlay();
+//     //
+//     // // Initialize cauldron positions
+//     // for (auto Position : CauldronPositions)
+//     // {
+//     //     if (Position)
+//     //     {
+//     //         // Setup the position
+//     //         Position->SetCauldronAltar(this);
+//     //     }
+//     // }
+// }
+//
+// // Called every frame
+// void ACauldronAltar::Tick(float DeltaTime)
+// {
+//     Super::Tick(DeltaTime);
+//
+//     // // Update cauldron timer if active
+//     // if (CurrentState == EInteractionState::Active && GetLocalRole() == ROLE_Authority)
+//     // {
+//     //     CauldronTimer -= DeltaTime;
+//     //     if (CauldronTimer <= 0.0f)
+//     //     {
+//     //         // Time's up!
+//     //         OnCauldronTimerExpired();
+//     //     }
+//     // }
+// }
+//
+// void ACauldronAltar::StartBrewing(ACharacter* InitiatingPlayer)
+// {
+//     // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Inactive)
+//     // {
+//     //     return;
+//     // }
+//     //
+//     // // Make sure we have at least one player
+//     // if (ParticipatingPlayers.Num() == 0)
+//     // {
+//     //     // Can't start with no players
+//     //     UE_LOG(LogTemp, Warning, TEXT("[CauldronAltar] Cannot start brewing with no participating players"));
+//     //     return;
+//     // }
+//     //
+//     // // Change state to preparing
+//     // CurrentState = EInteractionState::Preparing;
+//     // Multicast_OnStateChanged(CurrentState);
+//     //
+//     // // Generate sequences for each player
+//     // GeneratePlayerSequences();
+//     //
+//     // // Transition to active state
+//     // CurrentState = EInteractionState::Active;
+//     // Multicast_OnStateChanged(CurrentState);
+//     //
+//     // // Start the brewing timer
+//     // StartCauldronTimer();
+//     //
+//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing started with %d players"), ParticipatingPlayers.Num());
+// }
+//
+// bool ACauldronAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag)
+// {
+//     // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Active || !Character)
+//     // {
+//     //     return false;
+//     // }
+//     //
+//     // // Check if this player is participating
+//     // if (!IsPlayerEligibleForInteraction(Character))
+//     // {
+//     //     UE_LOG(LogTemp, Warning, TEXT("[CauldronAltar] Player %s tried to input but is not eligible"), 
+//     //         *Character->GetName());
+//     //     return false;
+//     // }
+//     //
+//     // // Get the player's expected input
+//     // FGameplayTag ExpectedInput = GetCurrentExpectedInputForPlayer(Character);
+//     //
+//     // // Check if the input matches what's expected
+//     // bool bInputCorrect = (InputTag == ExpectedInput);
+//     //
+//     // if (bInputCorrect)
+//     // {
+//     //     // Handle successful input
+//     //     HandleInputSuccess(Character);
+//     //     
+//     //     // Update the player's sequence index
+//     //     int32& CurrentIndex = PlayerSequenceIndices.FindOrAdd(Character);
+//     //     CurrentIndex++;
+//     //     
+//     //     // If this player has completed their sequence, check if all players are done
+//     //     if (CurrentIndex >= PlayerInputSequences[Character].Ingredients.Num())
+//     //     {
+//     //         if (AreAllPlayersDone())
+//     //         {
+//     //             // All players have completed their sequences!
+//     //             CurrentState = EInteractionState::Succeeded;
+//     //             Multicast_OnStateChanged(CurrentState);
+//     //             
+//     //             // Spawn reward
+//     //             SpawnReward();
+//     //             
+//     //             // Clean up
+//     //             CleanupInteraction();
+//     //         }
+//     //     }
+//     //     
+//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s input correct. Index now %d of %d"), 
+//     //         *Character->GetName(), CurrentIndex, PlayerInputSequences[Character].Ingredients.Num());
+//     //     
+//     //     // Broadcast the delegate
+//     //     OnInputReceived.Broadcast(Character, true);
+//     //     
+//     //     return true;
+//     // }
+//     // else
+//     // {
+//     //     // Handle failed input
+//     //     HandleInputFailure(Character);
+//     //     
+//     //     // Broadcast the delegate
+//     //     OnInputReceived.Broadcast(Character, false);
+//     //     
+//     //     return false;
+//     // }
+//     return false;
+// }
+//
+// // void ACauldronAltar::OccupyPosition(ACharacter* Player, ACauldronPosition* Position)
+// // {
+// //     if (!Player || !Position || GetLocalRole() != ROLE_Authority)
+// //     {
+// //         return;
+// //     }
+// //
+// //     // Call the base class implementation first
+// //     Super::OccupyPosition(Player, Position);
+// //     
+// //     // Initialize player sequence data if not already present
+// //     if (!PlayerInputSequences.Contains(Player))
+// //     {
+// //         FIngredientSequence NewSequence;
+// //         PlayerInputSequences.Add(Player, NewSequence);
+// //         PlayerSequenceIndices.Add(Player, 0);
+// //     }
+// //     
+// //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s occupied position %s"),
+// //         *Player->GetName(), *Position->GetName());
+// // }
+//
+// int32 ACauldronAltar::GetPlayerSequenceProgress(ACharacter* Player) const
+// {
+//     // if (!Player || !PlayerInputSequences.Contains(Player) || PlayerInputSequences[Player].Ingredients.Num() == 0)
+//     // {
+//     //     return 0;
+//     // }
+//     //
+//     // int32 CurrentIndex = PlayerSequenceIndices.Contains(Player) ? PlayerSequenceIndices[Player] : 0;
+//     // return (CurrentIndex * 100) / PlayerInputSequences[Player].Ingredients.Num();
+//     return 1;
+// }
+//
+// TArray<FGameplayTag> ACauldronAltar::GetPlayerSequence(ACharacter* Player) const
+// {
+//     // if (!Player || !PlayerInputSequences.Contains(Player))
+//     // {
+//     //     return TArray<FGameplayTag>();
+//     // }
+//     //
+//     // return PlayerInputSequences[Player].Ingredients;
+//     FGameplayTag Tag = FGameplayTag();
+//     return TArray<FGameplayTag>({Tag});
+// }
+//
+// FGameplayTag ACauldronAltar::GetCurrentExpectedInputForPlayer(ACharacter* Player) const
+// {
+//     // if (!Player || !PlayerInputSequences.Contains(Player))
+//     // {
+//     //     return FGameplayTag();
+//     // }
+//     //
+//     // const TArray<FGameplayTag>& Sequence = PlayerInputSequences[Player].Ingredients;
+//     // int32 CurrentIndex = PlayerSequenceIndices.Contains(Player) ? PlayerSequenceIndices[Player] : 0;
+//     //
+//     // // Check if the player has completed their sequence
+//     // if (CurrentIndex >= Sequence.Num())
+//     // {
+//     //     return FGameplayTag();
+//     // }
+//     //
+//     // return Sequence[CurrentIndex];
+//     FGameplayTag Tag = FGameplayTag();
+//     return Tag;
+// }
+//
+// void ACauldronAltar::OnRep_CauldronTimer()
+// {
+//     // Update UI or visuals based on timer
+// }
+//
+// void ACauldronAltar::GeneratePlayerSequences()
+// {
+//     // PlayerInputSequences.Empty();
+//     // PlayerSequenceIndices.Empty();
+//     //
+//     // // Generate a random sequence for each player
+//     // for (ACharacter* Player : ParticipatingPlayers)
+//     // {
+//     //     if (!Player)
+//     //     {
+//     //         continue;
+//     //     }
+//     //     
+//     //     FIngredientSequence NewSequence;
+//     //     
+//     //     // Generate 3-5 random ingredients for each player
+//     //     int32 NumIngredients = FMath::RandRange(3, 5);
+//     //     for (int32 i = 0; i < NumIngredients; ++i)
+//     //     {
+//     //         ECauldronInput RandomInput = static_cast<ECauldronInput>(FMath::RandRange(0, static_cast<int32>(ECauldronInput::Ingredient5)));
+//     //         FGameplayTag InputTag = ConvertECauldronInputToTag(RandomInput);
+//     //         NewSequence.Ingredients.Add(InputTag);
+//     //     }
+//     //     
+//     //     // Store the sequence for this player
+//     //     PlayerInputSequences.Add(Player, NewSequence);
+//     //     PlayerSequenceIndices.Add(Player, 0);
+//     //     
+//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Generated sequence for player %s with %d ingredients"), 
+//     //         *Player->GetName(), NewSequence.Ingredients.Num());
+//     // }
+// }
+//
+// void ACauldronAltar::HandleInputSuccess(ACharacter* Player)
+// {
+//     // Super::HandleInputSuccess(Player);
+//     //
+//     // // Play success effects
+//     // Multicast_OnInputSuccess(Player);
+//     //
+//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s successfully added an ingredient"), *Player->GetName());
+// }
+//
+// void ACauldronAltar::HandleInputFailure(ACharacter* Player)
+// {
+//     // Super::HandleInputFailure(Player);
+//     //
+//     // // Play failure effects
+//     // Multicast_OnInputFailed(Player);
+//     //
+//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s failed to add the correct ingredient"), *Player->GetName());
+// }
+//
+// void ACauldronAltar::StartCauldronTimer()
+// {
+//     // // Set the timer duration
+//     // CauldronTimer = IngredientTimeWindow;
+//     //
+//     // // Start the timer
+//     // GetWorldTimerManager().SetTimer(
+//     //     CauldronTimerHandle,
+//     //     this,
+//     //     &ACauldronAltar::OnCauldronTimerExpired,
+//     //     CauldronTimer,
+//     //     false
+//     // );
+//     //
+//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Started brewing timer: %.1f seconds"), CauldronTimer);
+// }
+//
+// void ACauldronAltar::OnCauldronTimerExpired()
+// {
+//     // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Active)
+//     // {
+//     //     return;
+//     // }
+//     //
+//     // // Check if all players have completed their sequences
+//     // if (AreAllPlayersDone())
+//     // {
+//     //     // Success!
+//     //     CurrentState = EInteractionState::Succeeded;
+//     //     Multicast_OnStateChanged(CurrentState);
+//     //     
+//     //     // Spawn reward
+//     //     SpawnReward();
+//     //     
+//     //     // Clean up
+//     //     CleanupInteraction();
+//     //     
+//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing succeeded - all players completed in time"));
+//     // }
+//     // else
+//     // {
+//     //     // Failure - time ran out
+//     //     CurrentState = EInteractionState::Failed;
+//     //     Multicast_OnStateChanged(CurrentState);
+//     //     
+//     //     // Apply aging penalties to all players who didn't complete
+//     //     for (ACharacter* Player : ParticipatingPlayers)
+//     //     {
+//     //         if (Player && PlayerSequenceIndices.Contains(Player))
+//     //         {
+//     //             int32 CurrentIndex = PlayerSequenceIndices[Player];
+//     //             TArray<FGameplayTag> Sequence = PlayerInputSequences[Player].Ingredients;
+//     //             
+//     //             // Check if this player didn't complete their sequence
+//     //             if (CurrentIndex < Sequence.Num())
+//     //             {
+//     //                 ApplyAgePenalty(Player, false);
+//     //             }
+//     //         }
+//     //     }
+//     //     
+//     //     // Clean up
+//     //     CleanupInteraction();
+//     //     
+//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing failed - time ran out"));
+//     // }
+// }
+//
+// FGameplayTag ACauldronAltar::ConvertECauldronInputToTag(ECauldronInput Input)
+// {
+//     // FString TagString;
+//     //
+//     // switch (Input)
+//     // {
+//     // case ECauldronInput::Ingredient1:
+//     //     TagString = "Input.Cauldron.Ingredient1";
+//     //     break;
+//     // case ECauldronInput::Ingredient2:
+//     //     TagString = "Input.Cauldron.Ingredient2";
+//     //     break;
+//     // case ECauldronInput::Ingredient3:
+//     //     TagString = "Input.Cauldron.Ingredient3";
+//     //     break;
+//     // case ECauldronInput::Ingredient4:
+//     //     TagString = "Input.Cauldron.Ingredient4";
+//     //     break;
+//     // case ECauldronInput::Ingredient5:
+//     //     TagString = "Input.Cauldron.Ingredient5";
+//     //     break;
+//     // default:
+//     //     TagString = "Input.Cauldron.None";
+//     //     break;
+//     // }
+//     //
+//     FGameplayTag Tag = FGameplayTag();
+//     return Tag;
+// }
+//
+// ECauldronInput ACauldronAltar::ConvertTagToECauldronInput(const FGameplayTag& Tag)
+// {
+//     // FString TagString = Tag.ToString();
+//     //
+//     // if (TagString.Contains("Ingredient1"))
+//     // {
+//     //     return ECauldronInput::Ingredient1;
+//     // }
+//     // else if (TagString.Contains("Ingredient2"))
+//     // {
+//     //     return ECauldronInput::Ingredient2;
+//     // }
+//     // else if (TagString.Contains("Ingredient3"))
+//     // {
+//     //     return ECauldronInput::Ingredient3;
+//     // }
+//     // else if (TagString.Contains("Ingredient4"))
+//     // {
+//     //     return ECauldronInput::Ingredient4;
+//     // }
+//     // else if (TagString.Contains("Ingredient5"))
+//     // {
+//     //     return ECauldronInput::Ingredient5;
+//     // }
+//     //
+//     return ECauldronInput::None;
+// }
+//
+// bool ACauldronAltar::IsPlayerEligibleForInteraction(ACharacter* Player) const
+// {
+//     return Super::IsPlayerEligibleForInteraction(Player) && PlayerInputSequences.Contains(Player);
+// }
+//
+// bool ACauldronAltar::AreAllPlayersDone() const
+// {
+//     // for (ACharacter* Player : ParticipatingPlayers)
+//     // {
+//     //     if (!Player || !PlayerInputSequences.Contains(Player) || !PlayerSequenceIndices.Contains(Player))
+//     //     {
+//     //         continue;
+//     //     }
+//     //     
+//     //     int32 CurrentIndex = PlayerSequenceIndices[Player];
+//     //     int32 SequenceLength = PlayerInputSequences[Player].Ingredients.Num();
+//     //     
+//     //     // If any player hasn't completed their sequence, return false
+//     //     if (CurrentIndex < SequenceLength)
+//     //     {
+//     //         return false;
+//     //     }
+//     // }
+//     //
+//     // // All players have completed their sequences
+//     // return true;
+//     return true;
+// } 

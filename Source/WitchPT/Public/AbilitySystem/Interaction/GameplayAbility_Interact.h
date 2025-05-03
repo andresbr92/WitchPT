@@ -79,6 +79,9 @@ protected:
 	
 	// Tiempo en que se inició la pulsación
 	float InteractionStartTime = 0.0f;
+	
+	// Indica si ya se disparó una interacción mantenida para la pulsación actual
+	bool bHoldInteractionFired = false;
 
 	// UPROPERTY(EditDefaultsOnly)
 	// TSoftClassPtr<UUserWidget> DefaultInteractionWidgetClass;

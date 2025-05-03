@@ -37,7 +37,7 @@ class UInteractableTarget : public UInterface
 	GENERATED_BODY()
 };
 
-/**  */
+
 class IInteractableTarget
 {
 	GENERATED_BODY()

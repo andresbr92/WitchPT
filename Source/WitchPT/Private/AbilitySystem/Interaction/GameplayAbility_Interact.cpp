@@ -223,6 +223,7 @@ void UGameplayAbility_Interact::OnInteractionButtonPressed()
 	
 	UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Botón de interacción presionado"));
 	bIsInteractionButtonHeld = true;
+	bHoldInteractionFired = false; // Reiniciamos la bandera al comenzar una nueva interacción
 	InteractionStartTime = GetWorld()->GetTimeSeconds();
 	
 	// Configurar un temporizador para detectar si el botón se mantiene presionado durante el tiempo requerido
@@ -255,6 +256,13 @@ void UGameplayAbility_Interact::OnInteractionButtonReleased()
 		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Temporizador de hold cancelado"));
 		GetWorld()->GetTimerManager().ClearTimer(HoldInteractionTimerHandle);
 		
+		// Verificamos si ya se lanzó una interacción mantenida
+		if (bHoldInteractionFired)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Ya se disparó una interacción mantenida, ignorando interacción rápida"));
+			return; // Si ya se disparó una interacción mantenida, no lanzamos la rápida
+		}
+		
 		// Si el botón se soltó antes del tiempo de interacción mantenida, considerarlo como una pulsación rápida
 		float CurrentTime = GetWorld()->GetTimeSeconds();
 		float HoldTime = CurrentTime - InteractionStartTime;
@@ -286,6 +294,9 @@ void UGameplayAbility_Interact::OnHoldInteractionTimeElapsed()
 	if (bIsInteractionButtonHeld)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Activando interacción mantenida"));
+		// Marcamos que ya se disparó la interacción mantenida
+		bHoldInteractionFired = true;
+		
 		// El botón se ha mantenido presionado durante el tiempo requerido
 		// Llamar a la interacción mantenida
 		TriggerHoldInteraction();

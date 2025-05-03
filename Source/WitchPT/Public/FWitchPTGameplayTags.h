@@ -37,6 +37,9 @@ public:
 	FGameplayTag Character_State_Aim;
 	FGameplayTag Character_State_Blocked;
 
+	FGameplayTag Character_State_Cauldron_Carrying;
+
+
 	// Input Tags
 	FGameplayTag InputTag_LMB;
 	FGameplayTag InputTag_RMB;
@@ -82,6 +85,12 @@ public:
 	FGameplayTag Event_Ritual_TurnAdvanced;
 	FGameplayTag Event_Ritual_SequenceFail;
 	FGameplayTag Event_Ritual_CatastrophicFail;
+
+	// Cauldron Tags
+	FGameplayTag Cauldron_State_Empty;
+	FGameplayTag Cauldron_State_Full;
+	FGameplayTag Cauldron_State_PotionReady;
+
 
 
 

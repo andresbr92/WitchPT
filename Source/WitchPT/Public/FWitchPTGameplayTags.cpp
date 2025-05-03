@@ -18,7 +18,7 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Character_State_Dead = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Dead"));
 	GameplayTags.Character_State_Aim = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Aim"));
 	GameplayTags.Character_State_Blocked = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Blocked"));
-
+	GameplayTags.Character_State_Cauldron_Carrying = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.Carrying"));
 
 
 	/**
@@ -63,7 +63,11 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 
 	GameplayTags.Event_Interaction_OccupyRitualPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Interaction.OccupyRitualPosition"));
 
-	
+	// Cauldron Tags
+	GameplayTags.Cauldron_State_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.Empty"));
+	GameplayTags.Cauldron_State_Full = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.Full"));
+	GameplayTags.Cauldron_State_PotionReady = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.PotionReady"));
+
 
 
 	
