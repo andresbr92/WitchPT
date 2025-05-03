@@ -45,6 +45,36 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetCauldronAltar(ACauldronAltar* Altar) { CauldronAltar = Altar; }
     //~ End Setters
+    //
+    // /**
+    //  * Posiciona un personaje en esta ubicación
+    //  * @param Character El personaje a posicionar
+    //  * @return True si el personaje fue posicionado correctamente
+    //  */
+    // UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
+    // bool PositionCharacter(ACharacter* Character);
+    //
+    // /**
+    //  * Comprueba si esta posición está ocupada
+    //  * @return True si la posición está ocupada por un personaje
+    //  */
+    // UFUNCTION(BlueprintPure, Category = "Cauldron|State")
+    // bool IsOccupied() const;
+    //
+    // /**
+    //  * Establece el estado de ocupación de esta posición
+    //  * @param bInOccupied Si la posición está ocupada
+    //  * @param InOccupyingCharacter El personaje que ocupa la posición
+    //  */
+    // UFUNCTION(BlueprintCallable, Category = "Cauldron|State")
+    // void SetOccupied(bool bInOccupied, ACharacter* InOccupyingCharacter = nullptr);
+    //
+    // /**
+    //  * Obtiene el personaje que ocupa esta posición
+    //  * @return El personaje que ocupa la posición, o nullptr si no está ocupada
+    //  */
+    // UFUNCTION(BlueprintPure, Category = "Cauldron|State")
+    // ACharacter* GetOccupyingCharacter() const { return OccupyingCharacter; }
 
 protected:
     // Reference to the parent altar
@@ -57,4 +87,12 @@ protected:
 private:
     // Find the CauldronAltar if not set
     void FindCauldronAltar();
+    //
+    // // Character currently occupying this position
+    // UPROPERTY()
+    // TObjectPtr<ACharacter> OccupyingCharacter;
+    //
+    // // Whether this position is currently occupied
+    // UPROPERTY()
+    // bool bIsOccupied;
 }; 

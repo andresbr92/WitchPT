@@ -120,9 +120,38 @@ public:
      */
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     ACharacter* GetCarryingCharacter() const;
+    
+    /**
+     * Create brewing positions around the cauldron
+     * These are scene components in the Blueprint that define where players can stand
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
+    void CreateBrewingPositions();
+    
+    /**
+     * Removes all brewing positions created by the cauldron
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
+    void DestroyBrewingPositions();
+    
+    /**
+     * Get an available brewing position for a character
+     * @param Character The character looking for a brewing position
+     * @return A valid brewing position, or nullptr if none available
+     */
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
+    ACauldronPosition* GetAvailableBrewingPosition(ACharacter* Character);
 
     UFUNCTION()
     void OnRep_CauldronPhysicState();
+    
+    // Transforms defining brewing positions around the cauldron
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cauldron|Brewing", meta = (MakeEditWidget = true))
+    TArray<FTransform> BrewingPositionTransforms;
+    
+    // The class to spawn for brewing positions
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Brewing")
+    TSubclassOf<ACauldronPosition> CauldronPositionClass;
     
 private:
     // Character currently carrying the cauldron
@@ -136,4 +165,8 @@ private:
     // Offset for placing the cauldron when detached
     UPROPERTY(EditDefaultsOnly, Category = "Cauldron|Movement")
     FVector DetachmentOffset = FVector(100.0f, 0.0f, 0.0f);
+    
+    // Array of spawned brewing positions
+    UPROPERTY()
+    TArray<ACauldronPosition*> SpawnedBrewingPositions;
 }; 

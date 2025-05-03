@@ -130,6 +130,9 @@ void ACauldronAltar::AttachToCharacter(ACharacter* Character)
         return;
     }
     
+    // First destroy any brewing positions
+    DestroyBrewingPositions();
+    
     // Set the cauldron state to moving
     CauldronPhysicState = ECauldronPhysicState::Moving;
     CarryingCharacter = Character;
@@ -147,7 +150,7 @@ void ACauldronAltar::AttachToCharacter(ACharacter* Character)
         
         // Disable collision
         SetActorEnableCollision(false);
-
+        
         // Reduce de Scale of the Cauldron
         SetActorScale3D(FVector(0.5f, 0.5f, 0.5f));
         
@@ -187,8 +190,14 @@ void ACauldronAltar::DetachFromCharacter(ACharacter* Character)
     CauldronPhysicState = ECauldronPhysicState::Static;
     CarryingCharacter = nullptr;
     
+    // Reset cauldron scale to normal
+    SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
+    
     // Enable collision
     SetActorEnableCollision(true);
+    
+    // Create brewing positions around the cauldron
+    CreateBrewingPositions();
     
     UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::DetachFromCharacter: Cauldron detached from %s"), *Character->GetName());
     
@@ -198,43 +207,34 @@ void ACauldronAltar::DetachFromCharacter(ACharacter* Character)
 
 bool ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
 {
-    if (!Character || !HasAuthority())
+    if (!Character)
     {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::PositionCharacterForBrewing: Invalid character"));
         return false;
     }
     
-    // Check if the cauldron is static (not being carried)
-    if (CauldronPhysicState != ECauldronPhysicState::Static)
+    // Obtener una posición disponible
+    ACauldronPosition* BrewingPosition = GetAvailableBrewingPosition(Character);
+    
+    if (BrewingPosition)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::PositionCharacterForBrewing: Cauldron is not in a static state"));
+        // Posicionar al personaje en esta posición
+        // return BrewingPosition->
         return false;
     }
-    
-    // Calculate position around the cauldron
-    float Radius = 150.0f; // Distance from the cauldron center
-    float Angle = 0.0f;    // Starting angle
-    
-    FVector CauldronLocation = GetActorLocation();
-    FVector PositionOffset = FVector(FMath::Cos(Angle) * Radius, FMath::Sin(Angle) * Radius, 0.0f);
-    FVector TargetLocation = CauldronLocation + PositionOffset;
-    
-    // Calculate rotation to face the cauldron
-    FVector DirectionToCauldron = CauldronLocation - TargetLocation;
-    DirectionToCauldron.Z = 0.0f; // Keep the rotation on the XY plane
-    FRotator TargetRotation = DirectionToCauldron.Rotation();
-    
-    // Move the character to the position
-    bool bSuccess = Character->SetActorLocationAndRotation(TargetLocation, TargetRotation);
-    
-    if (bSuccess)
+    else
     {
-        UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::PositionCharacterForBrewing: Character positioned successfully"));
+        // Fallback: si no hay posiciones disponibles, colocar al personaje en frente del caldero
+        UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::PositionCharacterForBrewing: Using fallback positioning"));
         
-        // Additional setup for brewing (e.g., play animations, setup UI, etc.)
-        // SetupBrewingState(Character);
+        // Si no hay posiciones, crear una posición por defecto frente al caldero
+        FVector CharacterLocation = GetActorLocation() + GetActorForwardVector() * 150.0f;
+        FRotator CharacterRotation = (GetActorLocation() - CharacterLocation).Rotation();
+        
+        // Teleportar al personaje a esta posición
+        Character->SetActorLocationAndRotation(CharacterLocation, CharacterRotation, false, nullptr, ETeleportType::TeleportPhysics);
+        return true;
     }
-    
-    return bSuccess;
 }
 
 //
@@ -650,3 +650,104 @@ bool ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
 //     // return true;
 //     return true;
 // } 
+
+// Implementación de las nuevas funciones para las posiciones de elaboración
+void ACauldronAltar::CreateBrewingPositions()
+{
+    // Only create brewing positions on the server
+    if (!HasAuthority() || !CauldronPositionClass)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::CreateBrewingPositions: Missing authority or position class"));
+        return;
+    }
+    
+    // Make sure we have no previous positions
+    DestroyBrewingPositions();
+    
+    UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CreateBrewingPositions: Creating %d brewing positions"), BrewingPositionTransforms.Num());
+    
+    // Spawn a CauldronPosition for each transform
+    for (const FTransform& PosTransform : BrewingPositionTransforms)
+    {
+        // Transform relative to world space
+        FTransform WorldTransform = PosTransform * GetActorTransform();
+        
+        // Get location and rotation from the transform
+        FVector Location = WorldTransform.GetLocation();
+        FRotator Rotation = WorldTransform.Rotator();
+        
+        // Spawn parameters
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+        
+        // Spawn the brewing position
+        ACauldronPosition* NewPosition = GetWorld()->SpawnActor<ACauldronPosition>(
+            CauldronPositionClass, 
+            Location, 
+            Rotation, 
+            SpawnParams);
+        
+        if (NewPosition)
+        {
+            // Initialize the position
+            // Note: Implement this method in CauldronPosition if needed
+            // NewPosition->SetCauldronAltar(this);
+            
+            // Add to our array
+            SpawnedBrewingPositions.Add(NewPosition);
+            
+            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CreateBrewingPositions: Created position at %s"), *Location.ToString());
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::CreateBrewingPositions: Failed to spawn position"));
+        }
+    }
+}
+
+void ACauldronAltar::DestroyBrewingPositions()
+{
+    // Only destroy positions on the server
+    if (!HasAuthority())
+    {
+        return;
+    }
+    
+    // Destroy all brewing positions
+    for (ACauldronPosition* Position : SpawnedBrewingPositions)
+    {
+        if (Position)
+        {
+            Position->Destroy();
+        }
+    }
+    
+    // Clear the array
+    SpawnedBrewingPositions.Empty();
+    
+    UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::DestroyBrewingPositions: All brewing positions destroyed"));
+}
+
+ACauldronPosition* ACauldronAltar::GetAvailableBrewingPosition(ACharacter* Character)
+{
+    // Verificar que tengamos posiciones
+    if (SpawnedBrewingPositions.Num() == 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::GetAvailableBrewingPosition: No brewing positions available"));
+        return nullptr;
+    }
+    
+    // Buscar la primera posición disponible
+    for (ACauldronPosition* Position : SpawnedBrewingPositions)
+    {
+        if (Position && !Position->IsOccupied())
+        {
+            return Position;
+        }
+    }
+    
+    // Todas las posiciones están ocupadas
+    UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::GetAvailableBrewingPosition: All positions are occupied"));
+    return nullptr;
+} 

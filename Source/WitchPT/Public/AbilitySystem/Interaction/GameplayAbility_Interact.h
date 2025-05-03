@@ -47,6 +47,18 @@ class WITCHPT_API UGameplayAbility_Interact : public UWitchPTGameplayAbility
 	// Método llamado cuando se cumple el tiempo de interacción mantenida
 	UFUNCTION()
 	void OnHoldInteractionTimeElapsed();
+    
+    // Método que verifica si el objeto bajo el trace sigue siendo el mismo
+    UFUNCTION()
+    void CheckInteractionValidity();
+    
+    // Método que cancela una interacción en curso
+    UFUNCTION(BlueprintCallable, Category = "Interaction")
+    void CancelCurrentInteraction();
+    
+    // Método de seguridad que se activa si una interacción dura demasiado tiempo
+    UFUNCTION()
+    void OnMaxInteractionTimeElapsed();
 
 	// Delegado que se dispara cuando se completa una interacción
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
@@ -55,6 +67,10 @@ class WITCHPT_API UGameplayAbility_Interact : public UWitchPTGameplayAbility
 	// Delegado que se dispara cuando se completa una interacción mantenida
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnInteractionComplete OnHoldInteractionComplete;
+    
+    // Delegado que se dispara cuando se cancela una interacción
+    UPROPERTY(BlueprintAssignable, Category = "Interaction")
+    FOnInteractionComplete OnInteractionCancelled;
 
 protected:
 
@@ -70,9 +86,23 @@ protected:
 	// Tiempo mínimo que debe mantenerse presionado el botón para considerar una interacción mantenida
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction", meta=(ClampMin="0.1", ToolTip="Tiempo en segundos que el jugador debe mantener presionado el botón para activar una interacción mantenida"))
 	float HoldInteractionTime = 1.0f;
+    
+    // Frecuencia para verificar si el objeto interactuable sigue siendo válido durante una interacción mantenida
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction", meta=(ClampMin="0.05", ToolTip="Tiempo en segundos entre comprobaciones de validez del objeto interactuable"))
+    float ValidityCheckRate = 0.1f;
+    
+    // Tiempo máximo que puede durar cualquier interacción antes de ser cancelada automáticamente
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction", meta=(ClampMin="1.0", ToolTip="Tiempo máximo en segundos que puede durar una interacción antes de ser cancelada automáticamente"))
+    float MaxInteractionTime = 10.0f;
 	
 	// Temporizador para detectar interacción mantenida
 	FTimerHandle HoldInteractionTimerHandle;
+    
+    // Temporizador para verificar la validez del objeto interactuable
+    FTimerHandle ValidityCheckTimerHandle;
+    
+    // Temporizador de seguridad para forzar el reinicio después de un tiempo máximo
+    FTimerHandle MaxInteractionTimeTimerHandle;
 	
 	// Estado del botón de interacción (presionado o no)
 	bool bIsInteractionButtonHeld = false;
@@ -82,6 +112,9 @@ protected:
 	
 	// Indica si ya se disparó una interacción mantenida para la pulsación actual
 	bool bHoldInteractionFired = false;
+    
+    // Guarda el objeto con el que se inició la interacción para compararlo
+    TScriptInterface<IInteractableTarget> InitialInteractableTarget;
 
 	// UPROPERTY(EditDefaultsOnly)
 	// TSoftClassPtr<UUserWidget> DefaultInteractionWidgetClass;

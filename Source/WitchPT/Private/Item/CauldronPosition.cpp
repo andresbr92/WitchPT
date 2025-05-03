@@ -7,6 +7,8 @@
 ACauldronPosition::ACauldronPosition()
 {
     // No need to set up replication here - it's handled by the base class
+    bIsOccupied = false;
+    OccupyingCharacter = nullptr;
 }
 
 void ACauldronPosition::BeginPlay()
@@ -189,4 +191,64 @@ void ACauldronPosition::HandleInteraction(ACharacter* InteractingCharacter)
     
     // Call the cauldron altar to handle occupation
     CauldronAltar->OccupyPosition(InteractingCharacter, this);
-} 
+}
+
+// bool ACauldronPosition::PositionCharacter(ACharacter* Character)
+// {
+//     if (!Character)
+//     {
+//         UE_LOG(LogTemp, Warning, TEXT("ACauldronPosition::PositionCharacter: Invalid character"));
+//         return false;
+//     }
+//     
+//     // No permitir posicionar si ya está ocupado
+//     if (bIsOccupied && OccupyingCharacter != Character)
+//     {
+//         UE_LOG(LogTemp, Warning, TEXT("ACauldronPosition::PositionCharacter: Position already occupied"));
+//         return false;
+//     }
+//     
+//     // Teleportar al personaje a la ubicación de este actor
+//     FVector TargetLocation = GetActorLocation();
+//     FRotator TargetRotation = GetActorRotation();
+//     
+//     bool bSuccess = Character->SetActorLocationAndRotation(
+//         TargetLocation, 
+//         TargetRotation, 
+//         false, 
+//         nullptr, 
+//         ETeleportType::TeleportPhysics);
+//     
+//     if (bSuccess)
+//     {
+//         // Marcar esta posición como ocupada
+//         SetOccupied(true, Character);
+//         
+//         UE_LOG(LogTemp, Log, TEXT("ACauldronPosition::PositionCharacter: Character positioned at %s"), 
+//                *GetName());
+//     }
+//     
+//     return bSuccess;
+// }
+//
+// bool ACauldronPosition::IsOccupied() const
+// {
+//     return bIsOccupied && OccupyingCharacter != nullptr;
+// }
+//
+// void ACauldronPosition::SetOccupied(bool bInOccupied, ACharacter* InOccupyingCharacter)
+// {
+//     bIsOccupied = bInOccupied;
+//     
+//     if (bInOccupied)
+//     {
+//         OccupyingCharacter = InOccupyingCharacter;
+//     }
+//     else
+//     {
+//         OccupyingCharacter = nullptr;
+//     }
+//     
+//     UE_LOG(LogTemp, Log, TEXT("ACauldronPosition::SetOccupied: %s is now %s"), 
+//            *GetName(), bIsOccupied ? TEXT("occupied") : TEXT("unoccupied"));
+// } 
