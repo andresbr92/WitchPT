@@ -12,6 +12,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayEffect.h"
 #include "FWitchPTGameplayTags.h"
+#include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -83,10 +84,6 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 	DOREPLIFETIME(ARitualAltar, BaseInputTimeWindow);
 	DOREPLIFETIME(ARitualAltar, DifficultyScalingMultiplier);
 }
-
-
-
-
 
 void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 {
@@ -667,8 +664,15 @@ void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character
 			EventData.Instigator = this;
 			EventData.Target = Character;
 			
-			// Find the correct montage
 			// FGameplayTag PositionTag = PlayerPositionTags[Character];
+			const FGameplayTag* PositionTag = PlayerPositionTags.Find(Character);
+			if (PositionTag && PositionTag->MatchesTag(WitchPtGameplayTags.Get().Ritual_Position_1))
+			{
+				EventData.OptionalObject = PrimaryAnimMontage;
+			} else
+			{
+				EventData.OptionalObject = SecondaryAnimMontage;
+			}
 			
 			
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, WitchPtGameplayTags.Event_Ritual_InputSuccess, EventData);
@@ -715,6 +719,7 @@ void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 	// Example: Play celebratory effects at altar location
 	// UGameplayStatics::PlaySoundAtLocation(this, SuccessSound, GetActorLocation());
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SuccessParticles, GetActorTransform());
+	OnSequenceCompleted.Broadcast(true);
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback"));
 }
@@ -729,6 +734,7 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CatastrophicFailParticles, GetActorTransform());
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
+	OnSequenceCompleted.Broadcast(false);
 }
 
 void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(ERitualState NewState)

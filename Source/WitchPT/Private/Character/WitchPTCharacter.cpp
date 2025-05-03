@@ -109,8 +109,7 @@ void AWitchPTCharacter::SetRitualPositionOccupied_Implementation(ACharacter* Occ
 
 
 
-void AWitchPTCharacter::Server_HandlePlayerInput_Implementation(ACharacter* InputCharacter,
-                                                                const FGameplayTag& InputTag)
+void AWitchPTCharacter::Server_HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
 {
 	if (RitualPosition)
 	{
