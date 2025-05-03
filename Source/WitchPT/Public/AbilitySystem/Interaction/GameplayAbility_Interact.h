@@ -61,14 +61,14 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FInteractionOption> CurrentOptions;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction", meta=(ClampMin="0.1"))
 	float InteractionScanRate = 0.1f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction", meta=(ClampMin="1.0"))
 	float InteractionScanRange = 500;
 	
 	// Tiempo mínimo que debe mantenerse presionado el botón para considerar una interacción mantenida
-	UPROPERTY(EditDefaultsOnly, Category="Interaction")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction", meta=(ClampMin="0.1", ToolTip="Tiempo en segundos que el jugador debe mantener presionado el botón para activar una interacción mantenida"))
 	float HoldInteractionTime = 1.0f;
 	
 	// Temporizador para detectar interacción mantenida

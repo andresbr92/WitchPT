@@ -143,7 +143,7 @@ void UAbilityTask_WaitForInteractable::UpdateInteractableOptions(const FInteract
 				{
 					// update the option
 					Option.TargetAbilitySystem = AbilitySystemComponent.Get();
-					Option.TargetInteractionAbilityHandle = InteractionAbilitySpec->Handle;
+					Option.TargetHoldInteractionAbilityHandle = InteractionAbilitySpec->Handle;
 				}
 			}
 			if (InteractionAbilitySpec)
