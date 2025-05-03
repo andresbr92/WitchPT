@@ -9,7 +9,11 @@
 #include "NativeGameplayTags.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
+#include "Engine/World.h"
+
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Ability_Interaction_Activate, "Ability.Interaction.Activate");
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Ability_Interaction_Hold_Activate, "Ability.Interaction.HoldActivate");
+
 UGameplayAbility_Interact::UGameplayAbility_Interact(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -86,7 +90,6 @@ void UGameplayAbility_Interact::UpdateInteractions(const TArray<FInteractionOpti
 
 void UGameplayAbility_Interact::TriggerInteraction()
 {
-	
 	if (CurrentOptions.Num() == 0)
 	{
 		return;
@@ -130,5 +133,135 @@ void UGameplayAbility_Interact::TriggerInteraction()
 			&Payload,
 			*InteractionOption.TargetAbilitySystem
 		);
+		
+		// Notificar que se completó la interacción
+		OnInteractionComplete.Broadcast();
+	}
+}
+
+void UGameplayAbility_Interact::TriggerHoldInteraction()
+{
+	if (CurrentOptions.Num() == 0)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* AbilitySystem = GetAbilitySystemComponentFromActorInfo();
+	if (AbilitySystem)
+	{
+		const FInteractionOption& InteractionOption = CurrentOptions[0];
+
+		// Verificar si la opción de interacción soporta interacción mantenida
+		if (!InteractionOption.bSupportsHoldInteraction)
+		{
+			// Si no soporta interacción mantenida, se cancela la operación
+			return;
+		}
+
+		AActor* Instigator = GetAvatarActorFromActorInfo();
+		AActor* InteractableTargetActor = UInteractionStatics::GetActorFromInteractableTarget(InteractionOption.InteractableTarget);
+
+		// Configurar los datos del evento para la interacción mantenida
+		FGameplayEventData Payload;
+		Payload.EventTag = TAG_Ability_Interaction_Hold_Activate;
+		Payload.Instigator = Instigator;
+		Payload.Target = InteractableTargetActor;
+
+		// Permitir que el objetivo personalice los datos del evento
+		InteractionOption.InteractableTarget->CustomizeInteractionEventData(TAG_Ability_Interaction_Hold_Activate, Payload);
+
+		// Obtener el actor objetivo
+		AActor* TargetActor = const_cast<AActor*>(ToRawPtr(Payload.Target));
+
+		// La información del actor necesaria para la interacción
+		FGameplayAbilityActorInfo ActorInfo;
+		ActorInfo.InitFromActor(InteractableTargetActor, TargetActor, InteractionOption.TargetAbilitySystem);
+
+		// Usar el handle de habilidad específico para interacción mantenida, si está disponible
+		FGameplayAbilitySpecHandle AbilityHandle = InteractionOption.TargetHoldInteractionAbilityHandle;
+		
+		// Si no hay un handle específico para interacción mantenida, usar el handle normal
+		if (!AbilityHandle.IsValid())
+		{
+			AbilityHandle = InteractionOption.TargetInteractionAbilityHandle;
+		}
+
+		// Activar la habilidad usando la etiqueta de evento de interacción mantenida
+		const bool bSuccess = InteractionOption.TargetAbilitySystem->TriggerAbilityFromGameplayEvent(
+			AbilityHandle,
+			&ActorInfo,
+			TAG_Ability_Interaction_Hold_Activate,
+			&Payload,
+			*InteractionOption.TargetAbilitySystem
+		);
+		
+		// Notificar que se completó la interacción mantenida
+		OnHoldInteractionComplete.Broadcast();
+	}
+}
+
+void UGameplayAbility_Interact::OnInteractionButtonPressed()
+{
+	if (CurrentOptions.Num() == 0)
+	{
+		return;
+	}
+	
+	bIsInteractionButtonHeld = true;
+	InteractionStartTime = GetWorld()->GetTimeSeconds();
+	
+	// Configurar un temporizador para detectar si el botón se mantiene presionado durante el tiempo requerido
+	GetWorld()->GetTimerManager().SetTimer(
+		HoldInteractionTimerHandle,
+		this,
+		&UGameplayAbility_Interact::OnHoldInteractionTimeElapsed,
+		HoldInteractionTime,
+		false
+	);
+}
+
+void UGameplayAbility_Interact::OnInteractionButtonReleased()
+{
+	if (!bIsInteractionButtonHeld)
+	{
+		return;
+	}
+	
+	bIsInteractionButtonHeld = false;
+	
+	// Cancelar el temporizador si existe
+	if (GetWorld()->GetTimerManager().IsTimerActive(HoldInteractionTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(HoldInteractionTimerHandle);
+		
+		// Si el botón se soltó antes del tiempo de interacción mantenida, considerarlo como una pulsación rápida
+		float CurrentTime = GetWorld()->GetTimeSeconds();
+		float HoldTime = CurrentTime - InteractionStartTime;
+		
+		if (HoldTime < HoldInteractionTime)
+		{
+			// Llamar a la interacción de pulsación rápida
+			TriggerInteraction();
+			
+			// Llamar a InteractPressScan después de la interacción para restaurar el estado
+			// y prepararse para la siguiente interacción
+			// Nota: Esto debe implementarse en el blueprint conectando la salida de este nodo
+			// a la entrada del nodo InteractPressScan
+		}
+	}
+}
+
+void UGameplayAbility_Interact::OnHoldInteractionTimeElapsed()
+{
+	if (bIsInteractionButtonHeld)
+	{
+		// El botón se ha mantenido presionado durante el tiempo requerido
+		// Llamar a la interacción mantenida
+		TriggerHoldInteraction();
+		
+		// Nota: Después de llamar a TriggerHoldInteraction, 
+		// es necesario llamar a InteractPressScan en el blueprint
+		// para restaurar el estado y prepararse para la siguiente interacción
+		// Esto se logra escuchando al delegado OnHoldInteractionComplete
 	}
 }

@@ -134,7 +134,18 @@ void UAbilityTask_WaitForInteractable::UpdateInteractableOptions(const FInteract
 					Option.TargetInteractionAbilityHandle = InteractionAbilitySpec->Handle;
 				}
 			}
+			if (Option.HoldInteractionAbilityToGrant)
+			{
+				// Find the spec
+				InteractionAbilitySpec = AbilitySystemComponent->FindAbilitySpecFromClass(Option.HoldInteractionAbilityToGrant);
 
+				if (InteractionAbilitySpec)
+				{
+					// update the option
+					Option.TargetAbilitySystem = AbilitySystemComponent.Get();
+					Option.TargetInteractionAbilityHandle = InteractionAbilitySpec->Handle;
+				}
+			}
 			if (InteractionAbilitySpec)
 			{
 				// Filter any options that we can't activate right now for whatever reason.

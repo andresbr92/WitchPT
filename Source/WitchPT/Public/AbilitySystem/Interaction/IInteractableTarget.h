@@ -48,4 +48,16 @@ public:
 
 	/**  */
 	virtual void CustomizeInteractionEventData(const FGameplayTag& InteractionEventTag, FGameplayEventData& InOutEventData) { }
+	
+	/**
+	 * Determina si este objeto interactuable soporta interacción mantenida
+	 * @return Verdadero si el objeto soporta interacción mantenida, falso en caso contrario
+	 */
+	virtual bool SupportsHoldInteraction() const { return false; }
+	
+	/**
+	 * Obtiene la habilidad que se debe activar cuando se realiza una interacción mantenida
+	 * @return El handle de la habilidad para interacción mantenida
+	 */
+	virtual FGameplayAbilitySpecHandle GetHoldInteractionAbilityHandle() const { return FGameplayAbilitySpecHandle(); }
 };

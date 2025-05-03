@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -48,6 +46,18 @@ public:
 	/** The ability spec to activate on the object for this option. */
 	UPROPERTY(BlueprintReadOnly)
 	FGameplayAbilitySpecHandle TargetInteractionAbilityHandle;
+	
+	/** Indica si esta opción de interacción soporta interacción mantenida */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bSupportsHoldInteraction = false;
+	
+	/** La habilidad a activar cuando se mantiene presionado el botón de interacción */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "bSupportsHoldInteraction"))
+	TSubclassOf<UGameplayAbility> HoldInteractionAbilityToGrant;
+	
+	/** La habilidad para interacción mantenida en el objetivo */
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayAbilitySpecHandle TargetHoldInteractionAbilityHandle;
 
 	// UI
 	//--------------------------------------------------------------
@@ -65,6 +75,9 @@ public:
 			InteractionAbilityToGrant == Other.InteractionAbilityToGrant&&
 			TargetAbilitySystem == Other.TargetAbilitySystem &&
 			TargetInteractionAbilityHandle == Other.TargetInteractionAbilityHandle &&
+			bSupportsHoldInteraction == Other.bSupportsHoldInteraction &&
+			HoldInteractionAbilityToGrant == Other.HoldInteractionAbilityToGrant &&
+			TargetHoldInteractionAbilityHandle == Other.TargetHoldInteractionAbilityHandle &&
 			// InteractionWidgetClass == Other.InteractionWidgetClass &&
 			Text.IdenticalTo(Other.Text) &&
 			SubText.IdenticalTo(Other.SubText);

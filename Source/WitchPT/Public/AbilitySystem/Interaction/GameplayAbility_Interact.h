@@ -11,6 +11,10 @@ class UObject;
 struct FFrame;
 struct FGameplayAbilityActorInfo;
 struct FGameplayEventData;
+
+// Delegado para notificar cuando se completa una interacción
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionComplete);
+
 /**
  * 
  */
@@ -23,8 +27,34 @@ class WITCHPT_API UGameplayAbility_Interact : public UWitchPTGameplayAbility
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateInteractions(const TArray<FInteractionOption>& InteractiveOptions);
+	
+	// Método para interacción de pulsación rápida
 	UFUNCTION(BlueprintCallable)
 	void TriggerInteraction();
+	
+	// Método para interacción manteniendo pulsado
+	UFUNCTION(BlueprintCallable)
+	void TriggerHoldInteraction();
+	
+	// Método llamado cuando se presiona el botón de interacción
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void OnInteractionButtonPressed();
+	
+	// Método llamado cuando se suelta el botón de interacción
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void OnInteractionButtonReleased();
+	
+	// Método llamado cuando se cumple el tiempo de interacción mantenida
+	UFUNCTION()
+	void OnHoldInteractionTimeElapsed();
+
+	// Delegado que se dispara cuando se completa una interacción
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnInteractionComplete OnInteractionComplete;
+
+	// Delegado que se dispara cuando se completa una interacción mantenida
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnInteractionComplete OnHoldInteractionComplete;
 
 protected:
 
@@ -36,6 +66,19 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float InteractionScanRange = 500;
+	
+	// Tiempo mínimo que debe mantenerse presionado el botón para considerar una interacción mantenida
+	UPROPERTY(EditDefaultsOnly, Category="Interaction")
+	float HoldInteractionTime = 1.0f;
+	
+	// Temporizador para detectar interacción mantenida
+	FTimerHandle HoldInteractionTimerHandle;
+	
+	// Estado del botón de interacción (presionado o no)
+	bool bIsInteractionButtonHeld = false;
+	
+	// Tiempo en que se inició la pulsación
+	float InteractionStartTime = 0.0f;
 
 	// UPROPERTY(EditDefaultsOnly)
 	// TSoftClassPtr<UUserWidget> DefaultInteractionWidgetClass;

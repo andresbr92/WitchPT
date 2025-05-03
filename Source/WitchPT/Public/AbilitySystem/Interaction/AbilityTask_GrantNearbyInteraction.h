@@ -30,6 +30,10 @@ private:
 	float InteractionScanRate = 0.100;
 	FTimerHandle QueryTimerHandle;
 
+	// Cache para habilidades de interacción rápida
 	TMap<FObjectKey, FGameplayAbilitySpecHandle> InteractionAbilityCache;
+	
+	// Cache para habilidades de interacción mantenida
+	TMap<FObjectKey, FGameplayAbilitySpecHandle> HoldInteractionAbilityCache;
 
 };

@@ -47,6 +47,32 @@ UAbilityTask_GrantNearbyInteraction* UAbilityTask_GrantNearbyInteraction::GrantA
 
 void UAbilityTask_GrantNearbyInteraction::OnDestroy(bool AbilityEnded)
 {
+	// Limpiar el temporizador
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->GetTimerManager().ClearTimer(QueryTimerHandle);
+	}
+	
+	// Limpiar las habilidades concedidas
+	// if (AbilitySystemComponent)
+	// {
+	// 	// Limpiar habilidades de interacción rápida
+	// 	for (const TPair<FObjectKey, FGameplayAbilitySpecHandle>& Entry : InteractionAbilityCache)
+	// 	{
+	// 		AbilitySystemComponent->ClearAbility(Entry.Value);
+	// 	}
+	// 	
+	// 	// Limpiar habilidades de interacción mantenida
+	// 	for (const TPair<FObjectKey, FGameplayAbilitySpecHandle>& Entry : HoldInteractionAbilityCache)
+	// 	{
+	// 		AbilitySystemComponent->ClearAbility(Entry.Value);
+	// 	}
+	// }
+	//
+	// InteractionAbilityCache.Empty();
+	// HoldInteractionAbilityCache.Empty();
+	
 	Super::OnDestroy(AbilityEnded);
 }
 
@@ -81,6 +107,7 @@ void UAbilityTask_GrantNearbyInteraction::QueryInteractables()
 			// Check if any of the options need to grant the ability to the user before they can be used.
 			for (FInteractionOption& Option : Options)
 			{
+				// Otorgar la habilidad de interacción regular
 				if (Option.InteractionAbilityToGrant)
 				{
 					// Grant the ability to the GAS, otherwise it won't be able to do whatever the interaction is.
@@ -92,7 +119,20 @@ void UAbilityTask_GrantNearbyInteraction::QueryInteractables()
 						Spec.GetDynamicSpecSourceTags().AddTag(AbilityBase->StartupInputTag);
 						FGameplayAbilitySpecHandle Handle = AbilitySystemComponent->GiveAbility(Spec);
 						InteractionAbilityCache.Add(ObjectKey, Handle);
-						
+					}
+				}
+				
+				// Otorgar la habilidad de interacción mantenida si está disponible y soportada
+				if (Option.bSupportsHoldInteraction && Option.HoldInteractionAbilityToGrant)
+				{
+					FObjectKey ObjectKey(Option.HoldInteractionAbilityToGrant);
+					if (!HoldInteractionAbilityCache.Find(ObjectKey))
+					{
+						FGameplayAbilitySpec Spec(Option.HoldInteractionAbilityToGrant, 1, INDEX_NONE, this);
+						UWitchPTGameplayAbility* AbilityBase = Cast<UWitchPTGameplayAbility>(Spec.Ability);
+						Spec.GetDynamicSpecSourceTags().AddTag(AbilityBase->StartupInputTag);
+						FGameplayAbilitySpecHandle Handle = AbilitySystemComponent->GiveAbility(Spec);
+						HoldInteractionAbilityCache.Add(ObjectKey, Handle);
 					}
 				}
 			}
