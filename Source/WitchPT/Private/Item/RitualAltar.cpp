@@ -692,10 +692,13 @@ void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 			EventData.Instigator = this;
 			EventData.Target = Character;
 			
-			EventData.OptionalObject = FailedMontage;
+			
+			EventData.OptionalObject = FailedAnimMontage;
 			
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, WitchPtGameplayTags.Event_Ritual_InputFailure, EventData);
+			
 		}
+		
 		
 		
 		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input success feedback for player %s"), *Character->GetName());
