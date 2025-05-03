@@ -50,14 +50,21 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Ritual_Input_Left = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Input.Left"));
 	GameplayTags.Ritual_Input_Right = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Input.Right"));
 
-	GameplayTags.State_Ritual_OccupyingPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Ritual.OccupyingPosition"));
-
-	GameplayTags.Event_Interaction_OccupyRitualPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Interaction.OccupyRitualPosition"));
+	// --- Ritual Event Tags ---
+	GameplayTags.Event_Ritual_InputSuccess = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.InputSuccess"));
+	GameplayTags.Event_Ritual_InputFailure = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.InputFailure"));
+	GameplayTags.Event_Ritual_SequenceSuccess = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.SequenceSuccess"));
+	GameplayTags.Event_Ritual_SequenceFailure = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.SequenceFailure"));
+	GameplayTags.Event_Ritual_CatastrophicFailure = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.CatastrophicFailure"));
 	GameplayTags.Event_Ritual_InputReceived = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.InputReceived"));
 	GameplayTags.Event_Ritual_TurnAdvanced = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.TurnAdvanced"));
-	GameplayTags.Event_Ritual_SequenceSuccess = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.SequenceSuccess"));
-	GameplayTags.Event_Ritual_SequenceFail = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.SequenceFail"));
-	GameplayTags.Event_Ritual_CatastrophicFail = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.CatastrophicFail"));
+	GameplayTags.State_Ritual_OccupyingPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Ritual.OccupyingPosition"));
+
+
+	GameplayTags.Event_Interaction_OccupyRitualPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Interaction.OccupyRitualPosition"));
+
+	
+
 
 	
 }

@@ -658,8 +658,22 @@ void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character
 	
 	if (Character)
 	{
-		// Example: Play sound at player location
-		// UGameplayStatics::PlaySoundAtLocation(this, SuccessSound, Player->GetActorLocation());
+		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Character);
+		if (ASC)
+		{
+			const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
+			FGameplayEventData EventData;
+			EventData.EventTag = WitchPtGameplayTags.Event_Ritual_InputSuccess;
+			EventData.Instigator = this;
+			EventData.Target = Character;
+			
+			// Find the correct montage
+			// FGameplayTag PositionTag = PlayerPositionTags[Character];
+			
+			
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, WitchPtGameplayTags.Event_Ritual_InputSuccess, EventData);
+		}
+		
 		
 		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input success feedback for player %s"), *Character->GetName());
 	}
@@ -667,15 +681,24 @@ void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character
 
 void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 {
-	// Client-side feedback for failed input
-	// This would typically play sounds, particle effects, etc.
-	
 	if (Character)
 	{
-		// Example: Play sound at player location
-		// UGameplayStatics::PlaySoundAtLocation(this, FailureSound, Player->GetActorLocation());
+		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Character);
+		if (ASC)
+		{
+			const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
+			FGameplayEventData EventData;
+			EventData.EventTag = WitchPtGameplayTags.Event_Ritual_InputSuccess;
+			EventData.Instigator = this;
+			EventData.Target = Character;
+			
+			EventData.OptionalObject = FailedMontage;
+			
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, WitchPtGameplayTags.Event_Ritual_InputFailure, EventData);
+		}
 		
-		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input failed feedback for player %s"), *Character->GetName());
+		
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input success feedback for player %s"), *Character->GetName());
 	}
 	
 	

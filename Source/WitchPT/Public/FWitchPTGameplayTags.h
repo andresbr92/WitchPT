@@ -55,7 +55,7 @@ public:
 	FGameplayTag InputTag_Shift;
 
 
-	// --- Ritual Tags ---
+	// --- Ritual Position Tags ---
 	FGameplayTag Ritual_Position_1;
 	FGameplayTag Ritual_Position_2;
 	FGameplayTag Ritual_Position_3;
@@ -66,14 +66,20 @@ public:
 	FGameplayTag Ritual_Input_Left;
 	FGameplayTag Ritual_Input_Right;
 
+	// --- Ritual Event Tags ---
+	FGameplayTag Event_Ritual_InputSuccess;
+	FGameplayTag Event_Ritual_InputFailure;
+	FGameplayTag Event_Ritual_SequenceSuccess;
+	FGameplayTag Event_Ritual_SequenceFailure;
+	FGameplayTag Event_Ritual_CatastrophicFailure;
+	FGameplayTag Event_Interaction_OccupyRitualPosition;
+
 	// --- Player State Tags (Added Ritual Specific) ---
 	FGameplayTag State_Ritual_OccupyingPosition;
 
 	// --- Event Tags ---
-	FGameplayTag Event_Interaction_OccupyRitualPosition;
 	FGameplayTag Event_Ritual_InputReceived; // Generic event when altar receives an input GE
 	FGameplayTag Event_Ritual_TurnAdvanced;
-	FGameplayTag Event_Ritual_SequenceSuccess;
 	FGameplayTag Event_Ritual_SequenceFail;
 	FGameplayTag Event_Ritual_CatastrophicFail;
 

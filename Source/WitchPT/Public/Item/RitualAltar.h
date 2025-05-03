@@ -174,6 +174,7 @@ protected:
 	// Timer handles
 	FTimerHandle InputTimerHandle;
 	
+	
 	// Helper functions
 	void GenerateInputSequence();
 	void AdvanceToNextPlayer();
@@ -189,4 +190,15 @@ protected:
 	void SpawnReward();
 	void SpawnDemon();
 	bool IsPlayerEligibleForTurn(ACharacter* Player) const;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> PrimaryAnimMontage;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> SecondaryAnimMontage;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> FailedAnimMontage;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> FailedCatastrophicallyAnimMontage;
+	
+	
 };
