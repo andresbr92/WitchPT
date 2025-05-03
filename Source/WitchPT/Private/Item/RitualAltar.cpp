@@ -25,7 +25,7 @@ ARitualAltar::ARitualAltar()
 	
 	
 	// Default values
-	CurrentRitualState = ERitualState::Inactive;
+	CurrentRitualState = EInteractionState::Inactive;
 	CurrentSequenceIndex = 0;
 	CurrentInputTimer = 0.0f;
 	CorruptionAmount = 0.0f;
@@ -62,7 +62,7 @@ void ARitualAltar::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	// Update timer on server only
-	if (HasAuthority() && CurrentRitualState == ERitualState::Active)
+	if (HasAuthority() && CurrentRitualState == EInteractionState::Active)
 	{
 		// Timer logic is handled by UE's timer system, but we could add additional per-tick logic here if needed
 	}
@@ -94,7 +94,7 @@ void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 	}
 	
 	// Check if the ritual is already active
-	if (CurrentRitualState != ERitualState::Inactive)
+	if (CurrentRitualState != EInteractionState::Inactive)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Cannot start ritual: already in state %d"), static_cast<int32>(CurrentRitualState));
 		return;
@@ -132,7 +132,7 @@ void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 	}
 	
 	// Change state to preparing
-	CurrentRitualState = ERitualState::Preparing;
+	CurrentRitualState = EInteractionState::Preparing;
 	OnRep_CurrentRitualState();
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] State changed to PREPARING"));
 	
@@ -145,7 +145,7 @@ void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] First active player is: %s"), *InitiatingPlayer->GetName());
 	
 	// Set state to active
-	CurrentRitualState = ERitualState::Active;
+	CurrentRitualState = EInteractionState::Active;
 	OnRep_CurrentRitualState();
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] State changed to ACTIVE"));
 	
@@ -205,7 +205,7 @@ bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 	}
 	
 	// Check if the ritual is active
-	if (CurrentRitualState != ERitualState::Active)
+	if (CurrentRitualState != EInteractionState::Active)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input from %s: ritual not active (state=%d)"), 
 			*Character->GetName(), static_cast<int32>(CurrentRitualState));
@@ -254,6 +254,43 @@ bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 	}
 }
 
+void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character)
+{
+	// Client-side feedback for successful input
+	// This would typically play sounds, particle effects, etc.
+	
+	if (Character)
+	{
+		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Character);
+		if (ASC)
+		{
+			const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
+			FGameplayEventData EventData;
+			EventData.EventTag = WitchPtGameplayTags.Event_Ritual_InputSuccess;
+			EventData.Instigator = this;
+			EventData.Target = Character;
+			
+			// FGameplayTag PositionTag = PlayerPositionTags[Character];
+			const FGameplayTag* PositionTag = PlayerPositionTags.Find(Character);
+			if (PositionTag && PositionTag->MatchesTag(WitchPtGameplayTags.Get().Ritual_Position_1))
+			{
+				EventData.OptionalObject = PrimaryAnimMontage;
+			} else
+			{
+				EventData.OptionalObject = SecondaryAnimMontage;
+			}
+			
+			
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, WitchPtGameplayTags.Event_Ritual_InputSuccess, EventData);
+		}
+		
+		
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input success feedback for player %s"), *Character->GetName());
+	}
+}
+
+
+
 void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 {
 	if (!HasAuthority() || !Player)
@@ -276,7 +313,7 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	if (CurrentSequenceIndex >= InputSequence.Num())
 	{
 		// Ritual succeeded
-		CurrentRitualState = ERitualState::Succeeded;
+		CurrentRitualState = EInteractionState::Succeeded;
 		OnRep_CurrentRitualState();
 		
 		// Spawn reward and notify
@@ -320,7 +357,7 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	if (CorruptionAmount >= MaxCorruption)
 	{
 		// Ritual failed catastrophically
-		CurrentRitualState = ERitualState::FailedCatastrophically;
+		CurrentRitualState = EInteractionState::FailedCatastrophically;
 		OnRep_CurrentRitualState();
 		
 		// Apply catastrophic penalties to all players
@@ -387,7 +424,7 @@ void ARitualAltar::StartInputTimer()
 
 void ARitualAltar::OnInputTimerExpired()
 {
-	if (!HasAuthority() || CurrentRitualState != ERitualState::Active)
+	if (!HasAuthority() || CurrentRitualState != EInteractionState::Active)
 	{
 		return;
 	}
@@ -585,22 +622,7 @@ void ARitualAltar::CleanupRitual()
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up"));
 }
 
-void ARitualAltar::OccupyPosition(ACharacter* Player, ARitualPosition* Position)
-{
-	if (!HasAuthority() || !Player || !Position)
-	{
-		return;
-	}
 
-	PlayerPositionTags.Add(Player, Position->GetPositionTag());
-	// This is called by RitualPosition when a player occupies it
-	// We might want to track which positions are occupied or update UI
-	
-	// If the ritual is in Preparing state, we might want to update UI or trigger events
-	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Player %s occupied position %s"), 
-		*Player->GetName(), *Position->GetName());
-}
 
 FGameplayTag ARitualAltar::GetCurrentExpectedInput() const
 {
@@ -648,40 +670,7 @@ ERitualInput ARitualAltar::ConvertTagToERitualInput(const FGameplayTag& Tag)
 	return ERitualInput::None;
 }
 
-void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character)
-{
-	// Client-side feedback for successful input
-	// This would typically play sounds, particle effects, etc.
-	
-	if (Character)
-	{
-		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Character);
-		if (ASC)
-		{
-			const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
-			FGameplayEventData EventData;
-			EventData.EventTag = WitchPtGameplayTags.Event_Ritual_InputSuccess;
-			EventData.Instigator = this;
-			EventData.Target = Character;
-			
-			// FGameplayTag PositionTag = PlayerPositionTags[Character];
-			const FGameplayTag* PositionTag = PlayerPositionTags.Find(Character);
-			if (PositionTag && PositionTag->MatchesTag(WitchPtGameplayTags.Get().Ritual_Position_1))
-			{
-				EventData.OptionalObject = PrimaryAnimMontage;
-			} else
-			{
-				EventData.OptionalObject = SecondaryAnimMontage;
-			}
-			
-			
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, WitchPtGameplayTags.Event_Ritual_InputSuccess, EventData);
-		}
-		
-		
-		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Input success feedback for player %s"), *Character->GetName());
-	}
-}
+
 
 void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 {
@@ -737,7 +726,7 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	OnSequenceCompleted.Broadcast(false);
 }
 
-void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(ERitualState NewState)
+void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionState NewState)
 {
 	// Client-side feedback for state change
 	// This would typically update UI or play transition effects
@@ -768,10 +757,6 @@ void ARitualAltar::OnRep_CurrentSequenceIndex()
 	}
 }
 
-void ARitualAltar::OnRep_ParticipatingPlayers()
-{
-	// Update UI or trigger events
-}
 
 void ARitualAltar::OnRep_CurrentActivePlayer()
 {

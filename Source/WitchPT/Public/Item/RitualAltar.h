@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Item/BaseInteractableAltar.h"
 #include "GameplayTagContainer.h" // Include for FGameplayTag
 #include "RitualAltar.generated.h"
 
-
 class ARitualPosition;
+
 // Enum defining the possible inputs for the ritual sequence
 UENUM(BlueprintType)
 enum class ERitualInput : uint8
@@ -20,21 +20,9 @@ enum class ERitualInput : uint8
 	None	UMETA(DisplayName = "None") // Optional: For default/invalid state
 };
 
-UENUM(BlueprintType)
-enum class ERitualState : uint8
-{
-	Inactive	UMETA(DisplayName = "Inactive"),
-	Preparing	UMETA(DisplayName = "Preparing"), // Players occupying positions
-	Active		UMETA(DisplayName = "Active"), // Ritual sequence running
-	Succeeded	UMETA(DisplayName = "Succeeded"),
-	Failed		UMETA(DisplayName = "Failed"), // Generic fail state if needed
-	FailedCatastrophically UMETA(DisplayName = "Failed Catastrophically")
-};
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceCompleted, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputReceived, ACharacter*, Character, bool, bWasCorrect);
 UCLASS()
-class WITCHPT_API ARitualAltar : public AActor
+class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
 {
 	GENERATED_BODY()
 
@@ -45,7 +33,7 @@ public:
 	
 	// Current ritual state
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentRitualState, BlueprintReadOnly, Category = "Ritual|State")
-	ERitualState CurrentRitualState = ERitualState::Inactive;
+	EInteractionState CurrentRitualState = EInteractionState::Inactive;
 	
 	// Current sequence of inputs required for the ritual
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual")
@@ -54,10 +42,7 @@ public:
 	// Current index in the sequence
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentSequenceIndex, BlueprintReadOnly, Category = "Ritual")
 	int32 CurrentSequenceIndex = 0;
-
-	// List of players participating in the ritual
-	UPROPERTY(ReplicatedUsing = OnRep_ParticipatingPlayers, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
-	TArray<TObjectPtr<ACharacter>> ParticipatingPlayers;
+	
 	
 	// Current player whose turn it is to input
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentActivePlayer, BlueprintReadOnly, Category = "Ritual|State")
@@ -91,8 +76,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ritual|Setup")
 	TArray<TObjectPtr<ARitualPosition>> RitualPositions;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Ritual|Setup")
-	TMap<TObjectPtr<ACharacter>, FGameplayTag> PlayerPositionTags;
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnSequenceCompleted OnSequenceCompleted;
+	
 	
 	// RPCs for client-server communication
 	UFUNCTION(BlueprintCallable)
@@ -101,18 +87,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
 	
-	UFUNCTION(BlueprintCallable)
-	void OccupyPosition(ACharacter* Player, ARitualPosition* Position);
 	
 	// Multicast RPCs for notifications
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnRitualStateChanged(ERitualState NewState);
+	void Multicast_OnRitualStateChanged(EInteractionState NewState);
 	
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnInputSuccess(ACharacter* Character);
 	
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnInputFailed(ACharacter* Character);
+	virtual void Multicast_OnInputSuccess_Implementation(ACharacter* Character) override;
+	
+	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;
+	
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualSucceeded();
@@ -125,7 +109,7 @@ public:
 	
 	// Getters for Blueprint/HUD access
 	UFUNCTION(BlueprintPure, Category = "Ritual")
-	ERitualState GetCurrentRitualState() const { return CurrentRitualState; }
+	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }
 	
 	UFUNCTION(BlueprintPure, Category = "Ritual")
 	ACharacter* GetCurrentActivePlayer() const { return CurrentActivePlayer; }
@@ -143,10 +127,12 @@ public:
 	FGameplayTag GetCurrentExpectedInput() const;
 
 	// Delegates
+	
+
+
+	// Delegate specifically for ritual inputs
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnSequenceCompleted OnSequenceCompleted;
-	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnInputReceived OnInputReceived;
+	FOnInputReceived OnRitualInputReceived;
 
 protected:
 	virtual void BeginPlay() override;
@@ -159,8 +145,7 @@ protected:
 	UFUNCTION()
 	void OnRep_CurrentSequenceIndex();
 	
-	UFUNCTION()
-	void OnRep_ParticipatingPlayers();
+	
 	
 	UFUNCTION()
 	void OnRep_CurrentActivePlayer();
@@ -178,8 +163,8 @@ protected:
 	// Helper functions
 	void GenerateInputSequence();
 	void AdvanceToNextPlayer();
-	void HandleInputSuccess(ACharacter* Player);
-	void HandleInputFailure(ACharacter* Player);
+	virtual void HandleInputSuccess(ACharacter* Player) override;
+	virtual void HandleInputFailure(ACharacter* Player) override;
 	void ApplyAgePenalty(ACharacter* Player, bool bCatastrophic = false);
 	void StartInputTimer();
 	void OnInputTimerExpired();
@@ -200,5 +185,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> FailedCatastrophicallyAnimMontage;
 	
-	
+	// Animation montages specifically for ritual
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> RitualWaitingAnimMontage;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> RitualActiveAnimMontage;
 };

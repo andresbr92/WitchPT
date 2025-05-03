@@ -16,260 +16,206 @@
 // Sets default values
 ARitualPosition::ARitualPosition()
 {
-	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false; // Position likely doesn't need to tick
-
-	bReplicates = true;
-	
-	// Default values for replicated properties
-	bIsOccupied = false;
-	OccupyingCharacter = nullptr;
-	RitualAltar = nullptr; // Should be set in the editor or found in BeginPlay
+	// No need to set up replication here - it's handled by the base class
 }
 
-void ARitualPosition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ARitualPosition, bIsOccupied);
-	DOREPLIFETIME(ARitualPosition, OccupyingCharacter);
-	// RitualAltar and PositionTag are usually set once and don't need replication unless they can change dynamically
-}
+// void ARitualPosition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+// {
+// 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+//
+// 	DOREPLIFETIME(ARitualPosition, bIsOccupied);
+// 	DOREPLIFETIME(ARitualPosition, OccupyingCharacter);
+// 	// RitualAltar and PositionTag are usually set once and don't need replication unless they can change dynamically
+// }
 
 void ARitualPosition::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Optional: If RitualAltar isn't set via EditInstanceOnly, you might try finding it here
+	
+	// Try to find the RitualAltar if it wasn't set in the editor
 	if (!RitualAltar)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] BeginPlay for position %s - Looking for altar..."), *GetName());
-		
-		// Try to find a parent altar in the hierarchy
-		AActor* ParentActor = GetAttachParentActor();
-		while (ParentActor)
+		FindRitualAltar();
+	}
+}
+
+void ARitualPosition::FindRitualAltar()
+{
+	// First check if we are attached to an altar
+	AActor* ParentActor = GetAttachParentActor();
+	if (ParentActor)
+	{
+		ARitualAltar* PotentialAltar = Cast<ARitualAltar>(ParentActor);
+		if (PotentialAltar)
 		{
-			ARitualAltar* PotentialAltar = Cast<ARitualAltar>(ParentActor);
-			if (PotentialAltar)
-			{
-				RitualAltar = PotentialAltar;
-				UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] RitualPosition %s auto-found parent altar %s"), 
-					*GetName(), *RitualAltar->GetName());
-				break;
-			}
-			ParentActor = ParentActor->GetAttachParentActor();
+			RitualAltar = PotentialAltar;
+			UE_LOG(LogTemp, Log, TEXT("[RitualPosition] %s found attached RitualAltar %s"), 
+				*GetName(), *RitualAltar->GetName());
+			return;
 		}
-		
-		// If still not found, look for any altar in the level
-		if (!RitualAltar)
-		{
-			TArray<AActor*> FoundAltars;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARitualAltar::StaticClass(), FoundAltars);
-			if (FoundAltars.Num() > 0)
-			{
-				RitualAltar = Cast<ARitualAltar>(FoundAltars[0]);
-				UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] RitualPosition %s auto-found level altar %s"), 
-					*GetName(), *RitualAltar->GetName());
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] RitualPosition %s could not find any altar in level!"), *GetName());
-			}
-		}
+	}
+	
+	// If not attached, try to find any altar in the world
+	TArray<AActor*> FoundAltars;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARitualAltar::StaticClass(), FoundAltars);
+	
+	if (FoundAltars.Num() > 0)
+	{
+		RitualAltar = Cast<ARitualAltar>(FoundAltars[0]);
+		UE_LOG(LogTemp, Log, TEXT("[RitualPosition] %s found world RitualAltar %s"), 
+			*GetName(), *RitualAltar->GetName());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] RitualPosition %s has preset altar %s"), 
-			*GetName(), *RitualAltar->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("[RitualPosition] %s couldn't find a RitualAltar!"), *GetName());
 	}
-	
-	// Log position tag for debugging
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] RitualPosition %s has tag: %s"), 
-		*GetName(), *PositionTag.ToString());
 }
 
 void ARitualPosition::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
 {
-	// Call Super to include any base interactions from AItem
 	Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
-
-	// // Get the character trying to interact
-	// ACharacter* InteractingCharacterPtr = Cast<ACharacter>(InteractQuery.RequestingAvatar);
-	// if (!InteractingCharacterPtr)
+	
+	// Ritual-specific interaction options
+	
+	// ACharacter* InteractingCharacterPtr = Cast<ACharacter>(InteractQuery.User);
+	//
+	// // If no player is occupying the position, let a player take the position
+	// if (!IsOccupied() && InteractingCharacterPtr)
 	// {
-	// 	return;
+	// 	OptionBuilder.AddDefaultInteraction(
+	// 		FText::FromString("Take Position"), // Text for the interaction
+	// 		[this, InteractingCharacterPtr](const FInteractionExecuteContext& Context)
+	// 		{
+	// 			HandleInteraction(InteractingCharacterPtr);
+	// 		}
+	// 	);
 	// }
 	//
-	// // Check if the position is already occupied
-	// if (bIsOccupied)
+	// // Special case: if the character is standing at a position and we're in Inactive state, they can initiate the ritual
+	// if (IsOccupied() && RitualAltar && GetOccupyingCharacter() == InteractingCharacterPtr)
 	// {
-	// 	// If this character is already occupying this position, maybe offer to leave
-	// 	if (OccupyingCharacter == InteractingCharacterPtr)
+	// 	// Check ritual state
+	// 	if (RitualAltar->GetCurrentState() == EInteractionState::Inactive)
 	// 	{
-	// 		FInteractionOption LeaveOption;
-	// 		LeaveOption.Verb = NSLOCTEXT("RitualPosition", "Leave", "Leave");
-	// 		LeaveOption.SubText = NSLOCTEXT("RitualPosition", "LeaveSubtext", "Leave the ritual position");
-	// 		LeaveOption.Priority = 1;
-	// 		LeaveOption.InteractionId = "Leave_Ritual_Position";
-	// 		
-	// 		// Set up the option to trigger the State.Ritual.OccupyingPosition tag removal
-	// 		// This could be handled by a GA on the player
-	// 		const UFWitchPTGameplayTags& Tags = UFWitchPTGameplayTags::Get();
-	// 		LeaveOption.TargetGameplayEventTag = Tags.Event_Interaction_LeaveRitualPosition;
-	// 		LeaveOption.Payload.TargetObject = this;
-	// 		
-	// 		OptionBuilder.AddInteractionOption(LeaveOption);
+	// 		OptionBuilder.AddDefaultInteraction(
+	// 			FText::FromString("Start Ritual"), // Text for the interaction
+	// 			[this, InteractingCharacterPtr](const FInteractionExecuteContext& Context)
+	// 			{
+	// 				if (RitualAltar)
+	// 				{
+	// 					// Cast to the appropriate start ritual function
+	// 					RitualAltar->StartRitual(InteractingCharacterPtr);
+	// 				}
+	// 			}
+	// 		);
 	// 	}
-	// 	
-	// 	// Otherwise, no option for a different player to occupy
-	// 	return;
 	// }
-	//
-	// // Offer option to occupy the position if it's vacant
-	// FInteractionOption OccupyOption;
-	// OccupyOption.Verb = NSLOCTEXT("RitualPosition", "Occupy", "Occupy");
-	// OccupyOption.SubText = NSLOCTEXT("RitualPosition", "OccupySubtext", "Take this ritual position");
-	// OccupyOption.Priority = 1;
-	// OccupyOption.InteractionId = "Occupy_Ritual_Position";
-	//
-	// // Set up the option to trigger the player's GA_Character_OccupyRitualPosition ability
-	// const UFWitchPTGameplayTags& Tags = UFWitchPTGameplayTags::Get();
-	// OccupyOption.TargetGameplayEventTag = Tags.Event_Interaction_OccupyRitualPosition;
-	// OccupyOption.Payload.TargetObject = this;
-	
-	OptionBuilder.AddInteractionOption(Option);
 }
 
-void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacterPtr)
+void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 {
-	if (!HasAuthority()) // Server-side logic only
+	Super::HandleInteraction(InteractingCharacter);
+	
+	if (!InteractingCharacter || !RitualAltar)
 	{
 		return;
 	}
-
-	if (!InteractingCharacterPtr || !RitualAltar)
-	{
-		return; // Basic validation
-	}
-
-	// This is a fallback in case the GatherInteractionOptions event system doesn't work
-	// Normally, the player's GA should be triggered through the interaction system's event
-
-	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingCharacterPtr);
-	if (TargetASC)
-	{
-		const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
-		FGameplayEventData Payload;
-		Payload.EventTag = WitchPtGameplayTags.Event_Interaction_OccupyRitualPosition;
-		Payload.Target = this; // Pass this position actor as the target data
-
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(InteractingCharacterPtr, WitchPtGameplayTags.Event_Interaction_OccupyRitualPosition, Payload);
-		UE_LOG(LogTemp, Log, TEXT("Sent Event_Interaction_OccupyRitualPosition to %s"), *InteractingCharacterPtr->GetName());
-	}
-}
-
-void ARitualPosition::SetPositionTag(const FGameplayTag& NewTag)
-{
-	PositionTag = NewTag;
-}
-
-
-
-
-void ARitualPosition::SetUnoccupied_Implementation()
-{
-	RemoveCharacterFromPosition();
-}
-
-void ARitualPosition::SetOccupied(ACharacter* Character)
-{
-	if (!HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] SetCharacterToPosition failed: no authority"));
-		return;
-	}
-
-	if (!Character)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] SetCharacterToPosition failed: invalid character"));
-		return;
-	}
-
-	if (bIsOccupied)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] SetCharacterToPosition failed: position %s already occupied by %s"), 
-			*GetName(), OccupyingCharacter ? *OccupyingCharacter->GetName() : TEXT("None"));
-		return;
-	}
-
-	// Set as occupied
-	bIsOccupied = true;
-	OccupyingCharacter = Character;
 	
-	// Force OnReps if needed immediately on server
-	OnRep_IsOccupied();
-	OnRep_OccupyingCharacter();
-	
-
-	
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s set to Occupied by %s"), *GetName(), *Character->GetName());
+	// Call the ritual altar to handle occupation
+	RitualAltar->OccupyPosition(InteractingCharacter, this);
 }
+
+
+
+
+
+// void ARitualPosition::SetOccupied(ACharacter* Character)
+// {
+// 	if (!HasAuthority())
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] SetCharacterToPosition failed: no authority"));
+// 		return;
+// 	}
+//
+// 	if (!Character)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] SetCharacterToPosition failed: invalid character"));
+// 		return;
+// 	}
+//
+// 	if (bIsOccupied)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] SetCharacterToPosition failed: position %s already occupied by %s"), 
+// 			*GetName(), OccupyingCharacter ? *OccupyingCharacter->GetName() : TEXT("None"));
+// 		return;
+// 	}
+//
+// 	// Set as occupied
+// 	bIsOccupied = true;
+// 	OccupyingCharacter = Character;
+// 	
+// 	// Force OnReps if needed immediately on server
+// 	OnRep_IsOccupied();
+// 	OnRep_OccupyingCharacter();
+// 	
+// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s set to Occupied by %s"), *GetName(), *Character->GetName());
+// }
 
 // Called on the Server by the Altar (or potentially a GA)
-void ARitualPosition::RemoveCharacterFromPosition()
-{
-	if (!HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] RemoveCharacterFromPosition failed: no authority"));
-		return;
-	}
-
-	if (!bIsOccupied || !OccupyingCharacter)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] RemoveCharacterFromPosition failed: position %s is not occupied"), *GetName());
-		return;
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Removing %s from position %s"), 
-		*OccupyingCharacter->GetName(), *GetName());
-	
-	// Remove the occupying position tag from the character
-	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OccupyingCharacter);
-	if (ASC)
-	{
-		const FWitchPTGameplayTags& gameplayTags = FWitchPTGameplayTags::Get();
-		
-		// Remove the State.Ritual.OccupyingPosition tag
-		// This would typically be done by removing the GE that applied it
-		
-		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Removed State.Ritual.OccupyingPosition tag from %s"), *OccupyingCharacter->GetName());
-	}
-	
-	// Clear state
-	bIsOccupied = false;
-	ACharacter* OldCharacter = OccupyingCharacter;
-	OccupyingCharacter = nullptr;
-	
-	// Force OnReps if needed immediately on server
-	OnRep_IsOccupied();
-	OnRep_OccupyingCharacter();
-	
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s set to Unoccupied (was %s)"), 
-		*GetName(), OldCharacter ? *OldCharacter->GetName() : TEXT("nullptr"));
-}
-
-void ARitualPosition::OnRep_IsOccupied()
-{
-	// Client-side reaction to occupancy change
-	// Example: Change material, play sound, update UI attached to this position
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s occupancy changed to: %s"), 
-		*GetName(), bIsOccupied ? TEXT("OCCUPIED") : TEXT("VACANT"));
-}
-
-void ARitualPosition::OnRep_OccupyingCharacter()
-{
-	// Client-side reaction to character change
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s occupying character changed to: %s"), 
-		*GetName(), OccupyingCharacter ? *OccupyingCharacter->GetName() : TEXT("None"));
-}
+// void ARitualPosition::RemoveCharacterFromPosition()
+// {
+// 	if (!HasAuthority())
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] RemoveCharacterFromPosition failed: no authority"));
+// 		return;
+// 	}
+//
+// 	if (!bIsOccupied || !OccupyingCharacter)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL-POS] RemoveCharacterFromPosition failed: position %s is not occupied"), *GetName());
+// 		return;
+// 	}
+//
+// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Removing %s from position %s"), 
+// 		*OccupyingCharacter->GetName(), *GetName());
+// 	
+// 	// Remove the occupying position tag from the character
+// 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OccupyingCharacter);
+// 	if (ASC)
+// 	{
+// 		const FWitchPTGameplayTags& gameplayTags = FWitchPTGameplayTags::Get();
+// 		
+// 		// Remove the State.Ritual.OccupyingPosition tag
+// 		// This would typically be done by removing the GE that applied it
+// 		
+// 		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Removed State.Ritual.OccupyingPosition tag from %s"), *OccupyingCharacter->GetName());
+// 	}
+// 	
+// 	// Clear state
+// 	bIsOccupied = false;
+// 	ACharacter* OldCharacter = OccupyingCharacter;
+// 	OccupyingCharacter = nullptr;
+// 	
+// 	// Force OnReps if needed immediately on server
+// 	OnRep_IsOccupied();
+// 	OnRep_OccupyingCharacter();
+// 	
+// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s set to Unoccupied (was %s)"), 
+// 		*GetName(), OldCharacter ? *OldCharacter->GetName() : TEXT("nullptr"));
+// }
+//
+// void ARitualPosition::OnRep_IsOccupied()
+// {
+// 	// Client-side reaction to occupancy change
+// 	// Example: Change material, play sound, update UI attached to this position
+// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s occupancy changed to: %s"), 
+// 		*GetName(), bIsOccupied ? TEXT("OCCUPIED") : TEXT("VACANT"));
+// }
+//
+// void ARitualPosition::OnRep_OccupyingCharacter()
+// {
+// 	// Client-side reaction to character change
+// 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL-POS] Position %s occupying character changed to: %s"), 
+// 		*GetName(), OccupyingCharacter ? *OccupyingCharacter->GetName() : TEXT("None"));
+// }
 
