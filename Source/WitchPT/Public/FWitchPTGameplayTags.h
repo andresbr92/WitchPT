@@ -38,6 +38,7 @@ public:
 	FGameplayTag Character_State_Blocked;
 
 	FGameplayTag Character_State_Cauldron_Carrying;
+	FGameplayTag Character_State_Cauldron_Placing;
 
 
 	// Input Tags

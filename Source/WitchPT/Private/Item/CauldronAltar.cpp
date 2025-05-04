@@ -6,6 +6,9 @@
 #include "TimerManager.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/World.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ACauldronAltar::ACauldronAltar()
@@ -18,6 +21,7 @@ ACauldronAltar::ACauldronAltar()
     bAlwaysRelevant = true;
     CauldronPhysicState = ECauldronPhysicState::Static;
     CarryingCharacter = nullptr;
+    CurrentPlacementState = ECauldronPlacementState::None;
 }
 
 void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery,
@@ -39,6 +43,7 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     
     DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
     DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
+    DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
 }
 
 void ACauldronAltar::OnRep_CauldronPhysicState()
@@ -49,10 +54,17 @@ void ACauldronAltar::OnRep_CauldronPhysicState()
         // Cauldron is being carried - update visuals if needed
         SetActorEnableCollision(false);
     }
+    else if (CauldronPhysicState == ECauldronPhysicState::Previewing)
+    {
+        // Cauldron is in preview mode - update visuals
+        SetActorEnableCollision(false);
+        ApplyPlacementPreviewMaterial();
+    }
     else
     {
         // Cauldron is stationary - update visuals if needed
         SetActorEnableCollision(true);
+        RestoreOriginalMaterials();
     }
 }
 
@@ -66,10 +78,17 @@ void ACauldronAltar::OnPressInteraction(ACharacter* InteractingCharacter)
         return;
     }
     
+    // Si el caldero está en modo de previsualización, finalizar la colocación
+    if (IsInPlacementPreview() && CarryingCharacter == InteractingCharacter)
+    {
+        FinalizePlacement();
+        return;
+    }
+    
     // If the cauldron is being carried by this character, detach it
     if (IsBeingCarried() && CarryingCharacter == InteractingCharacter)
     {
-        DetachFromCharacter(InteractingCharacter);
+        StartPlacementPreview(InteractingCharacter);
         return;
     }
     
@@ -89,6 +108,13 @@ void ACauldronAltar::OnHoldInteraction(ACharacter* InteractingCharacter)
         return;
     }
     
+    // Si el caldero está en modo de previsualización, cancelar y volver a adjuntar al personaje
+    if (IsInPlacementPreview() && CarryingCharacter == InteractingCharacter)
+    {
+        CancelPlacement();
+        return;
+    }
+    
     // Check if the cauldron can be picked up
     if (!CanBePickedUp())
     {
@@ -103,7 +129,7 @@ void ACauldronAltar::OnHoldInteraction(ACharacter* InteractingCharacter)
 bool ACauldronAltar::CanBePickedUp() const
 {
     // Check if the cauldron is already being carried
-    if (IsBeingCarried())
+    if (IsBeingCarried() || IsInPlacementPreview())
     {
         return false;
     }
@@ -116,6 +142,11 @@ bool ACauldronAltar::CanBePickedUp() const
 bool ACauldronAltar::IsBeingCarried() const
 {
     return CauldronPhysicState == ECauldronPhysicState::Moving && CarryingCharacter != nullptr;
+}
+
+bool ACauldronAltar::IsInPlacementPreview() const
+{
+    return CauldronPhysicState == ECauldronPhysicState::Previewing && CarryingCharacter != nullptr;
 }
 
 ACharacter* ACauldronAltar::GetCarryingCharacter() const
@@ -237,420 +268,6 @@ bool ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
     }
 }
 
-//
-// // Called when the game starts or when spawned
-// void ACauldronAltar::BeginPlay()
-// {
-//     // Super::BeginPlay();
-//     //
-//     // // Initialize cauldron positions
-//     // for (auto Position : CauldronPositions)
-//     // {
-//     //     if (Position)
-//     //     {
-//     //         // Setup the position
-//     //         Position->SetCauldronAltar(this);
-//     //     }
-//     // }
-// }
-//
-// // Called every frame
-// void ACauldronAltar::Tick(float DeltaTime)
-// {
-//     Super::Tick(DeltaTime);
-//
-//     // // Update cauldron timer if active
-//     // if (CurrentState == EInteractionState::Active && GetLocalRole() == ROLE_Authority)
-//     // {
-//     //     CauldronTimer -= DeltaTime;
-//     //     if (CauldronTimer <= 0.0f)
-//     //     {
-//     //         // Time's up!
-//     //         OnCauldronTimerExpired();
-//     //     }
-//     // }
-// }
-//
-// void ACauldronAltar::StartBrewing(ACharacter* InitiatingPlayer)
-// {
-//     // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Inactive)
-//     // {
-//     //     return;
-//     // }
-//     //
-//     // // Make sure we have at least one player
-//     // if (ParticipatingPlayers.Num() == 0)
-//     // {
-//     //     // Can't start with no players
-//     //     UE_LOG(LogTemp, Warning, TEXT("[CauldronAltar] Cannot start brewing with no participating players"));
-//     //     return;
-//     // }
-//     //
-//     // // Change state to preparing
-//     // CurrentState = EInteractionState::Preparing;
-//     // Multicast_OnStateChanged(CurrentState);
-//     //
-//     // // Generate sequences for each player
-//     // GeneratePlayerSequences();
-//     //
-//     // // Transition to active state
-//     // CurrentState = EInteractionState::Active;
-//     // Multicast_OnStateChanged(CurrentState);
-//     //
-//     // // Start the brewing timer
-//     // StartCauldronTimer();
-//     //
-//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing started with %d players"), ParticipatingPlayers.Num());
-// }
-//
-// bool ACauldronAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag)
-// {
-//     // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Active || !Character)
-//     // {
-//     //     return false;
-//     // }
-//     //
-//     // // Check if this player is participating
-//     // if (!IsPlayerEligibleForInteraction(Character))
-//     // {
-//     //     UE_LOG(LogTemp, Warning, TEXT("[CauldronAltar] Player %s tried to input but is not eligible"), 
-//     //         *Character->GetName());
-//     //     return false;
-//     // }
-//     //
-//     // // Get the player's expected input
-//     // FGameplayTag ExpectedInput = GetCurrentExpectedInputForPlayer(Character);
-//     //
-//     // // Check if the input matches what's expected
-//     // bool bInputCorrect = (InputTag == ExpectedInput);
-//     //
-//     // if (bInputCorrect)
-//     // {
-//     //     // Handle successful input
-//     //     HandleInputSuccess(Character);
-//     //     
-//     //     // Update the player's sequence index
-//     //     int32& CurrentIndex = PlayerSequenceIndices.FindOrAdd(Character);
-//     //     CurrentIndex++;
-//     //     
-//     //     // If this player has completed their sequence, check if all players are done
-//     //     if (CurrentIndex >= PlayerInputSequences[Character].Ingredients.Num())
-//     //     {
-//     //         if (AreAllPlayersDone())
-//     //         {
-//     //             // All players have completed their sequences!
-//     //             CurrentState = EInteractionState::Succeeded;
-//     //             Multicast_OnStateChanged(CurrentState);
-//     //             
-//     //             // Spawn reward
-//     //             SpawnReward();
-//     //             
-//     //             // Clean up
-//     //             CleanupInteraction();
-//     //         }
-//     //     }
-//     //     
-//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s input correct. Index now %d of %d"), 
-//     //         *Character->GetName(), CurrentIndex, PlayerInputSequences[Character].Ingredients.Num());
-//     //     
-//     //     // Broadcast the delegate
-//     //     OnInputReceived.Broadcast(Character, true);
-//     //     
-//     //     return true;
-//     // }
-//     // else
-//     // {
-//     //     // Handle failed input
-//     //     HandleInputFailure(Character);
-//     //     
-//     //     // Broadcast the delegate
-//     //     OnInputReceived.Broadcast(Character, false);
-//     //     
-//     //     return false;
-//     // }
-//     return false;
-// }
-//
-// // void ACauldronAltar::OccupyPosition(ACharacter* Player, ACauldronPosition* Position)
-// // {
-// //     if (!Player || !Position || GetLocalRole() != ROLE_Authority)
-// //     {
-// //         return;
-// //     }
-// //
-// //     // Call the base class implementation first
-// //     Super::OccupyPosition(Player, Position);
-// //     
-// //     // Initialize player sequence data if not already present
-// //     if (!PlayerInputSequences.Contains(Player))
-// //     {
-// //         FIngredientSequence NewSequence;
-// //         PlayerInputSequences.Add(Player, NewSequence);
-// //         PlayerSequenceIndices.Add(Player, 0);
-// //     }
-// //     
-// //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s occupied position %s"),
-// //         *Player->GetName(), *Position->GetName());
-// // }
-//
-// int32 ACauldronAltar::GetPlayerSequenceProgress(ACharacter* Player) const
-// {
-//     // if (!Player || !PlayerInputSequences.Contains(Player) || PlayerInputSequences[Player].Ingredients.Num() == 0)
-//     // {
-//     //     return 0;
-//     // }
-//     //
-//     // int32 CurrentIndex = PlayerSequenceIndices.Contains(Player) ? PlayerSequenceIndices[Player] : 0;
-//     // return (CurrentIndex * 100) / PlayerInputSequences[Player].Ingredients.Num();
-//     return 1;
-// }
-//
-// TArray<FGameplayTag> ACauldronAltar::GetPlayerSequence(ACharacter* Player) const
-// {
-//     // if (!Player || !PlayerInputSequences.Contains(Player))
-//     // {
-//     //     return TArray<FGameplayTag>();
-//     // }
-//     //
-//     // return PlayerInputSequences[Player].Ingredients;
-//     FGameplayTag Tag = FGameplayTag();
-//     return TArray<FGameplayTag>({Tag});
-// }
-//
-// FGameplayTag ACauldronAltar::GetCurrentExpectedInputForPlayer(ACharacter* Player) const
-// {
-//     // if (!Player || !PlayerInputSequences.Contains(Player))
-//     // {
-//     //     return FGameplayTag();
-//     // }
-//     //
-//     // const TArray<FGameplayTag>& Sequence = PlayerInputSequences[Player].Ingredients;
-//     // int32 CurrentIndex = PlayerSequenceIndices.Contains(Player) ? PlayerSequenceIndices[Player] : 0;
-//     //
-//     // // Check if the player has completed their sequence
-//     // if (CurrentIndex >= Sequence.Num())
-//     // {
-//     //     return FGameplayTag();
-//     // }
-//     //
-//     // return Sequence[CurrentIndex];
-//     FGameplayTag Tag = FGameplayTag();
-//     return Tag;
-// }
-//
-// void ACauldronAltar::OnRep_CauldronTimer()
-// {
-//     // Update UI or visuals based on timer
-// }
-//
-// void ACauldronAltar::GeneratePlayerSequences()
-// {
-//     // PlayerInputSequences.Empty();
-//     // PlayerSequenceIndices.Empty();
-//     //
-//     // // Generate a random sequence for each player
-//     // for (ACharacter* Player : ParticipatingPlayers)
-//     // {
-//     //     if (!Player)
-//     //     {
-//     //         continue;
-//     //     }
-//     //     
-//     //     FIngredientSequence NewSequence;
-//     //     
-//     //     // Generate 3-5 random ingredients for each player
-//     //     int32 NumIngredients = FMath::RandRange(3, 5);
-//     //     for (int32 i = 0; i < NumIngredients; ++i)
-//     //     {
-//     //         ECauldronInput RandomInput = static_cast<ECauldronInput>(FMath::RandRange(0, static_cast<int32>(ECauldronInput::Ingredient5)));
-//     //         FGameplayTag InputTag = ConvertECauldronInputToTag(RandomInput);
-//     //         NewSequence.Ingredients.Add(InputTag);
-//     //     }
-//     //     
-//     //     // Store the sequence for this player
-//     //     PlayerInputSequences.Add(Player, NewSequence);
-//     //     PlayerSequenceIndices.Add(Player, 0);
-//     //     
-//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Generated sequence for player %s with %d ingredients"), 
-//     //         *Player->GetName(), NewSequence.Ingredients.Num());
-//     // }
-// }
-//
-// void ACauldronAltar::HandleInputSuccess(ACharacter* Player)
-// {
-//     // Super::HandleInputSuccess(Player);
-//     //
-//     // // Play success effects
-//     // Multicast_OnInputSuccess(Player);
-//     //
-//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s successfully added an ingredient"), *Player->GetName());
-// }
-//
-// void ACauldronAltar::HandleInputFailure(ACharacter* Player)
-// {
-//     // Super::HandleInputFailure(Player);
-//     //
-//     // // Play failure effects
-//     // Multicast_OnInputFailed(Player);
-//     //
-//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Player %s failed to add the correct ingredient"), *Player->GetName());
-// }
-//
-// void ACauldronAltar::StartCauldronTimer()
-// {
-//     // // Set the timer duration
-//     // CauldronTimer = IngredientTimeWindow;
-//     //
-//     // // Start the timer
-//     // GetWorldTimerManager().SetTimer(
-//     //     CauldronTimerHandle,
-//     //     this,
-//     //     &ACauldronAltar::OnCauldronTimerExpired,
-//     //     CauldronTimer,
-//     //     false
-//     // );
-//     //
-//     // UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Started brewing timer: %.1f seconds"), CauldronTimer);
-// }
-//
-// void ACauldronAltar::OnCauldronTimerExpired()
-// {
-//     // if (GetLocalRole() != ROLE_Authority || CurrentState != EInteractionState::Active)
-//     // {
-//     //     return;
-//     // }
-//     //
-//     // // Check if all players have completed their sequences
-//     // if (AreAllPlayersDone())
-//     // {
-//     //     // Success!
-//     //     CurrentState = EInteractionState::Succeeded;
-//     //     Multicast_OnStateChanged(CurrentState);
-//     //     
-//     //     // Spawn reward
-//     //     SpawnReward();
-//     //     
-//     //     // Clean up
-//     //     CleanupInteraction();
-//     //     
-//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing succeeded - all players completed in time"));
-//     // }
-//     // else
-//     // {
-//     //     // Failure - time ran out
-//     //     CurrentState = EInteractionState::Failed;
-//     //     Multicast_OnStateChanged(CurrentState);
-//     //     
-//     //     // Apply aging penalties to all players who didn't complete
-//     //     for (ACharacter* Player : ParticipatingPlayers)
-//     //     {
-//     //         if (Player && PlayerSequenceIndices.Contains(Player))
-//     //         {
-//     //             int32 CurrentIndex = PlayerSequenceIndices[Player];
-//     //             TArray<FGameplayTag> Sequence = PlayerInputSequences[Player].Ingredients;
-//     //             
-//     //             // Check if this player didn't complete their sequence
-//     //             if (CurrentIndex < Sequence.Num())
-//     //             {
-//     //                 ApplyAgePenalty(Player, false);
-//     //             }
-//     //         }
-//     //     }
-//     //     
-//     //     // Clean up
-//     //     CleanupInteraction();
-//     //     
-//     //     UE_LOG(LogTemp, Log, TEXT("[CauldronAltar] Brewing failed - time ran out"));
-//     // }
-// }
-//
-// FGameplayTag ACauldronAltar::ConvertECauldronInputToTag(ECauldronInput Input)
-// {
-//     // FString TagString;
-//     //
-//     // switch (Input)
-//     // {
-//     // case ECauldronInput::Ingredient1:
-//     //     TagString = "Input.Cauldron.Ingredient1";
-//     //     break;
-//     // case ECauldronInput::Ingredient2:
-//     //     TagString = "Input.Cauldron.Ingredient2";
-//     //     break;
-//     // case ECauldronInput::Ingredient3:
-//     //     TagString = "Input.Cauldron.Ingredient3";
-//     //     break;
-//     // case ECauldronInput::Ingredient4:
-//     //     TagString = "Input.Cauldron.Ingredient4";
-//     //     break;
-//     // case ECauldronInput::Ingredient5:
-//     //     TagString = "Input.Cauldron.Ingredient5";
-//     //     break;
-//     // default:
-//     //     TagString = "Input.Cauldron.None";
-//     //     break;
-//     // }
-//     //
-//     FGameplayTag Tag = FGameplayTag();
-//     return Tag;
-// }
-//
-// ECauldronInput ACauldronAltar::ConvertTagToECauldronInput(const FGameplayTag& Tag)
-// {
-//     // FString TagString = Tag.ToString();
-//     //
-//     // if (TagString.Contains("Ingredient1"))
-//     // {
-//     //     return ECauldronInput::Ingredient1;
-//     // }
-//     // else if (TagString.Contains("Ingredient2"))
-//     // {
-//     //     return ECauldronInput::Ingredient2;
-//     // }
-//     // else if (TagString.Contains("Ingredient3"))
-//     // {
-//     //     return ECauldronInput::Ingredient3;
-//     // }
-//     // else if (TagString.Contains("Ingredient4"))
-//     // {
-//     //     return ECauldronInput::Ingredient4;
-//     // }
-//     // else if (TagString.Contains("Ingredient5"))
-//     // {
-//     //     return ECauldronInput::Ingredient5;
-//     // }
-//     //
-//     return ECauldronInput::None;
-// }
-//
-// bool ACauldronAltar::IsPlayerEligibleForInteraction(ACharacter* Player) const
-// {
-//     return Super::IsPlayerEligibleForInteraction(Player) && PlayerInputSequences.Contains(Player);
-// }
-//
-// bool ACauldronAltar::AreAllPlayersDone() const
-// {
-//     // for (ACharacter* Player : ParticipatingPlayers)
-//     // {
-//     //     if (!Player || !PlayerInputSequences.Contains(Player) || !PlayerSequenceIndices.Contains(Player))
-//     //     {
-//     //         continue;
-//     //     }
-//     //     
-//     //     int32 CurrentIndex = PlayerSequenceIndices[Player];
-//     //     int32 SequenceLength = PlayerInputSequences[Player].Ingredients.Num();
-//     //     
-//     //     // If any player hasn't completed their sequence, return false
-//     //     if (CurrentIndex < SequenceLength)
-//     //     {
-//     //         return false;
-//     //     }
-//     // }
-//     //
-//     // // All players have completed their sequences
-//     // return true;
-//     return true;
-// } 
-
 // Implementación de las nuevas funciones para las posiciones de elaboración
 void ACauldronAltar::CreateBrewingPositions()
 {
@@ -750,4 +367,295 @@ ACauldronPosition* ACauldronAltar::GetAvailableBrewingPosition(ACharacter* Chara
     // Todas las posiciones están ocupadas
     UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::GetAvailableBrewingPosition: All positions are occupied"));
     return nullptr;
+}
+
+// --- Nueva implementación para colocación del caldero ---
+
+void ACauldronAltar::StartPlacementPreview(ACharacter* Character)
+{
+    if (!Character || !HasAuthority() || Character != CarryingCharacter)
+    {
+        return;
+    }
+    
+    // Desacoplar el caldero del personaje
+    DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+    
+    // Establecer el estado de previsualización
+    CauldronPhysicState = ECauldronPhysicState::Previewing;
+    
+    // Guardar los materiales originales para restaurarlos después
+    UStaticMeshComponent* MeshComponent = FindComponentByClass<UStaticMeshComponent>();
+    if (MeshComponent)
+    {
+        OriginalMaterials.Empty();
+        for (int32 i = 0; i < MeshComponent->GetNumMaterials(); i++)
+        {
+            OriginalMaterials.Add(MeshComponent->GetMaterial(i));
+        }
+    }
+    
+    // Aplicar material de previsualización
+    CurrentPlacementState = ECauldronPlacementState::Invalid; // Por defecto, inválido hasta que se verifique
+    // ApplyPlacementPreviewMaterial();
+    
+    // Desactivar colisiones durante la previsualización
+    SetActorEnableCollision(false);
+    
+    // Colocar inicialmente el caldero frente al personaje
+    FVector CharacterLocation = Character->GetActorLocation();
+    FRotator CharacterRotation = Character->GetActorRotation();
+    FVector PlacementOffset = CharacterRotation.RotateVector(DetachmentOffset);
+
+    
+    
+    // Guardar la posición inicial
+    PreviewLocation = CharacterLocation + PlacementOffset;
+    // PreviewRotation = CharacterRotation;
+    // Reset z rotation
+    PreviewRotation.Pitch = 0;
+    PreviewRotation.Roll = 0;
+    PreviewRotation.Yaw = 0;
+    // Establecer la posición del caldero
+    SetActorLocation(PreviewLocation);
+    SetActorRotation(PreviewRotation);
+    
+    // Restablecer la escala normal
+    SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
+    
+    UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::StartPlacementPreview: Cauldron in placement preview mode"));
+}
+
+void ACauldronAltar::UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal)
+{
+    if (!IsInPlacementPreview() || !HasAuthority())
+    {
+        return;
+    }
+    
+    // Guardar la nueva posición de previsualización
+    PreviewLocation = HitLocation;
+    
+    // Calcular la rotación para alinear con la superficie
+    FRotator SurfaceAlignedRotation = HitNormal.Rotation();
+    
+    // Ajustar la rotación para que el caldero se alinee con la superficie pero mantenga su orientación "hacia arriba"
+    // Necesitamos solo el componente de inclinación de la superficie
+    FRotator AdjustedRotation = FRotator(SurfaceAlignedRotation.Pitch, PreviewRotation.Yaw, SurfaceAlignedRotation.Roll);
+    
+    // Limitar la inclinación máxima
+    if (FMath::Abs(AdjustedRotation.Pitch) > 15.0f)
+    {
+        AdjustedRotation.Pitch = FMath::Clamp(AdjustedRotation.Pitch, 0.f, 0.f);
+    }
+    
+    if (FMath::Abs(AdjustedRotation.Roll) > 15.0f)
+    {
+        AdjustedRotation.Roll = FMath::Clamp(AdjustedRotation.Roll, 0.f, 0.f);
+    }
+    
+    PreviewRotation = AdjustedRotation;
+    
+    // Establecer la nueva posición y rotación
+    SetActorLocation(PreviewLocation);
+    // SetActorRotation(PreviewRotation);
+    
+    // Verificar si la posición es válida
+    CurrentPlacementState = IsPlacementValid() ? ECauldronPlacementState::Valid : ECauldronPlacementState::Invalid;
+    
+    // Actualizar el material según el estado
+    // ApplyPlacementPreviewMaterial();
+    
+    // Debug
+}
+
+bool ACauldronAltar::FinalizePlacement()
+{
+    if (!IsInPlacementPreview() || !HasAuthority())
+    {
+        return false;
+    }
+    
+    // // Comprobar si la posición es válida
+    // if (CurrentPlacementState != ECauldronPlacementState::Valid)
+    // {
+    //     UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::FinalizePlacement: Cannot place cauldron in invalid position"));
+    //     // Opcionalmente, reproducir sonido de error
+    //     return false;
+    // }
+    
+    // Establecer la posición final
+    SetActorLocation(PreviewLocation);
+    SetActorRotation(PreviewRotation);
+    
+    // Restaurar los materiales originales
+    RestoreOriginalMaterials();
+    
+    // Activar colisiones
+    SetActorEnableCollision(true);
+    
+    // Cambiar el estado
+    CauldronPhysicState = ECauldronPhysicState::Static;
+    CarryingCharacter = nullptr;
+    CurrentPlacementState = ECauldronPlacementState::None;
+    CauldronPhysicState = ECauldronPhysicState::Static;
+
+    OnECauldronPhysicStateChanged.Broadcast(ECauldronPhysicState::Static);
+
+    
+    
+    // Crear posiciones de elaboración alrededor del caldero
+    CreateBrewingPositions();
+    
+    UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::FinalizePlacement: Cauldron placed successfully"));
+    
+    return true;
+}
+
+void ACauldronAltar::CancelPlacement()
+{
+    if (!IsInPlacementPreview() || !HasAuthority())
+    {
+        return;
+    }
+    
+    // Restaurar materiales originales
+    RestoreOriginalMaterials();
+    
+    // Recolocar el caldero en el personaje
+    ACharacter* Character = CarryingCharacter;
+    
+    // Reiniciar estado
+    CauldronPhysicState = ECauldronPhysicState::Moving;
+    CarryingCharacter = nullptr;
+    CurrentPlacementState = ECauldronPlacementState::None;
+    
+    // Volver a adjuntar el caldero al personaje
+    if (Character)
+    {
+        AttachToCharacter(Character);
+    }
+    
+    UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CancelPlacement: Placement canceled"));
+}
+
+ECauldronPlacementState ACauldronAltar::GetPlacementState() const
+{
+    return CurrentPlacementState;
+}
+
+void ACauldronAltar::ApplyPlacementPreviewMaterial()
+{
+    UStaticMeshComponent* MeshComponent = FindComponentByClass<UStaticMeshComponent>();
+    if (!MeshComponent)
+    {
+        return;
+    }
+    
+    // Determinar qué material aplicar según el estado
+    UMaterialInterface* MaterialToApply = CurrentPlacementState == ECauldronPlacementState::Valid ? 
+        ValidPlacementMaterial : InvalidPlacementMaterial;
+    
+    // Si no tenemos un material específico, no hacemos nada
+    if (!MaterialToApply)
+    {
+        return;
+    }
+    
+    // Aplicar el material a todos los elementos del mesh
+    for (int32 i = 0; i < MeshComponent->GetNumMaterials(); i++)
+    {
+        MeshComponent->SetMaterial(i, MaterialToApply);
+    }
+}
+
+void ACauldronAltar::RestoreOriginalMaterials()
+{
+    // Restaurar los materiales originales si estamos fuera del modo de previsualización
+    if (CauldronPhysicState != ECauldronPhysicState::Previewing)
+    {
+        UStaticMeshComponent* MeshComponent = FindComponentByClass<UStaticMeshComponent>();
+        if (MeshComponent && OriginalMaterials.Num() > 0)
+        {
+            for (int32 i = 0; i < FMath::Min(MeshComponent->GetNumMaterials(), OriginalMaterials.Num()); i++)
+            {
+                if (OriginalMaterials[i])
+                {
+                    MeshComponent->SetMaterial(i, OriginalMaterials[i]);
+                }
+            }
+        }
+    }
+}
+
+bool ACauldronAltar::IsPlacementValid() const
+{
+    if (!GetWorld())
+    {
+        return false;
+    }
+    
+    // 1. Comprobar si hay objetos en el radio de colisión
+    TArray<FOverlapResult> Overlaps;
+    FCollisionQueryParams QueryParams;
+    QueryParams.AddIgnoredActor(this);
+    
+    if (CarryingCharacter)
+    {
+        QueryParams.AddIgnoredActor(CarryingCharacter);
+    }
+    
+    bool bHasOverlaps = GetWorld()->OverlapMultiByObjectType(
+        Overlaps,
+        PreviewLocation,
+        FQuat::Identity,
+        FCollisionObjectQueryParams::AllObjects,
+        FCollisionShape::MakeSphere(PlacementCollisionCheckRadius),
+        QueryParams
+    );
+    
+    if (bHasOverlaps)
+    {
+        // Encontramos solapamientos, verificar si son relevantes
+        for (const FOverlapResult& Overlap : Overlaps)
+        {
+            // Ignorar actores que no tienen colisión (podrían ser efectos visuales, etc.)
+            if (Overlap.GetActor() && Overlap.GetActor()->GetActorEnableCollision())
+            {
+                // Si encontramos algún actor con colisión, la posición no es válida
+                return false;
+            }
+        }
+    }
+    
+    // 2. Comprobar si el caldero está alineado con el suelo
+    // Hacer un trazado hacia abajo para ver si hay suelo cerca
+    FHitResult HitResult;
+    FVector TraceStart = PreviewLocation;
+    FVector TraceEnd = TraceStart - FVector(0, 0, MaxGroundAlignmentHeight * 2.0f);
+    
+    bool bHitGround = GetWorld()->LineTraceSingleByChannel(
+        HitResult,
+        TraceStart,
+        TraceEnd,
+        ECC_Visibility,
+        QueryParams
+    );
+    
+    if (!bHitGround)
+    {
+        // No encontramos suelo debajo del caldero
+        return false;
+    }
+    
+    // Comprobar la distancia al suelo
+    float DistanceToGround = (HitResult.Location - TraceStart).Size();
+    if (DistanceToGround > MaxGroundAlignmentHeight)
+    {
+        // El caldero está demasiado lejos del suelo
+        return false;
+    }
+    
+    // La posición es válida
+    return true;
 } 

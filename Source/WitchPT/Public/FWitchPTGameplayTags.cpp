@@ -19,6 +19,7 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Character_State_Aim = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Aim"));
 	GameplayTags.Character_State_Blocked = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Blocked"));
 	GameplayTags.Character_State_Cauldron_Carrying = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.Carrying"));
+	GameplayTags.Character_State_Cauldron_Placing = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.Placing"));
 
 
 	/**
