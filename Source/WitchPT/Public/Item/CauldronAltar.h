@@ -79,7 +79,7 @@ public:
      * @param InteractingCharacter The character that is interacting with the cauldron
      */
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
-    void OnPressInteraction(ACharacter* InteractingCharacter);
+    void StartBrewingPotion(ACharacter* InteractingCharacter);
     
     /**
      * Function called when the player performs a hold interaction with the cauldron
@@ -87,20 +87,20 @@ public:
      * @param InteractingCharacter The character that is interacting with the cauldron
      */
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
-    void OnHoldInteraction(ACharacter* InteractingCharacter);
+    void StartCarryCauldron(ACharacter* InteractingCharacter);
     
     /**
      * Attaches the cauldron to the player's back
      * @param Character The character to attach the cauldron to
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Movement")
+    UFUNCTION()
     void AttachToCharacter(ACharacter* Character);
     
     /**
      * Detaches the cauldron from the player and places it in the world
      * @param Character The character the cauldron is currently attached to
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Movement")
+    UFUNCTION()
     void DetachFromCharacter(ACharacter* Character);
     
     /**

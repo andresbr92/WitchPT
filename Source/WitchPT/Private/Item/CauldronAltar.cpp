@@ -24,8 +24,7 @@ ACauldronAltar::ACauldronAltar()
     CurrentPlacementState = ECauldronPlacementState::None;
 }
 
-void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery,
-    FInteractionOptionBuilder& OptionBuilder)
+void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
 {
     // Set up the interaction option based on the cauldron state
     FInteractionOption InteractionOption = Option;
@@ -70,11 +69,11 @@ void ACauldronAltar::OnRep_CauldronPhysicState()
 
 // --- Interaction Functions ---
 
-void ACauldronAltar::OnPressInteraction(ACharacter* InteractingCharacter)
+void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
 {
     if (!InteractingCharacter)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnPressInteraction: Invalid character"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::StartBrewingPotion: Invalid character"));
         return;
     }
     
@@ -96,15 +95,15 @@ void ACauldronAltar::OnPressInteraction(ACharacter* InteractingCharacter)
     bool bSuccess = PositionCharacterForBrewing(InteractingCharacter);
     if (!bSuccess)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnPressInteraction: Failed to position character for brewing"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::StartBrewingPotion: Failed to position character for brewing"));
     }
 }
 
-void ACauldronAltar::OnHoldInteraction(ACharacter* InteractingCharacter)
+void ACauldronAltar::StartCarryCauldron(ACharacter* InteractingCharacter)
 {
     if (!InteractingCharacter)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnHoldInteraction: Invalid character"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::StartCarryCauldron: Invalid character"));
         return;
     }
     
@@ -118,7 +117,7 @@ void ACauldronAltar::OnHoldInteraction(ACharacter* InteractingCharacter)
     // Check if the cauldron can be picked up
     if (!CanBePickedUp())
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::OnHoldInteraction: Cauldron cannot be picked up"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::StartCarryCauldron: Cauldron cannot be picked up"));
         return;
     }
     

@@ -81,10 +81,10 @@ public:
 	
 	
 	// RPCs for client-server communication
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void StartRitual(ACharacter* InitiatingPlayer);
 	
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	bool HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
 	
 	

@@ -72,12 +72,12 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 
 void AWitchPTCharacter::HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
 {
-	Server_HandleStartRitualRequest_Implementation(RequestingCharacter);
+	Server_HandleStartRitualRequest(RequestingCharacter);
 }
 
 void AWitchPTCharacter::HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
 {
-	Server_HandlePlayerInput_Implementation(InputCharacter, InputTag);
+	Server_HandlePlayerInput(InputCharacter, InputTag);
 }
 
 void AWitchPTCharacter::HandleSetRitualPosition_Implementation(ARitualPosition* InRitualPosition)

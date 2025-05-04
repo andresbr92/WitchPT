@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WitchPTCharacterBase.h"
+#include "Item/CauldronAltar.h"
 #include "Item/MechanicsInterface.h"
 #include "WitchPTCharacter.generated.h"
 
@@ -26,7 +27,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ritual")
 	TObjectPtr<ARitualPosition> RitualPosition;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ritual")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Cauldron")
 	TObjectPtr<ACauldronAltar> CauldronAltar;
 
 
@@ -69,6 +70,7 @@ public:
 
 	
 
+	
 
 	
 
