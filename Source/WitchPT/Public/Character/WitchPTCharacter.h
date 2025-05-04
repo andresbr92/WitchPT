@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "WitchPTCharacterBase.h"
-#include "Item/RitualInterface.h"
+#include "Item/MechanicsInterface.h"
 #include "WitchPTCharacter.generated.h"
 
+class ACauldronAltar;
 class ARitualPosition;
 
 UCLASS()
-class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase, public IRitualInterface
+class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase, public IMechanicsInterface
 {
 	GENERATED_BODY()
 
@@ -25,10 +26,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ritual")
 	TObjectPtr<ARitualPosition> RitualPosition;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ritual")
+	TObjectPtr<ACauldronAltar> CauldronAltar;
+
 
 
 	/***
-	 * IRitualInterface implementation
+	 * IMechanicsInterface implementation
 	 */
 	/***
 	 * Ritual Altar interface functions
@@ -42,6 +46,14 @@ public:
 	virtual bool IsRitualPositionOccupied_Implementation() const override;
 	virtual void SetRitualPositionOccupied_Implementation(ACharacter* OccupyingCharacter) override;
 	virtual ARitualPosition* GetRitualPosition_Implementation() const override { return RitualPosition;  }
+	/***
+	 * Cauldron Altar interface functions
+	 */
+
+	virtual ACauldronAltar* GetCauldronAltar_Implementation() override { return CauldronAltar; }
+	virtual void HandleSetCauldronAltar_Implementation(ACauldronAltar* InCauldronAltar) override;
+	virtual void HandleRemoveCauldronAltar_Implementation() override { CauldronAltar = nullptr; }
+
 	
 
 

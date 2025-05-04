@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Item/BaseInteractionPosition.h"
 #include "GameplayTagContainer.h" // Added for FGameplayTag
-#include "RitualInterface.h"
+#include "MechanicsInterface.h"
 #include "RitualPosition.generated.h"
 
 // Forward Declarations

@@ -144,6 +144,7 @@ void UGameplayAbility_Interact::TriggerHoldInteraction()
 	if (CurrentOptions.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TriggerHoldInteraction: No hay opciones de interacción disponibles"));
+		OnInteractionCancelled.Broadcast();
 		return;
 	}
 
@@ -218,6 +219,7 @@ void UGameplayAbility_Interact::OnInteractionButtonPressed()
 	if (CurrentOptions.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: No hay opciones de interacción disponibles"));
+		OnInteractionCancelled.Broadcast();
 		return;
 	}
 	

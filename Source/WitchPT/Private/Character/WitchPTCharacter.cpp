@@ -106,7 +106,13 @@ void AWitchPTCharacter::SetRitualPositionOccupied_Implementation(ACharacter* Occ
 	}
 }
 
-
+void AWitchPTCharacter::HandleSetCauldronAltar_Implementation(ACauldronAltar* InCauldronAltar)
+{
+	if (InCauldronAltar)
+	{
+		CauldronAltar = InCauldronAltar;
+	}
+}
 
 
 void AWitchPTCharacter::Server_HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)

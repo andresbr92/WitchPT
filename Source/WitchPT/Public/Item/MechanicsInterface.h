@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "UObject/Interface.h"
-#include "RitualInterface.generated.h"
+#include "MechanicsInterface.generated.h"
 
+class ACauldronAltar;
 class ARitualPosition;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class URitualInterface : public UInterface
+class UMechanicsInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -18,7 +19,7 @@ class URitualInterface : public UInterface
 /**
  * 
  */
-class WITCHPT_API IRitualInterface
+class WITCHPT_API IMechanicsInterface
 {
 	GENERATED_BODY()
 
@@ -43,6 +44,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
 	void GetRitualPositionTag(FGameplayTag& OutPositionTag) const;
+	
 
 	
 	
@@ -55,6 +57,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
 	void SetRitualPositionOccupied(ACharacter* OccupyingCharacter);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
+	ACauldronAltar* GetCauldronAltar();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
+	void HandleSetCauldronAltar(ACauldronAltar* InCauldronAltar);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
+	void HandleRemoveCauldronAltar();
 	
 	
 };

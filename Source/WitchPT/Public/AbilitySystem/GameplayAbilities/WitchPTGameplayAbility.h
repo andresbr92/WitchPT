@@ -19,7 +19,9 @@ enum class EPrototypeAbilityActivationPolicy: uint8
 	WhileInputActive,
 
 	// Try to activate the ability when an avatar is assigned.
-	OnSpawn
+	OnSpawn,
+	
+	OnTriggeredEvent
 };
 UCLASS()
 class WITCHPT_API UWitchPTGameplayAbility : public UGameplayAbility

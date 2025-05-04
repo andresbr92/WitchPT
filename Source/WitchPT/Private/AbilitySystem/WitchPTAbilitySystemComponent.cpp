@@ -106,7 +106,12 @@ void UWitchPTAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool b
 				const UWitchPTGameplayAbility* PTAbilityBase = Cast<UWitchPTGameplayAbility>(AbilitySpec->Ability);
 				if (PTAbilityBase && PTAbilityBase->GetActivationPolicy() == EPrototypeAbilityActivationPolicy::WhileInputActive)
 				{
-					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+					// --- MODIFICACION AQUI ---
+					// Solo añadir si la política es WhileInputActive y NO es la nueva On Triggered Event
+					if (PTAbilityBase && PTAbilityBase->GetActivationPolicy() == EPrototypeAbilityActivationPolicy::WhileInputActive)
+					{
+						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+					}
 				}
 			}
 		}
@@ -132,13 +137,14 @@ void UWitchPTAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool b
 				}
 				else
 				{
-					const UWitchPTGameplayAbility* LyraAbilityCDO = Cast<UWitchPTGameplayAbility>(AbilitySpec->Ability);
+					const UWitchPTGameplayAbility* PTAbilityBase = Cast<UWitchPTGameplayAbility>(AbilitySpec->Ability);
 
-					if (LyraAbilityCDO && LyraAbilityCDO->GetActivationPolicy() == EPrototypeAbilityActivationPolicy::OnInputTriggered)
+					if (PTAbilityBase && PTAbilityBase->GetActivationPolicy() == EPrototypeAbilityActivationPolicy::OnInputTriggered)
 					{
-						// print activation policy
-						
-						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+						if (PTAbilityBase && PTAbilityBase->GetActivationPolicy() == EPrototypeAbilityActivationPolicy::OnInputTriggered)
+						{
+							AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+						}
 					}
 				}
 			}

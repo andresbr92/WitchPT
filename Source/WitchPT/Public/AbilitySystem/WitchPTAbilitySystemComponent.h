@@ -14,9 +14,11 @@ class WITCHPT_API UWitchPTAbilitySystemComponent : public UAbilitySystemComponen
 
 public:
 	void GrantStartupAbilities(const TArray<TSubclassOf<UGameplayAbility>>& AbilitiesToGrant);
+	
 	void AbilityInputTagPressed(const FGameplayTag& InputTag);
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
+	
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	
 	bool bCharacterAbilitiesGiven = false;

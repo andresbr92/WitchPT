@@ -167,6 +167,6 @@ private:
     FVector DetachmentOffset = FVector(100.0f, 0.0f, 0.0f);
     
     // Array of spawned brewing positions
-    UPROPERTY()
+    UPROPERTY(VisibleAnywhere)
     TArray<ACauldronPosition*> SpawnedBrewingPositions;
 }; 
