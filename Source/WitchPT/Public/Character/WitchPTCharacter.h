@@ -55,6 +55,11 @@ public:
 	virtual void HandleSetCauldronAltar_Implementation(ACauldronAltar* InCauldronAltar) override;
 	virtual void HandleRemoveCauldronAltar_Implementation() override { CauldronAltar = nullptr; }
 
+	virtual void HandleStartBrewingPotion_Implementation(ACharacter* InteractingCharacter) override;
+	virtual void HandleStartCarryCauldron_Implementation(ACharacter* InteractingCharacter) override;
+
+	virtual void HandleStopBrewingPotion_Implementation(ACharacter* InteractingCharacter) override;
+	virtual void HandleStopCarryCauldron_Implementation(ACharacter* InteractingCharacter) override;
 	
 
 
@@ -68,9 +73,17 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_SetRitualPositionOccupied(ACharacter* Player, ARitualPosition* Position);
 
-	
+	UFUNCTION(Server, Reliable)
+	void Server_HandleStartBrewingPotion(ACharacter* InteractingCharacter);
 
-	
+	UFUNCTION(Server, Reliable)
+	void Server_HandleStartCarryCauldron(ACharacter* InteractingCharacter);
+
+	UFUNCTION(Server, Reliable)
+	void Server_HandleStopBrewingPotion(ACharacter* InteractingCharacter);
+
+	UFUNCTION(Server, Reliable)
+	void Server_HandleStopCarryCauldron(ACharacter* InteractingCharacter);
 
 	
 

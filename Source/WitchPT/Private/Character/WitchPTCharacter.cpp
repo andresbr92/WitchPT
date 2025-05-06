@@ -102,7 +102,7 @@ void AWitchPTCharacter::SetRitualPositionOccupied_Implementation(ACharacter* Occ
 	if (RitualPosition)
 	{
 		RitualPosition->SetOccupied(OccupyingCharacter);
-		Server_SetRitualPositionOccupied_Implementation(OccupyingCharacter, RitualPosition);
+		Server_SetRitualPositionOccupied(OccupyingCharacter, RitualPosition);
 	}
 }
 
@@ -111,6 +111,69 @@ void AWitchPTCharacter::HandleSetCauldronAltar_Implementation(ACauldronAltar* In
 	if (InCauldronAltar)
 	{
 		CauldronAltar = InCauldronAltar;
+	}
+}
+
+void AWitchPTCharacter::HandleStartBrewingPotion_Implementation(ACharacter* InteractingCharacter)
+{
+	if (InteractingCharacter && CauldronAltar)
+	{
+		Server_HandleStartBrewingPotion(InteractingCharacter);
+	}
+}
+
+void AWitchPTCharacter::HandleStartCarryCauldron_Implementation(ACharacter* InteractingCharacter)
+{
+	if (InteractingCharacter && CauldronAltar)
+	{
+		Server_HandleStartCarryCauldron(InteractingCharacter);
+	}
+}
+
+void AWitchPTCharacter::HandleStopBrewingPotion_Implementation(ACharacter* InteractingCharacter)
+{
+	if ( CauldronAltar)
+	{
+		Server_HandleStartBrewingPotion(InteractingCharacter);
+	}
+	
+}
+
+void AWitchPTCharacter::HandleStopCarryCauldron_Implementation(ACharacter* InteractingCharacter)
+{
+	Server_HandleStopCarryCauldron(InteractingCharacter);
+
+}
+
+void AWitchPTCharacter::Server_HandleStopCarryCauldron_Implementation(ACharacter* InteractingCharacter)
+{
+	if ( CauldronAltar)
+	{
+		// CauldronAltar->StopBrewingPotion
+	}
+}
+
+void AWitchPTCharacter::Server_HandleStopBrewingPotion_Implementation(ACharacter* InteractingCharacter)
+{
+	if (CauldronAltar)
+	{
+		// CauldronAltar->
+	}
+}
+
+void AWitchPTCharacter::Server_HandleStartCarryCauldron_Implementation(ACharacter* InteractingCharacter)
+{
+	if (InteractingCharacter && CauldronAltar)
+	{
+		CauldronAltar->StartCarryCauldron(InteractingCharacter);
+	}
+}
+
+void AWitchPTCharacter::Server_HandleStartBrewingPotion_Implementation(ACharacter* InteractingCharacter)
+{
+	if (InteractingCharacter && CauldronAltar)
+	{
+		CauldronAltar->StartBrewingPotion(InteractingCharacter);
 	}
 }
 

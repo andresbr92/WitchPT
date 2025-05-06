@@ -58,12 +58,33 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
 	void SetRitualPositionOccupied(ACharacter* OccupyingCharacter);
 
+
+	/**
+	 * Cauldron Altar interface functions
+	 */
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
 	ACauldronAltar* GetCauldronAltar();
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
 	void HandleSetCauldronAltar(ACauldronAltar* InCauldronAltar);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
 	void HandleRemoveCauldronAltar();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
+	void HandleStartBrewingPotion(ACharacter* InteractingCharacter);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
+	void HandleStartCarryCauldron(ACharacter* InteractingCharacter);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
+	void HandleStopBrewingPotion(ACharacter* InteractingCharacter);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
+	void HandleStopCarryCauldron(ACharacter* InteractingCharacter);
+
+
+	
 	
 	
 };
