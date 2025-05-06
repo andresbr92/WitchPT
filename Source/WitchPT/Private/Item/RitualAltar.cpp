@@ -39,22 +39,22 @@ void ARitualAltar::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Auto-discover RitualPositions if not set in editor
-	if (RitualPositions.Num() == 0 && HasAuthority())
-	{
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARitualPosition::StaticClass(), FoundActors);
-		
-		for (AActor* Actor : FoundActors)
-		{
-			ARitualPosition* Position = Cast<ARitualPosition>(Actor);
-			if (Position)
-			{
-				RitualPositions.Add(Position);
-				Position->SetRitualAltar(this);
-			}
-		}
-	}
+	// // Auto-discover RitualPositions if not set in editor
+	// if (RitualPositions.Num() == 0 && HasAuthority())
+	// {
+	// 	TArray<AActor*> FoundActors;
+	// 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARitualPosition::StaticClass(), FoundActors);
+	// 	
+	// 	for (AActor* Actor : FoundActors)
+	// 	{
+	// 		ARitualPosition* Position = Cast<ARitualPosition>(Actor);
+	// 		if (Position)
+	// 		{
+	// 			RitualPositions.Add(Position);
+	// 			Position->SetRitualAltar(this);
+	// 		}
+	// 	}
+	// }
 }
 
 void ARitualAltar::Tick(float DeltaTime)
@@ -84,6 +84,7 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 	DOREPLIFETIME(ARitualAltar, BaseInputTimeWindow);
 	DOREPLIFETIME(ARitualAltar, DifficultyScalingMultiplier);
 }
+
 
 void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 {

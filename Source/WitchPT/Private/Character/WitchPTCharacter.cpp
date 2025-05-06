@@ -101,8 +101,8 @@ void AWitchPTCharacter::SetRitualPositionOccupied_Implementation(ACharacter* Occ
 {
 	if (RitualPosition)
 	{
-		RitualPosition->SetOccupied(OccupyingCharacter);
-		Server_SetRitualPositionOccupied(OccupyingCharacter, RitualPosition);
+		RitualPosition->Server_SetOccupied(OccupyingCharacter);
+		// Server_SetRitualPositionOccupied(OccupyingCharacter, RitualPosition);
 	}
 }
 

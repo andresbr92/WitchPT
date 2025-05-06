@@ -43,6 +43,17 @@ public:
     // Current interaction state
     UPROPERTY(ReplicatedUsing = OnRep_CurrentState, BlueprintReadOnly, Category = "Interaction|State")
     EInteractionState CurrentState = EInteractionState::Inactive;
+
+    // Transforms defining brewing positions around the cauldron
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Altar|Positions", meta = (MakeEditWidget = true))
+    TArray<FTransform> PositionTransforms;
+
+    // The class to spawn for brewing positions
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Brewing")
+    TSubclassOf<ABaseInteractionPosition> PositionClass;
+    
+    UPROPERTY(EditDefaultsOnly, Category = "Ritual|Config")
+    TArray<FGameplayTag> TagsPositions;
     
     // List of players participating in the interaction
     UPROPERTY(ReplicatedUsing = OnRep_ParticipatingPlayers, BlueprintReadWrite, VisibleAnywhere, Category = "Interaction")
@@ -59,6 +70,14 @@ public:
     // Basic interaction methods
     UFUNCTION(BlueprintCallable)
     virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
+
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
+    virtual void CreateAltarPositions();
+    
+
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
+    virtual void DestroyAltarPositions();
+    
     
     // Multicast RPCs for notifications
     UFUNCTION(NetMulticast, Reliable)

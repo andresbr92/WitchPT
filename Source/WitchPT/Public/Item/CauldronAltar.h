@@ -80,6 +80,8 @@ public:
      */
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
     void StartBrewingPotion(ACharacter* InteractingCharacter);
+
+    virtual void BeginPlay() override;
     
     /**
      * Function called when the player performs a hold interaction with the cauldron
@@ -136,14 +138,12 @@ public:
      * Create brewing positions around the cauldron
      * These are scene components in the Blueprint that define where players can stand
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
-    void CreateBrewingPositions();
+   
     
     /**
      * Removes all brewing positions created by the cauldron
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
-    void DestroyBrewingPositions();
+    
 
     // delegate
     
@@ -154,7 +154,7 @@ public:
      * @return A valid brewing position, or nullptr if none available
      */
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
-    ACauldronPosition* GetAvailableBrewingPosition(ACharacter* Character);
+    ABaseInteractionPosition* GetAvailableBrewingPosition(ACharacter* Character);
 
     UFUNCTION()
     void OnRep_CauldronPhysicState();
@@ -206,13 +206,8 @@ public:
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     bool IsInPlacementPreview() const;
     
-    // Transforms defining brewing positions around the cauldron
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cauldron|Brewing", meta = (MakeEditWidget = true))
-    TArray<FTransform> BrewingPositionTransforms;
+
     
-    // The class to spawn for brewing positions
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Brewing")
-    TSubclassOf<ACauldronPosition> CauldronPositionClass;
     
     // Material a aplicar durante la previsualización
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
@@ -242,10 +237,6 @@ private:
     // Offset for placing the cauldron when detached
     UPROPERTY(EditDefaultsOnly, Category = "Cauldron|Movement")
     FVector DetachmentOffset = FVector(100.0f, 0.0f, 0.0f);
-    
-    // Array of spawned brewing positions
-    UPROPERTY(VisibleAnywhere)
-    TArray<ACauldronPosition*> SpawnedBrewingPositions;
     
     // Estado de colocación actual
     UPROPERTY(Replicated)

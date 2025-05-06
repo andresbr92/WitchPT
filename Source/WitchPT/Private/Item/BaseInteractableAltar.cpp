@@ -1,4 +1,6 @@
 #include "Item/BaseInteractableAltar.h"
+
+#include "FWitchPTGameplayTags.h"
 #include "Item/BaseInteractionPosition.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
@@ -12,6 +14,12 @@ ABaseInteractableAltar::ABaseInteractableAltar()
     // Make sure it replicates
     bReplicates = true;
     bAlwaysRelevant = true;
+    
+    TagsPositions.Add(FWitchPTGameplayTags::Get().Ritual_Position_1);
+    TagsPositions.Add(FWitchPTGameplayTags::Get().Ritual_Position_2);
+    TagsPositions.Add(FWitchPTGameplayTags::Get().Ritual_Position_3);
+    TagsPositions.Add(FWitchPTGameplayTags::Get().Ritual_Position_4);
+
 }
 
 void ABaseInteractableAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -29,13 +37,7 @@ void ABaseInteractableAltar::BeginPlay()
     Super::BeginPlay();
     
     // Initialize interaction positions
-    for (auto Position : InteractionPositions)
-    {
-        if (Position)
-        {
-            // Child classes might want to do additional setup here
-        }
-    }
+    CreateAltarPositions();
 }
 
 // Called every frame
@@ -54,7 +56,7 @@ void ABaseInteractableAltar::OccupyPosition(ACharacter* Player, ABaseInteraction
     }
 
     // Set the position as occupied
-    Position->SetOccupied(Player);
+    Position->Server_SetOccupied(Player);
     
     // Track which position this player is at
     PlayerPositionTags.Add(Player, Position->GetPositionTag());
@@ -69,6 +71,86 @@ void ABaseInteractableAltar::OccupyPosition(ACharacter* Player, ABaseInteraction
         *Player->GetName(), *Position->GetName());
         
     // Child classes can override to add additional logic
+}
+
+void ABaseInteractableAltar::CreateAltarPositions()
+{
+    if (!HasAuthority() || !PositionClass)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::CreateBrewingPositions: Missing authority or position class"));
+        return;
+    }
+    
+    // Make sure we have no previous positions
+    DestroyAltarPositions();
+    
+    UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CreateBrewingPositions: Creating %d brewing positions"), PositionTransforms.Num());
+    int positionIndex = 0;
+    // Spawn a CauldronPosition for each transform
+    for (const FTransform& PosTransform : PositionTransforms)
+    {
+        // Transform relative to world space
+        FTransform WorldTransform = PosTransform * GetActorTransform();
+        
+        // Get location and rotation from the transform
+        FVector Location = WorldTransform.GetLocation();
+        FRotator Rotation = WorldTransform.Rotator();
+        
+        // Spawn parameters
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+        
+        // Spawn the brewing position
+        ABaseInteractionPosition* NewPosition = GetWorld()->SpawnActor<ABaseInteractionPosition>(
+            PositionClass, 
+            Location, 
+            Rotation, 
+            SpawnParams);
+        
+        if (NewPosition)
+        {
+            // Initialize the position
+            // Note: Implement this method in CauldronPosition if needed
+            // NewPosition->SetCauldronAltar(this);
+            NewPosition->SetPositionTag(TagsPositions[positionIndex]);
+            positionIndex++;
+
+            
+            // Add to our array
+            InteractionPositions.Add(NewPosition);
+            
+            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CreateBrewingPositions: Created position at %s"), *Location.ToString());
+        }
+        
+      
+    }
+   
+}
+
+
+
+void ABaseInteractableAltar::DestroyAltarPositions()
+{
+    // Only destroy positions on the server
+    if (!HasAuthority())
+    {
+        return;
+    }
+    
+    // Destroy all brewing positions
+    for (ABaseInteractionPosition* Position : InteractionPositions)
+    {
+        if (Position)
+        {
+            Position->Destroy();
+        }
+    }
+    
+    // Clear the array
+    InteractionPositions.Empty();
+    
+    UE_LOG(LogTemp, Log, TEXT("Altar::DestroyAltarPositions: All altar positions destroyed"));
 }
 
 void ABaseInteractableAltar::Multicast_OnStateChanged_Implementation(EInteractionState NewState)

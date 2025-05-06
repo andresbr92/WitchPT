@@ -49,18 +49,18 @@ public:
     //~ End Getters
 
     //~ Setters
-    UFUNCTION(BlueprintCallable)
-    void SetOccupied(ACharacter* Character);
+    UFUNCTION(Server, Reliable)
+    void Server_SetOccupied(ACharacter* Character);
 
     UFUNCTION(Server, Reliable, BlueprintCallable)
     void SetUnoccupied();
 
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION()
     void SetPositionTag(const FGameplayTag& NewTag);
 
 protected:
     // Unique tag identifying this position (e.g., Ritual.Position.1). Set per instance.
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
+    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
     FGameplayTag PositionTag;
 
     // Is this position currently occupied by a player? Replicated.
@@ -68,7 +68,7 @@ protected:
     bool bIsOccupied = false;
 
     // Which character is currently occupying this position? Replicated.
-    UPROPERTY(ReplicatedUsing = OnRep_OccupyingCharacter, BlueprintReadOnly, Category = "Interaction|State")
+    UPROPERTY(ReplicatedUsing = OnRep_OccupyingCharacter, VisibleAnywhere, BlueprintReadOnly, Category = "Interaction|State")
     TObjectPtr<ACharacter> OccupyingCharacter = nullptr;
 
     // Variables potentially used by the base AItem interaction system

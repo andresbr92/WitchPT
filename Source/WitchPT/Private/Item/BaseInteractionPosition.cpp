@@ -22,6 +22,7 @@ void ABaseInteractionPosition::GetLifetimeReplicatedProps(TArray<FLifetimeProper
     // Replicate the occupied state and occupying character
     DOREPLIFETIME(ABaseInteractionPosition, bIsOccupied);
     DOREPLIFETIME(ABaseInteractionPosition, OccupyingCharacter);
+    DOREPLIFETIME(ABaseInteractionPosition, PositionTag);
     
     // PositionTag and Altar are usually set once and don't need replication unless they can change dynamically
 }
@@ -39,7 +40,7 @@ void ABaseInteractionPosition::GatherInteractionOptions(const FInteractionQuery&
     Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
 }
 
-void ABaseInteractionPosition::SetOccupied(ACharacter* Character)
+void ABaseInteractionPosition::Server_SetOccupied_Implementation(ACharacter* Character)
 {
     if (GetLocalRole() != ROLE_Authority)
     {
