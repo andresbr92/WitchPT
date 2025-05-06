@@ -81,11 +81,11 @@ public:
 	
 	
 	// RPCs for client-server communication
-	UFUNCTION()
-	void StartRitual(ACharacter* InitiatingPlayer);
+	UFUNCTION(Server, Reliable)
+	void Server_StartRitual(ACharacter* RequestingCharacter);
 	
-	UFUNCTION()
-	bool HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
+	UFUNCTION(Server, Reliable)
+	void Server_HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
 	
 	
 	// Multicast RPCs for notifications

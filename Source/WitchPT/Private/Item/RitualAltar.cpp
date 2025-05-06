@@ -86,9 +86,9 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 }
 
 
-void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
+void ARitualAltar::Server_StartRitual_Implementation(ACharacter* RequestingCharacter)
 {
-	if (!HasAuthority() || !InitiatingPlayer)
+	if (!HasAuthority() || !RequestingCharacter)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Cannot start ritual: invalid player or no authority"));
 		return;
@@ -117,7 +117,7 @@ void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 				UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Found participant: %s at position %s"), 
 					*OccupyingCharacter->GetName(), *Position->GetName());
 				
-				if (OccupyingCharacter == InitiatingPlayer)
+				if (OccupyingCharacter == RequestingCharacter)
 				{
 					bFoundInitiator = true;
 				}
@@ -141,9 +141,9 @@ void ARitualAltar::StartRitual(ACharacter* InitiatingPlayer)
 	GenerateInputSequence();
 	
 	// Set current active player to the initiator
-	CurrentActivePlayer = InitiatingPlayer;
+	CurrentActivePlayer = RequestingCharacter;
 	OnRep_CurrentActivePlayer();
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] First active player is: %s"), *InitiatingPlayer->GetName());
+	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] First active player is: %s"), *RequestingCharacter->GetName());
 	
 	// Set state to active
 	CurrentRitualState = EInteractionState::Active;
@@ -197,12 +197,12 @@ void ARitualAltar::GenerateInputSequence()
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Generated sequence with %d inputs: %s"), InputSequence.Num(), *SequenceStr);
 }
 
-bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag)
+void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character, const FGameplayTag& InputTag)
 {
 	if (!Character)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input: no authority or invalid character"));
-		return false;
+		return;
 	}
 	
 	// Check if the ritual is active
@@ -210,7 +210,7 @@ bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input from %s: ritual not active (state=%d)"), 
 			*Character->GetName(), static_cast<int32>(CurrentRitualState));
-		return false;
+		return;
 	}
 	
 	// Check if it's this player's turn
@@ -218,7 +218,7 @@ bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input from %s: not their turn (current active=%s)"), 
 			*Character->GetName(), CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"));
-		return false;
+		return;
 	}
 	
 	// Check if we have a valid input to match against
@@ -226,7 +226,7 @@ bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 	{
 		UE_LOG(LogTemp, Error, TEXT("[DEBUG-RITUAL] Input validation error: invalid sequence state (index=%d, sequence length=%d)"), 
 			CurrentSequenceIndex, InputSequence.Num());
-		return false;
+		return;
 	}
 	
 	// Get the expected input for the current step
@@ -241,9 +241,8 @@ bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 		// Input successful
 		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Input CORRECT! Player: %s, Input: %s, Index: %d/%d"), 
 			*Character->GetName(), *InputTag.ToString(), CurrentSequenceIndex, InputSequence.Num()-1);
-		HandleInputSuccess(Character);
-		return true;
-
+	
+	
 	}
 	else
 	{
@@ -251,7 +250,7 @@ bool ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Input INCORRECT! Player: %s, Received: %s, Expected: %s"), 
 			*Character->GetName(), *InputTag.ToString(), *ExpectedInput.ToString());
 		HandleInputFailure(Character);
-		return false;
+		
 	}
 }
 

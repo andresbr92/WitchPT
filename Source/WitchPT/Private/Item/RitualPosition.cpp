@@ -112,6 +112,31 @@ void ARitualPosition::GatherInteractionOptions(const FInteractionQuery& Interact
 	// }
 }
 
+ARitualAltar* ARitualPosition::GetRitualAltarActor_Implementation() const
+{
+	if (RitualAltar)
+	{
+		return RitualAltar;
+	}
+	return nullptr;
+}
+
+void ARitualPosition::SendStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
+{
+	if (RitualAltar && RequestingCharacter)
+	{
+		RitualAltar->Server_StartRitual(RequestingCharacter);
+	}
+}
+
+void ARitualPosition::SendPlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
+{
+	if (RitualAltar && InputCharacter && InputTag.IsValid() && HasAuthority())
+	{
+		RitualAltar->Server_HandlePlayerInput(InputCharacter, InputTag);
+	}
+}
+
 void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 {
 	Super::HandleInteraction(InteractingCharacter);

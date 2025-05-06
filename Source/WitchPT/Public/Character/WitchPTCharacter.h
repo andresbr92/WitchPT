@@ -12,7 +12,7 @@ class ACauldronAltar;
 class ARitualPosition;
 
 UCLASS()
-class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase, public IMechanicsInterface
+class WITCHPT_API AWitchPTCharacter : public AWitchPTCharacterBase
 {
 	GENERATED_BODY()
 
@@ -32,58 +32,7 @@ public:
 
 
 
-	/***
-	 * IMechanicsInterface implementation
-	 */
-	/***
-	 * Ritual Altar interface functions
-	 */
-	virtual void HandleStartRitualRequest_Implementation(ACharacter* RequestingCharacter) override;
-	virtual void HandlePlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
-	virtual void HandleSetRitualPosition_Implementation(ARitualPosition* InRitualPosition) override;
-	/***
-	 * Ritual Position interface functions
-	 */
-	virtual bool IsRitualPositionOccupied_Implementation() const override;
-	virtual void SetRitualPositionOccupied_Implementation(ACharacter* OccupyingCharacter) override;
-	virtual ARitualPosition* GetRitualPosition_Implementation() const override { return RitualPosition;  }
-	/***
-	 * Cauldron Altar interface functions
-	 */
 
-	virtual ACauldronAltar* GetCauldronAltar_Implementation() override { return CauldronAltar; }
-	virtual void HandleSetCauldronAltar_Implementation(ACauldronAltar* InCauldronAltar) override;
-	virtual void HandleRemoveCauldronAltar_Implementation() override { CauldronAltar = nullptr; }
-
-	virtual void HandleStartBrewingPotion_Implementation(ACharacter* InteractingCharacter) override;
-	virtual void HandleStartCarryCauldron_Implementation(ACharacter* InteractingCharacter) override;
-
-	virtual void HandleStopBrewingPotion_Implementation(ACharacter* InteractingCharacter) override;
-	virtual void HandleStopCarryCauldron_Implementation(ACharacter* InteractingCharacter) override;
-	
-
-
-	//RPC
-	UFUNCTION(Server, Reliable)
-	void Server_HandleStartRitualRequest(ACharacter* RequestingCharacter);
-
-	UFUNCTION(Server, Reliable)
-	void Server_HandlePlayerInput(ACharacter* InputCharacter, const FGameplayTag& InputTag);
-
-	UFUNCTION(Server, Reliable)
-	void Server_SetRitualPositionOccupied(ACharacter* Player, ARitualPosition* Position);
-
-	UFUNCTION(Server, Reliable)
-	void Server_HandleStartBrewingPotion(ACharacter* InteractingCharacter);
-
-	UFUNCTION(Server, Reliable)
-	void Server_HandleStartCarryCauldron(ACharacter* InteractingCharacter);
-
-	UFUNCTION(Server, Reliable)
-	void Server_HandleStopBrewingPotion(ACharacter* InteractingCharacter);
-
-	UFUNCTION(Server, Reliable)
-	void Server_HandleStopCarryCauldron(ACharacter* InteractingCharacter);
 
 	
 

@@ -18,7 +18,7 @@ class UBoxComponent;
 class ACharacter;
 
 UCLASS()
-class WITCHPT_API ARitualPosition : public ABaseInteractionPosition
+class WITCHPT_API ARitualPosition : public ABaseInteractionPosition, public IMechanicsInterface
 {
 	GENERATED_BODY()
 
@@ -33,13 +33,14 @@ public:
 	//~ Begin IInteraction Interface (from AItem)
 	virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
 	//~ End IInteraction Interface
+	
+	
+	virtual ARitualAltar* GetRitualAltarActor_Implementation() const override;
+	virtual void SendStartRitualRequest_Implementation(ACharacter* RequestingCharacter) override;
+	virtual void SendPlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
+	
 
-	//~ Getters
-	UFUNCTION(BlueprintPure, Category = "Ritual")
-	ARitualAltar* GetRitualAltar() const { return RitualAltar; }
-	//~ End Getters
-
-	//~ Setters
+	
 	UFUNCTION(BlueprintCallable)
 	void SetRitualAltar(ARitualAltar* Altar) { RitualAltar = Altar; }
 	//~ End Setters
