@@ -27,6 +27,19 @@ enum class EInteractionState : uint8
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionCompleted, bool, bWasSuccessful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputReceived, ACharacter*, Character, bool, bWasCorrect);
 
+// Estructura para mapear un jugador a su tag de posición
+USTRUCT(BlueprintType)
+struct FPlayerPositionTagEntry
+{
+    GENERATED_BODY();
+
+    UPROPERTY(BlueprintReadWrite)
+    TObjectPtr<ACharacter> Player = nullptr;
+
+    UPROPERTY(BlueprintReadWrite)
+    FGameplayTag PositionTag;
+};
+
 /**
  * Base class for interactive altars/cauldrons that players can interact with
  */
@@ -65,7 +78,7 @@ public:
     TArray<TObjectPtr<ABaseInteractionPosition>> InteractionPositions;
 
     UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Interaction|Setup")
-    TMap<TObjectPtr<ACharacter>, FGameplayTag> PlayerPositionTags;
+    TArray<FPlayerPositionTagEntry> PlayerPositionTags;
     
     // Basic interaction methods
     UFUNCTION(Server, Reliable)

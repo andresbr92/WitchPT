@@ -30,6 +30,7 @@ void ABaseInteractableAltar::GetLifetimeReplicatedProps(TArray<class FLifetimePr
 
     DOREPLIFETIME(ABaseInteractableAltar, CurrentState);
     DOREPLIFETIME(ABaseInteractableAltar, ParticipatingPlayers);
+    DOREPLIFETIME(ABaseInteractableAltar, PlayerPositionTags);
   
 }
 
@@ -59,19 +60,36 @@ void ABaseInteractableAltar::Server_OccupyPosition_Implementation(ACharacter* Pl
 
     // Set the position as occupied
     Position->SetOccupied(Player);
-    
+
     // Track which position this player is at
-    PlayerPositionTags.Add(Player, Position->GetPositionTag());
-    
+    // Buscar si ya existe una entrada para este jugador
+    bool bFound = false;
+    for (FPlayerPositionTagEntry& Entry : PlayerPositionTags)
+    {
+        if (Entry.Player == Player)
+        {
+            Entry.PositionTag = Position->GetPositionTag();
+            bFound = true;
+            break;
+        }
+    }
+    if (!bFound)
+    {
+        FPlayerPositionTagEntry NewEntry;
+        NewEntry.Player = Player;
+        NewEntry.PositionTag = Position->GetPositionTag();
+        PlayerPositionTags.Add(NewEntry);
+    }
+
     // Add to participating players if not already there
     if (!ParticipatingPlayers.Contains(Player))
     {
         ParticipatingPlayers.Add(Player);
     }
-    
+
     UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Player %s occupied position %s"),
         *Player->GetName(), *Position->GetName());
-        
+
     // Child classes can override to add additional logic
 }
 

@@ -268,8 +268,16 @@ void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character
 			EventData.Instigator = this;
 			EventData.Target = Character;
 			
-			// FGameplayTag PositionTag = PlayerPositionTags[Character];
-			const FGameplayTag* PositionTag = PlayerPositionTags.Find(Character);
+			// Buscar el tag de posición del jugador en el array
+			FGameplayTag* PositionTag = nullptr;
+			for (FPlayerPositionTagEntry& Entry : PlayerPositionTags)
+			{
+				if (Entry.Player == Character)
+				{
+					PositionTag = &Entry.PositionTag;
+					break;
+				}
+			}
 			if (PositionTag && PositionTag->MatchesTag(WitchPtGameplayTags.Get().Ritual_Position_1))
 			{
 				EventData.OptionalObject = PrimaryAnimMontage;
