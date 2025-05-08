@@ -27,11 +27,11 @@ class WITCHPT_API IMechanicsInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 	
 public:
+	//RITUAL IMPLEMENTATION
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
 	ARitualAltar* GetRitualAltarActor() const;
 
-	//start ritual request
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
 	void SendStartRitualRequest(ACharacter* RequestingCharacter);
 
@@ -44,6 +44,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Queyr")
 	bool IsOccuppied() const;
+
+
+	// CAULDRON IMPLEMENTATION
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	void SendStartBrewingPotionRequest(ACharacter* RequestingCharacter);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	void SendStartCarryCauldronRequest(ACharacter* RequestingCharacter);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	void SendUpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+
 
 	// /***
 	//  * Ritual Altar interface functions

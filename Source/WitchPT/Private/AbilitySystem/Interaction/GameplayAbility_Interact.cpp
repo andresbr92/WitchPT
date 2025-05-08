@@ -218,12 +218,12 @@ void UGameplayAbility_Interact::OnInteractionButtonPressed()
 {
 	if (CurrentOptions.Num() == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: No hay opciones de interacción disponibles"));
+		// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: No hay opciones de interacción disponibles"));
 		OnInteractionCancelled.Broadcast();
 		return;
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Botón de interacción presionado"));
+	// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Botón de interacción presionado"));
 	bIsInteractionButtonHeld = true;
 	bHoldInteractionFired = false; // Reiniciamos la bandera al comenzar una nueva interacción
 	InteractionStartTime = GetWorld()->GetTimeSeconds();
@@ -232,7 +232,7 @@ void UGameplayAbility_Interact::OnInteractionButtonPressed()
 	if (CurrentOptions.Num() > 0)
 	{
 		InitialInteractableTarget = CurrentOptions[0].InteractableTarget;
-		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Guardando objetivo inicial de interacción"));
+		// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Guardando objetivo inicial de interacción"));
 	}
 	
 	// Configurar un temporizador para detectar si el botón se mantiene presionado durante el tiempo requerido
@@ -262,17 +262,17 @@ void UGameplayAbility_Interact::OnInteractionButtonPressed()
 		false // No repetitivo
 	);
 	
-	UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Temporizadores configurados. Hold: %f segundos, Max: %f segundos"), 
-		HoldInteractionTime, MaxInteractionTime);
+	// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Temporizadores configurados. Hold: %f segundos, Max: %f segundos"), 
+	// 	HoldInteractionTime, MaxInteractionTime);
 }
 
 void UGameplayAbility_Interact::OnInteractionButtonReleased()
 {
-	UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Botón de interacción liberado"));
+	// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Botón de interacción liberado"));
 	
 	if (!bIsInteractionButtonHeld)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: El botón no estaba siendo mantenido, ignorando liberación"));
+		// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: El botón no estaba siendo mantenido, ignorando liberación"));
 		return;
 	}
 	
@@ -296,13 +296,13 @@ void UGameplayAbility_Interact::OnInteractionButtonReleased()
 		// Temporizador de interacción mantenida
 		if (GetWorld()->GetTimerManager().IsTimerActive(HoldInteractionTimerHandle))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Temporizador de hold cancelado"));
+			// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Temporizador de hold cancelado"));
 			GetWorld()->GetTimerManager().ClearTimer(HoldInteractionTimerHandle);
 			
 			// Verificamos si ya se lanzó una interacción mantenida
 			if (bHoldInteractionFired)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Ya se disparó una interacción mantenida, ignorando interacción rápida"));
+				// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Ya se disparó una interacción mantenida, ignorando interacción rápida"));
 				return; // Si ya se disparó una interacción mantenida, no lanzamos la rápida
 			}
 			
@@ -310,11 +310,11 @@ void UGameplayAbility_Interact::OnInteractionButtonReleased()
 			float CurrentTime = GetWorld()->GetTimeSeconds();
 			float HoldTime = CurrentTime - InteractionStartTime;
 			
-			UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Tiempo mantenido: %f / Requerido: %f"), HoldTime, HoldInteractionTime);
+			// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Tiempo mantenido: %f / Requerido: %f"), HoldTime, HoldInteractionTime);
 			
 			if (HoldTime < HoldInteractionTime)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Activando interacción rápida"));
+				// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Activando interacción rápida"));
 				// Llamar a la interacción de pulsación rápida
 				TriggerInteraction();
 				
@@ -326,7 +326,7 @@ void UGameplayAbility_Interact::OnInteractionButtonReleased()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: No había temporizador activo al liberar el botón"));
+			// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: No había temporizador activo al liberar el botón"));
 		}
 	}
 	
@@ -336,11 +336,11 @@ void UGameplayAbility_Interact::OnInteractionButtonReleased()
 
 void UGameplayAbility_Interact::OnHoldInteractionTimeElapsed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Tiempo de interacción mantenida alcanzado"));
+	// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Tiempo de interacción mantenida alcanzado"));
 	
 	if (bIsInteractionButtonHeld)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Activando interacción mantenida"));
+		// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: Activando interacción mantenida"));
 		// Marcamos que ya se disparó la interacción mantenida
 		bHoldInteractionFired = true;
 		
@@ -355,7 +355,7 @@ void UGameplayAbility_Interact::OnHoldInteractionTimeElapsed()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: El botón ya no está presionado, no se activa interacción mantenida"));
+		// UE_LOG(LogTemp, Warning, TEXT("GameplayAbility_Interact: El botón ya no está presionado, no se activa interacción mantenida"));
 	}
 }
 

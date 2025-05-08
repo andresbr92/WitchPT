@@ -42,6 +42,7 @@ public:
 	FGameplayTag Character_State_Ritual_InGame;
 
 	// Ability Tags
+	FGameplayTag Ability_Interact;
 	FGameplayTag Ability_Sprint;
 	FGameplayTag Ability_Jump;
 	FGameplayTag Ability_Crouch;

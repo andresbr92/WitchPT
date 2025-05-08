@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Item/BaseInteractableAltar.h"
 #include "GameplayTagContainer.h" // Include for FGameplayTag
+#include "MechanicsInterface.h"
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
@@ -51,17 +52,19 @@ enum class ECauldronPlacementState : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnECauldronPhysicStateChanged, ECauldronPhysicState, PhysicState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterPositioned, bool, bWasSuccessful);
 /**
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
  */
 UCLASS()
-class WITCHPT_API ACauldronAltar : public ABaseInteractableAltar, public IInteractableTarget
+class WITCHPT_API ACauldronAltar : public ABaseInteractableAltar, public IInteractableTarget, public IMechanicsInterface
 {
     GENERATED_BODY()
 
 public:
     // Sets default values for this actor's properties
     ACauldronAltar();
+    virtual void BeginPlay() override;
     virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
     UPROPERTY(EditAnywhere)
     FInteractionOption Option;
@@ -72,24 +75,26 @@ public:
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
     // --- New functions for interaction ---
+    virtual void SendStartBrewingPotionRequest_Implementation(ACharacter* RequestingCharacter) override;
+    virtual void SendStartCarryCauldronRequest_Implementation(ACharacter* RequestingCharacter) override;
+    virtual void SendUpdatePlacementPreview_Implementation(const FVector& HitLocation, const FVector& HitNormal) override;
     
     /**
      * Function called when the player performs a quick interaction with the cauldron
      * This will position the player for potion making
      * @param InteractingCharacter The character that is interacting with the cauldron
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
-    void StartBrewingPotion(ACharacter* InteractingCharacter);
+    UFUNCTION(Server, Reliable)
+    void Server_StartBrewingPotion(ACharacter* InteractingCharacter);
 
-    virtual void BeginPlay() override;
     
     /**
      * Function called when the player performs a hold interaction with the cauldron
      * This will allow the player to carry the cauldron on their back
      * @param InteractingCharacter The character that is interacting with the cauldron
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Interaction")
-    void StartCarryCauldron(ACharacter* InteractingCharacter);
+    UFUNCTION(Server, Reliable)
+    void Server_StartCarryCauldron(ACharacter* InteractingCharacter);
     
     /**
      * Attaches the cauldron to the player's back
@@ -102,16 +107,16 @@ public:
      * Detaches the cauldron from the player and places it in the world
      * @param Character The character the cauldron is currently attached to
      */
-    UFUNCTION()
-    void DetachFromCharacter(ACharacter* Character);
+    UFUNCTION(Server, Reliable)
+    void Server_DetachFromCharacter(ACharacter* Character);
     
     /**
      * Positions the character at one of the cauldron positions for brewing
      * @param Character The character to position at the cauldron
      * @return Whether the character was successfully positioned
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
-    bool PositionCharacterForBrewing(ACharacter* Character);
+    UFUNCTION()
+    void PositionCharacterForBrewing(ACharacter* Character);
     
     /**
      * Checks if the cauldron can be picked up
@@ -163,34 +168,36 @@ public:
     //Delegate
     UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
     FOnECauldronPhysicStateChanged OnECauldronPhysicStateChanged;
+    UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
+    FOnCharacterPositioned OnCharacterPositioned;
     
     /**
      * Activa el modo de previsualización para colocar el caldero
      * @param Character El personaje que está colocando el caldero
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Placement")
-    void StartPlacementPreview(ACharacter* Character);
+    UFUNCTION(Server, Reliable)
+    void Server_StartPlacementPreview(ACharacter* Character);
     
     /**
      * Actualiza la posición de previsualización del caldero según el punto final del line trace
      * @param HitLocation Ubicación donde se desea colocar el caldero
      * @param HitNormal Normal de la superficie donde se colocará el caldero
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Placement")
+    UFUNCTION()
     void UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
     
     /**
      * Finaliza el modo de previsualización y coloca el caldero en la posición actual
      * @return True si el caldero se colocó correctamente
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Placement")
-    bool FinalizePlacement();
+    UFUNCTION(Server, Reliable)
+    void Server_FinalizePlacement();
     
     /**
      * Cancela el modo de previsualización y vuelve a adjuntar el caldero al personaje
      */
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Placement")
-    void CancelPlacement();
+    UFUNCTION(Server, Reliable)
+    void Server_CancelPlacement();
     
     /**
      * Verifica si la posición actual es válida para colocar el caldero

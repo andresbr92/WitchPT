@@ -24,7 +24,7 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Character_State_Ritual_InPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Ritual.InPosition"));
 	GameplayTags.Character_State_Ritual_InGame = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Ritual.InGame"));
 
-	
+	GameplayTags.Ability_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Interact"));
 	GameplayTags.Ability_Sprint = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Sprint"));
 	GameplayTags.Ability_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Jump"));
 	GameplayTags.Ability_Crouch = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Crouch"));
