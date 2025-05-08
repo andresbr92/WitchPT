@@ -172,7 +172,7 @@ void ABaseInteractableAltar::Multicast_OnInputSuccess_Implementation(ACharacter*
     UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Input success feedback for player %s"), *Character->GetName());
 }
 
-void ABaseInteractableAltar::Client_OnInputFailed_Implementation(ACharacter* Character)
+void ABaseInteractableAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 {
     // Play failure feedback
     UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Input failed feedback for player %s"), *Character->GetName());

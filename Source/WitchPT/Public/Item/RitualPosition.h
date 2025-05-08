@@ -41,8 +41,6 @@ public:
 	virtual void SendPlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
 	virtual void SendPlayerOccupiedPosition_Implementation(ACharacter* InputCharacter) override;
 	
-
-	
 	
 	void SetRitualAltar(ARitualAltar* Altar) { RitualAltar = Altar; }
 	//~ End Setters

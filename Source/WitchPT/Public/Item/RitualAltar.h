@@ -84,16 +84,11 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
 	
-	
+	virtual void Multicast_OnInputSuccess_Implementation(ACharacter* Character) override;
+	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;
 	// Multicast RPCs for notifications
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualStateChanged(EInteractionState NewState);
-	
-	
-	virtual void Multicast_OnInputSuccess_Implementation(ACharacter* Character) override;
-	
-	virtual void Client_OnInputFailed_Implementation(ACharacter* Character) override;
-	
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualSucceeded();

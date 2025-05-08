@@ -64,7 +64,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction|Setup")
     TArray<TObjectPtr<ABaseInteractionPosition>> InteractionPositions;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction|Setup")
+    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Interaction|Setup")
     TMap<TObjectPtr<ACharacter>, FGameplayTag> PlayerPositionTags;
     
     // Basic interaction methods
@@ -86,8 +86,8 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     virtual void Multicast_OnInputSuccess(ACharacter* Character);
     
-    UFUNCTION(Client, Reliable)
-    virtual void Client_OnInputFailed(ACharacter* Character);
+    UFUNCTION(NetMulticast, Reliable)
+    virtual void Multicast_OnInputFailed(ACharacter* Character);
     
     
     // Getters for Blueprint/HUD access

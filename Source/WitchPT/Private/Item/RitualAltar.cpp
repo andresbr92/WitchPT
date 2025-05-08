@@ -199,7 +199,7 @@ void ARitualAltar::GenerateInputSequence()
 
 void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character, const FGameplayTag& InputTag)
 {
-	if (!Character)
+	if (!Character || !HasAuthority())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Rejected input: no authority or invalid character"));
 		return;
@@ -256,8 +256,6 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 
 void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character)
 {
-	// Client-side feedback for successful input
-	// This would typically play sounds, particle effects, etc.
 	
 	if (Character)
 	{
@@ -306,6 +304,7 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	OnRep_CurrentSequenceIndex();
 	
 	// Send success feedback
+	
 	Multicast_OnInputSuccess(Player);
 	// Notify the player
 	
@@ -351,7 +350,7 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	ApplyAgePenalty(Player);
 	
 	// Send failure feedback
-	Client_OnInputFailed(Player);
+	Multicast_OnInputFailed(Player);
 	
 	// Check if corruption has reached the maximum
 	if (CorruptionAmount >= MaxCorruption)
@@ -624,6 +623,7 @@ void ARitualAltar::CleanupRitual()
 
 
 
+
 FGameplayTag ARitualAltar::GetCurrentExpectedInput() const
 {
 	if (InputSequence.Num() == 0 || CurrentSequenceIndex >= InputSequence.Num())
@@ -670,9 +670,7 @@ ERitualInput ARitualAltar::ConvertTagToERitualInput(const FGameplayTag& Tag)
 	return ERitualInput::None;
 }
 
-
-
-void ARitualAltar::Client_OnInputFailed_Implementation(ACharacter* Character)
+void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 {
 	if (Character)
 	{
