@@ -40,7 +40,12 @@ void ABaseInteractionPosition::GatherInteractionOptions(const FInteractionQuery&
     Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
 }
 
-void ABaseInteractionPosition::Server_SetOccupied_Implementation(ACharacter* Character)
+bool ABaseInteractionPosition::IsOccuppied_Implementation() const
+{
+    return bIsOccupied;
+}
+
+void ABaseInteractionPosition::SetOccupied(ACharacter* Character)
 {
     if (GetLocalRole() != ROLE_Authority)
     {
@@ -51,7 +56,7 @@ void ABaseInteractionPosition::Server_SetOccupied_Implementation(ACharacter* Cha
     bIsOccupied = (Character != nullptr);
 }
 
-void ABaseInteractionPosition::SetUnoccupied_Implementation()
+void ABaseInteractionPosition::SetUnoccupied()
 {
     if (GetLocalRole() != ROLE_Authority)
     {

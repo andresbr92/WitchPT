@@ -68,8 +68,8 @@ public:
     TMap<TObjectPtr<ACharacter>, FGameplayTag> PlayerPositionTags;
     
     // Basic interaction methods
-    UFUNCTION(BlueprintCallable)
-    virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
+    UFUNCTION(Server, Reliable)
+    void Server_OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
 
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
     virtual void CreateAltarPositions();
@@ -86,14 +86,9 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     virtual void Multicast_OnInputSuccess(ACharacter* Character);
     
-    UFUNCTION(NetMulticast, Reliable)
-    virtual void Multicast_OnInputFailed(ACharacter* Character);
+    UFUNCTION(Client, Reliable)
+    virtual void Client_OnInputFailed(ACharacter* Character);
     
-    UFUNCTION(NetMulticast, Reliable)
-    void Multicast_OnInteractionSucceeded();
-    
-    UFUNCTION(NetMulticast, Reliable)
-    void Multicast_OnInteractionCatastrophicFail();
     
     // Getters for Blueprint/HUD access
     UFUNCTION(BlueprintPure, Category = "Interaction")

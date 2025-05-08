@@ -39,6 +39,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
 	void SendPlayerInput(ACharacter* InputCharacter, const FGameplayTag& InputTag);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
+	void SendPlayerOccupiedPosition(ACharacter* InputCharacter);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Queyr")
+	bool IsOccuppied() const;
+
 	// /***
 	//  * Ritual Altar interface functions
 	//  */

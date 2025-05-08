@@ -6,6 +6,7 @@
 #include "Item/Item.h"
 #include "AbilitySystem/Interaction/InteractionOption.h"
 #include "GameplayTagContainer.h" // Added for FGameplayTag
+#include "MechanicsInterface.h"
 #include "BaseInteractionPosition.generated.h"
 
 class UAbilitySystemComponent;
@@ -20,7 +21,7 @@ class ABaseInteractableAltar;
  * Base class for interaction positions (rituals, cauldrons, etc)
  */
 UCLASS(Abstract)
-class WITCHPT_API ABaseInteractionPosition : public AItem
+class WITCHPT_API ABaseInteractionPosition : public AItem, public IMechanicsInterface
 {
     GENERATED_BODY()
 
@@ -38,8 +39,6 @@ public:
     //~ End IInteraction Interface
 
     //~ Getters
-    UFUNCTION(BlueprintPure, Category = "Interaction")
-    bool IsOccupied() const { return bIsOccupied; }
 
     UFUNCTION(BlueprintPure, Category = "Interaction")
     ACharacter* GetOccupyingCharacter() const { return OccupyingCharacter; }
@@ -47,12 +46,13 @@ public:
     UFUNCTION(BlueprintPure, Category = "Interaction")
     FGameplayTag GetPositionTag() const { return PositionTag; }
     //~ End Getters
+    virtual bool IsOccuppied_Implementation() const override;
 
     //~ Setters
-    UFUNCTION(Server, Reliable)
-    void Server_SetOccupied(ACharacter* Character);
+    UFUNCTION()
+    void SetOccupied(ACharacter* Character);
 
-    UFUNCTION(Server, Reliable, BlueprintCallable)
+    UFUNCTION()
     void SetUnoccupied();
 
     UFUNCTION()

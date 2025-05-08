@@ -288,7 +288,7 @@ ABaseInteractionPosition* ACauldronAltar::GetAvailableBrewingPosition(ACharacter
     // Buscar la primera posición disponible
     for (ABaseInteractionPosition* Position : InteractionPositions)
     {
-        if (Position && !Position->IsOccupied())
+        if (Position && !Position->IsOccuppied_Implementation())
         {
             return Position;
         }

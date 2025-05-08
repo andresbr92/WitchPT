@@ -24,21 +24,38 @@ public:
 	FGameplayTag Attributes_Primary_Age;
 	FGameplayTag Attributes_Secondary_Mana;
 	FGameplayTag Attributes_Secondary_Stamina;
+	// State Tags
+	FGameplayTag Character_State_Movement_Sprinting;
+	FGameplayTag Character_State_Movement_Crouching;
+	FGameplayTag Character_State_Movement_MovingToPosition;
+	FGameplayTag Character_State_Dead;
+	FGameplayTag Character_State_Aim;
+	FGameplayTag Character_State_Blocked;
+	
+	FGameplayTag Character_State_Cauldron_InPosition;
+	FGameplayTag Character_State_Cauldron_Carrying;
+	FGameplayTag Character_State_Cauldron_Placing;
+	FGameplayTag Character_State_Cauldron_InGame;
+	FGameplayTag Character_State_Cauldron_BrewingPotion;
+	
+	FGameplayTag Character_State_Ritual_InPosition;
+	FGameplayTag Character_State_Ritual_InGame;
 
 	// Ability Tags
 	FGameplayTag Ability_Sprint;
 	FGameplayTag Ability_Jump;
 	FGameplayTag Ability_Crouch;
+	FGameplayTag Ability_Ritual_GoToPosition;
+	FGameplayTag Ability_Ritual_ParticipatingInAltar;
+	FGameplayTag Ability_Cauldron_ParticipatingInCauldron;
+	FGameplayTag Ability_Cauldron_CarryingCauldron;
+	FGameplayTag Ability_Cauldron_LookingForPlaceCauldron;
+	FGameplayTag Ability_Cauldron_SetInPlace;
+	FGameplayTag Ability_Cauldron_CancelSetInPlace;
 
-	// State Tags
-	FGameplayTag Character_State_Sprinting;
-	FGameplayTag Character_State_Crouching;
-	FGameplayTag Character_State_Dead;
-	FGameplayTag Character_State_Aim;
-	FGameplayTag Character_State_Blocked;
+	
+	
 
-	FGameplayTag Character_State_Cauldron_Carrying;
-	FGameplayTag Character_State_Cauldron_Placing;
 
 
 	// Input Tags
@@ -76,10 +93,8 @@ public:
 	FGameplayTag Event_Ritual_SequenceSuccess;
 	FGameplayTag Event_Ritual_SequenceFailure;
 	FGameplayTag Event_Ritual_CatastrophicFailure;
-	FGameplayTag Event_Interaction_OccupyRitualPosition;
-
-	// --- Player State Tags (Added Ritual Specific) ---
-	FGameplayTag State_Ritual_OccupyingPosition;
+	
+	
 
 	// --- Event Tags ---
 	FGameplayTag Event_Ritual_InputReceived; // Generic event when altar receives an input GE

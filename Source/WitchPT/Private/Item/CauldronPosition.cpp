@@ -190,7 +190,7 @@ void ACauldronPosition::HandleInteraction(ACharacter* InteractingCharacter)
     }
     
     // Call the cauldron altar to handle occupation
-    CauldronAltar->OccupyPosition(InteractingCharacter, this);
+    // CauldronAltar->OccupyPosition(InteractingCharacter, this);
 }
 
 // bool ACauldronPosition::PositionCharacter(ACharacter* Character)

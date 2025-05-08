@@ -18,13 +18,14 @@ class UBoxComponent;
 class ACharacter;
 
 UCLASS()
-class WITCHPT_API ARitualPosition : public ABaseInteractionPosition, public IMechanicsInterface
+class WITCHPT_API ARitualPosition : public ABaseInteractionPosition
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
 	ARitualPosition();
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//~ Begin AActor Interface
 	virtual void BeginPlay() override;
@@ -38,16 +39,17 @@ public:
 	virtual ARitualAltar* GetRitualAltarActor_Implementation() const override;
 	virtual void SendStartRitualRequest_Implementation(ACharacter* RequestingCharacter) override;
 	virtual void SendPlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
+	virtual void SendPlayerOccupiedPosition_Implementation(ACharacter* InputCharacter) override;
 	
 
 	
-	UFUNCTION(BlueprintCallable)
+	
 	void SetRitualAltar(ARitualAltar* Altar) { RitualAltar = Altar; }
 	//~ End Setters
 
 protected:
 	// Reference to the parent altar
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Ritual", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, Replicated)
 	TObjectPtr<ARitualAltar> RitualAltar;
 
 	// Interaction Logic Helper
@@ -55,5 +57,5 @@ protected:
 
 private:
 	// Find the RitualAltar if not set
-	void FindRitualAltar();
+	
 };

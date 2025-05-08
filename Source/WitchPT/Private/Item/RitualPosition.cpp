@@ -19,6 +19,13 @@ ARitualPosition::ARitualPosition()
 	// No need to set up replication here - it's handled by the base class
 }
 
+void ARitualPosition::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ARitualPosition, RitualAltar);
+}
+
 // void ARitualPosition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 // {
 // 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -33,43 +40,9 @@ void ARitualPosition::BeginPlay()
 	Super::BeginPlay();
 	
 	// Try to find the RitualAltar if it wasn't set in the editor
-	if (!RitualAltar)
-	{
-		FindRitualAltar();
-	}
+	
 }
 
-void ARitualPosition::FindRitualAltar()
-{
-	// First check if we are attached to an altar
-	AActor* ParentActor = GetAttachParentActor();
-	if (ParentActor)
-	{
-		ARitualAltar* PotentialAltar = Cast<ARitualAltar>(ParentActor);
-		if (PotentialAltar)
-		{
-			RitualAltar = PotentialAltar;
-			UE_LOG(LogTemp, Log, TEXT("[RitualPosition] %s found attached RitualAltar %s"), 
-				*GetName(), *RitualAltar->GetName());
-			return;
-		}
-	}
-	
-	// If not attached, try to find any altar in the world
-	TArray<AActor*> FoundAltars;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARitualAltar::StaticClass(), FoundAltars);
-	
-	if (FoundAltars.Num() > 0)
-	{
-		RitualAltar = Cast<ARitualAltar>(FoundAltars[0]);
-		UE_LOG(LogTemp, Log, TEXT("[RitualPosition] %s found world RitualAltar %s"), 
-			*GetName(), *RitualAltar->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[RitualPosition] %s couldn't find a RitualAltar!"), *GetName());
-	}
-}
 
 void ARitualPosition::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
 {
@@ -123,7 +96,7 @@ ARitualAltar* ARitualPosition::GetRitualAltarActor_Implementation() const
 
 void ARitualPosition::SendStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
 {
-	if (RitualAltar && RequestingCharacter)
+	if (RitualAltar && RequestingCharacter && HasAuthority())
 	{
 		RitualAltar->Server_StartRitual(RequestingCharacter);
 	}
@@ -137,6 +110,15 @@ void ARitualPosition::SendPlayerInput_Implementation(ACharacter* InputCharacter,
 	}
 }
 
+void ARitualPosition::SendPlayerOccupiedPosition_Implementation(ACharacter* InputCharacter)
+{
+	if (RitualAltar && InputCharacter && HasAuthority())
+	{
+		RitualAltar->Server_OccupyPosition(InputCharacter, this);
+	}
+}
+
+
 void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 {
 	Super::HandleInteraction(InteractingCharacter);
@@ -147,7 +129,7 @@ void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 	}
 	
 	// Call the ritual altar to handle occupation
-	RitualAltar->OccupyPosition(InteractingCharacter, this);
+	// RitualAltar->OccupyPosition(InteractingCharacter, this);
 }
 
 

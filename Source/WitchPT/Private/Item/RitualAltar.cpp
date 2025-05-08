@@ -106,9 +106,9 @@ void ARitualAltar::Server_StartRitual_Implementation(ACharacter* RequestingChara
 	bool bFoundInitiator = false;
 	
 	// First, check ritual positions
-	for (ARitualPosition* Position : RitualPositions)
+	for (ABaseInteractionPosition* Position : InteractionPositions)
 	{
-		if (Position && Position->IsOccupied())
+		if (Position && Position->IsOccuppied_Implementation())
 		{
 			ACharacter* OccupyingCharacter = Position->GetOccupyingCharacter();
 			if (OccupyingCharacter)
@@ -241,7 +241,7 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 		// Input successful
 		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Input CORRECT! Player: %s, Input: %s, Index: %d/%d"), 
 			*Character->GetName(), *InputTag.ToString(), CurrentSequenceIndex, InputSequence.Num()-1);
-	
+		HandleInputSuccess(Character);
 	
 	}
 	else
@@ -351,7 +351,7 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	ApplyAgePenalty(Player);
 	
 	// Send failure feedback
-	Multicast_OnInputFailed(Player);
+	Client_OnInputFailed(Player);
 	
 	// Check if corruption has reached the maximum
 	if (CorruptionAmount >= MaxCorruption)
@@ -525,9 +525,9 @@ bool ARitualAltar::IsPlayerEligibleForTurn(ACharacter* Player) const
 	
 	// Check if the player is still in a ritual position
 	bool bIsInPosition = false;
-	for (const ARitualPosition* Position : RitualPositions)
+	for (const ABaseInteractionPosition* Position : InteractionPositions)
 	{
-		if (Position && Position->IsOccupied() && Position->GetOccupyingCharacter() == Player)
+		if (Position && Position->IsOccuppied_Implementation() && Position->GetOccupyingCharacter() == Player)
 		{
 			bIsInPosition = true;
 			break;
@@ -537,7 +537,7 @@ bool ARitualAltar::IsPlayerEligibleForTurn(ACharacter* Player) const
 	// Check if the player has the OccupyingPosition tag
 	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Player);
-	bool bHasPositionTag = ASC && ASC->HasMatchingGameplayTag(WitchPtGameplayTags.State_Ritual_OccupyingPosition);
+	bool bHasPositionTag = ASC && ASC->HasMatchingGameplayTag(WitchPtGameplayTags.Character_State_Ritual_InPosition);
 	
 	return bIsInPosition && bHasPositionTag;
 }
@@ -672,7 +672,7 @@ ERitualInput ARitualAltar::ConvertTagToERitualInput(const FGameplayTag& Tag)
 
 
 
-void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
+void ARitualAltar::Client_OnInputFailed_Implementation(ACharacter* Character)
 {
 	if (Character)
 	{

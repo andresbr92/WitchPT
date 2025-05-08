@@ -72,9 +72,6 @@ public:
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
 	float DifficultyScalingMultiplier = 1.0f;
 	
-	// Positions for the ritual
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ritual|Setup")
-	TArray<TObjectPtr<ARitualPosition>> RitualPositions;
 
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnSequenceCompleted OnSequenceCompleted;
@@ -95,7 +92,7 @@ public:
 	
 	virtual void Multicast_OnInputSuccess_Implementation(ACharacter* Character) override;
 	
-	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;
+	virtual void Client_OnInputFailed_Implementation(ACharacter* Character) override;
 	
 	
 	UFUNCTION(NetMulticast, Reliable)

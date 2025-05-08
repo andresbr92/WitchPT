@@ -6,6 +6,9 @@
 #include "WitchPTCharacterBase.h"
 #include "Item/CauldronAltar.h"
 #include "Item/MechanicsInterface.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/WidgetComponent.h" // Necesitas un Widget Component
+#include "UObject/ConstructorHelpers.h"
 #include "WitchPTCharacter.generated.h"
 
 class ACauldronAltar;
@@ -23,13 +26,9 @@ public:
 	virtual void OnRep_PlayerState() override;
 	
 	virtual void InitAbilityActorInfo() override;
+	
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ritual")
-	TObjectPtr<ARitualPosition> RitualPosition;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Cauldron")
-	TObjectPtr<ACauldronAltar> CauldronAltar;
-
+	
 
 
 

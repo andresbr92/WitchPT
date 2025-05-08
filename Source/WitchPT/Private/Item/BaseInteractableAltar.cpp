@@ -4,6 +4,8 @@
 #include "Item/BaseInteractionPosition.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
+#include "Item/RitualAltar.h"
+#include "Item/RitualPosition.h"
 
 // Sets default values
 ABaseInteractableAltar::ABaseInteractableAltar()
@@ -48,15 +50,15 @@ void ABaseInteractableAltar::Tick(float DeltaTime)
     // Child classes will implement specific tick behavior
 }
 
-void ABaseInteractableAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
+void ABaseInteractableAltar::Server_OccupyPosition_Implementation(ACharacter* Player, ABaseInteractionPosition* Position)
 {
-    if (!Player || !Position || GetLocalRole() != ROLE_Authority)
+    if (!Player || !Position || !HasAuthority())
     {
         return;
     }
 
     // Set the position as occupied
-    Position->Server_SetOccupied(Player);
+    Position->SetOccupied(Player);
     
     // Track which position this player is at
     PlayerPositionTags.Add(Player, Position->GetPositionTag());
@@ -114,6 +116,11 @@ void ABaseInteractableAltar::CreateAltarPositions()
             // Note: Implement this method in CauldronPosition if needed
             // NewPosition->SetCauldronAltar(this);
             NewPosition->SetPositionTag(TagsPositions[positionIndex]);
+            ARitualPosition* RitualPosition = Cast<ARitualPosition>(NewPosition);
+            if (RitualPosition)
+            {
+                RitualPosition->SetRitualAltar(Cast<ARitualAltar>(this));
+            }
             positionIndex++;
 
             
@@ -165,23 +172,12 @@ void ABaseInteractableAltar::Multicast_OnInputSuccess_Implementation(ACharacter*
     UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Input success feedback for player %s"), *Character->GetName());
 }
 
-void ABaseInteractableAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
+void ABaseInteractableAltar::Client_OnInputFailed_Implementation(ACharacter* Character)
 {
     // Play failure feedback
     UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Input failed feedback for player %s"), *Character->GetName());
 }
 
-void ABaseInteractableAltar::Multicast_OnInteractionSucceeded_Implementation()
-{
-    // Play overall success effects
-    UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Interaction succeeded feedback"));
-}
-
-void ABaseInteractableAltar::Multicast_OnInteractionCatastrophicFail_Implementation()
-{
-    // Play catastrophic fail effects
-    UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Interaction catastrophically failed feedback"));
-}
 
 void ABaseInteractableAltar::OnRep_CurrentState()
 {

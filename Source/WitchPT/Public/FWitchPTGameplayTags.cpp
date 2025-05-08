@@ -10,17 +10,32 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Attributes_Primary_Age = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Vital.Age"));
 	GameplayTags.Attributes_Secondary_Mana = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Vital.Mana"));
 	GameplayTags.Attributes_Secondary_Stamina = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attributes.Vital.Stamina"));
-	GameplayTags.Ability_Sprint = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Sprint"));
-	GameplayTags.Ability_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Jump"));
-	GameplayTags.Ability_Crouch = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Crouch"));
-	GameplayTags.Character_State_Sprinting = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Sprinting"));
-	GameplayTags.Character_State_Crouching = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Crouching"));
+	GameplayTags.Character_State_Movement_Sprinting = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Movement.Sprinting"));
+	GameplayTags.Character_State_Movement_Crouching = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Movement.Crouching"));
+	GameplayTags.Character_State_Movement_MovingToPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Movement.MovingToPosition"));
 	GameplayTags.Character_State_Dead = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Dead"));
 	GameplayTags.Character_State_Aim = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Aim"));
 	GameplayTags.Character_State_Blocked = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Blocked"));
+	GameplayTags.Character_State_Cauldron_InPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.InPosition"));
 	GameplayTags.Character_State_Cauldron_Carrying = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.Carrying"));
 	GameplayTags.Character_State_Cauldron_Placing = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.Placing"));
+	GameplayTags.Character_State_Cauldron_InGame = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.InGame"));
+	GameplayTags.Character_State_Cauldron_BrewingPotion = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Cauldron.BrewingPotion"));
+	GameplayTags.Character_State_Ritual_InPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Ritual.InPosition"));
+	GameplayTags.Character_State_Ritual_InGame = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Character.State.Ritual.InGame"));
 
+	
+	GameplayTags.Ability_Sprint = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Sprint"));
+	GameplayTags.Ability_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Jump"));
+	GameplayTags.Ability_Crouch = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Crouch"));
+	GameplayTags.Ability_Ritual_GoToPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.GoToPosition"));
+	GameplayTags.Ability_Ritual_ParticipatingInAltar = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.ParticipatingInAltar"));
+	// Cauldron Abilities
+	GameplayTags.Ability_Cauldron_ParticipatingInCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.ParticipatingInCauldron"));
+	GameplayTags.Ability_Cauldron_CarryingCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.CarryingCauldron"));
+	GameplayTags.Ability_Cauldron_LookingForPlaceCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.LookingForPlaceCauldron"));
+	GameplayTags.Ability_Cauldron_SetInPlace = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.SetInPlace"));
+	GameplayTags.Ability_Cauldron_CancelSetInPlace = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.CancelSetInPlace"));
 
 	/**
 	 * Input Tags
@@ -59,11 +74,8 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Event_Ritual_CatastrophicFailure = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.CatastrophicFailure"));
 	GameplayTags.Event_Ritual_InputReceived = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.InputReceived"));
 	GameplayTags.Event_Ritual_TurnAdvanced = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Ritual.TurnAdvanced"));
-	GameplayTags.State_Ritual_OccupyingPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("State.Ritual.OccupyingPosition"));
 
-
-	GameplayTags.Event_Interaction_OccupyRitualPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Interaction.OccupyRitualPosition"));
-
+	
 	// Cauldron Tags
 	GameplayTags.Cauldron_State_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.Empty"));
 	GameplayTags.Cauldron_State_Full = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.Full"));
