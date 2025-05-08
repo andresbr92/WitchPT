@@ -52,9 +52,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
 	void SendStartCarryCauldronRequest(ACharacter* RequestingCharacter);
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	void SendStartPlacementPreview(ACharacter* RequestingCharacter);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
 	void SendUpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	void SendCancelPlacementPreview();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	void SendFinalizePlacement();
 
 
 	// /***

@@ -22,6 +22,7 @@ ACauldronAltar::ACauldronAltar()
     CauldronPhysicState = ECauldronPhysicState::Static;
     CarryingCharacter = nullptr;
     CurrentPlacementState = ECauldronPlacementState::None;
+    
 }
 
 void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
@@ -64,10 +65,32 @@ void ACauldronAltar::SendStartCarryCauldronRequest_Implementation(ACharacter* Re
 
 void ACauldronAltar::SendUpdatePlacementPreview_Implementation(const FVector& HitLocation, const FVector& HitNormal)
 {
+    
+        Client_UpdatePlacementPreview(HitLocation, HitNormal);
+    
+}
+
+void ACauldronAltar::SendCancelPlacementPreview_Implementation()
+{
     if (HasAuthority())
     {
-        Server_StartPlacementPreview(CarryingCharacter);
-        UpdatePlacementPreview(HitLocation, HitNormal);
+        Server_CancelPlacement();
+    }
+}
+
+void ACauldronAltar::SendFinalizePlacement_Implementation()
+{
+    if (HasAuthority())
+    {
+        Server_FinalizePlacement();
+    }
+}
+
+void ACauldronAltar::SendStartPlacementPreview_Implementation(ACharacter* RequestingCharacter)
+{
+    if (RequestingCharacter && HasAuthority())
+    {
+        Server_StartPlacementPreview(RequestingCharacter);
     }
 }
 
@@ -83,6 +106,7 @@ void ACauldronAltar::OnRep_CauldronPhysicState()
     {
         // Cauldron is in preview mode - update visuals
         SetActorEnableCollision(false);
+        
         ApplyPlacementPreviewMaterial();
     }
     else
@@ -125,6 +149,7 @@ void ACauldronAltar::Server_StartBrewingPotion_Implementation(ACharacter* Intera
 void ACauldronAltar::BeginPlay()
 {
     Super::BeginPlay();
+    SetReplicateMovement(true);
 
     
 }
@@ -375,7 +400,7 @@ void ACauldronAltar::Server_StartPlacementPreview_Implementation(ACharacter* Cha
     UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::Server_StartPlacementPreview: Cauldron in placement preview mode"));
 }
 
-void ACauldronAltar::UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal)
+void ACauldronAltar::Client_UpdatePlacementPreview_Implementation(const FVector& HitLocation, const FVector& HitNormal)
 {
     if (!IsInPlacementPreview() || !HasAuthority())
     {
@@ -406,6 +431,7 @@ void ACauldronAltar::UpdatePlacementPreview(const FVector& HitLocation, const FV
     PreviewRotation = AdjustedRotation;
     
     // Establecer la nueva posición y rotación
+    SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
     SetActorLocation(PreviewLocation);
     // SetActorRotation(PreviewRotation);
     
@@ -434,6 +460,7 @@ void ACauldronAltar::Server_FinalizePlacement_Implementation()
     // }
     
     // Establecer la posición final
+    SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
     SetActorLocation(PreviewLocation);
     SetActorRotation(PreviewRotation);
     
@@ -448,6 +475,7 @@ void ACauldronAltar::Server_FinalizePlacement_Implementation()
     CarryingCharacter = nullptr;
     CurrentPlacementState = ECauldronPlacementState::None;
     CauldronPhysicState = ECauldronPhysicState::Static;
+    // Reestablecer la escala normal
 
     OnECauldronPhysicStateChanged.Broadcast(ECauldronPhysicState::Static);
 

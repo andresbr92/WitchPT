@@ -77,7 +77,10 @@ public:
     // --- New functions for interaction ---
     virtual void SendStartBrewingPotionRequest_Implementation(ACharacter* RequestingCharacter) override;
     virtual void SendStartCarryCauldronRequest_Implementation(ACharacter* RequestingCharacter) override;
+    virtual void SendStartPlacementPreview_Implementation(ACharacter* RequestingCharacter) override;
     virtual void SendUpdatePlacementPreview_Implementation(const FVector& HitLocation, const FVector& HitNormal) override;
+    virtual void SendCancelPlacementPreview_Implementation() override;
+    virtual void SendFinalizePlacement_Implementation() override;
     
     /**
      * Function called when the player performs a quick interaction with the cauldron
@@ -183,8 +186,9 @@ public:
      * @param HitLocation Ubicación donde se desea colocar el caldero
      * @param HitNormal Normal de la superficie donde se colocará el caldero
      */
-    UFUNCTION()
-    void UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+    UFUNCTION(NetMulticast, Unreliable)
+    void Client_UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+  
     
     /**
      * Finaliza el modo de previsualización y coloca el caldero en la posición actual
