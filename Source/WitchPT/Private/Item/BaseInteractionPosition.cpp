@@ -40,7 +40,7 @@ void ABaseInteractionPosition::GatherInteractionOptions(const FInteractionQuery&
     Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
 }
 
-bool ABaseInteractionPosition::IsOccuppied_Implementation() const
+bool ABaseInteractionPosition::IsOccupied() const
 {
     return bIsOccupied;
 }

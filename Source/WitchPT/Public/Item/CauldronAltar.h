@@ -74,10 +74,7 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
-    // --- Modified functions for interaction without RPC ---
-
-    
-
+  
     
     // Funciones normales que reemplazan a los RPCs
     void StartBrewingPotion(ACharacter* InteractingCharacter);
@@ -165,7 +162,6 @@ private:
     UPROPERTY()
     TArray<UMaterialInterface*> OriginalMaterials;
     
-    // Aplica el material de previsualización según el estado de colocación
     
     // Restaura los materiales originales después de salir del modo previsualización
     void RestoreOriginalMaterials();

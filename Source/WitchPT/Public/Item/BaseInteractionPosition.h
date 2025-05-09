@@ -21,7 +21,7 @@ class ABaseInteractableAltar;
  * Base class for interaction positions (rituals, cauldrons, etc)
  */
 UCLASS(Abstract)
-class WITCHPT_API ABaseInteractionPosition : public AItem, public IMechanicsInterface
+class WITCHPT_API ABaseInteractionPosition : public AItem
 {
     GENERATED_BODY()
 
@@ -46,7 +46,7 @@ public:
     UFUNCTION(BlueprintPure, Category = "Interaction")
     FGameplayTag GetPositionTag() const { return PositionTag; }
     //~ End Getters
-    virtual bool IsOccuppied_Implementation() const override;
+    virtual bool IsOccupied() const;
 
     //~ Setters
     UFUNCTION()

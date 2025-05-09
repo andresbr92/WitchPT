@@ -12,6 +12,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/Components/WitchPTMechanicComponent.h" // Required for new RPC calls
 
 // Sets default values
 ARitualPosition::ARitualPosition()
@@ -85,7 +86,7 @@ void ARitualPosition::GatherInteractionOptions(const FInteractionQuery& Interact
 	// }
 }
 
-ARitualAltar* ARitualPosition::GetRitualAltarActor_Implementation() const
+ARitualAltar* ARitualPosition::GetRitualAltarActor() const
 {
 	if (RitualAltar)
 	{
@@ -93,31 +94,6 @@ ARitualAltar* ARitualPosition::GetRitualAltarActor_Implementation() const
 	}
 	return nullptr;
 }
-
-void ARitualPosition::SendStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
-{
-	if (RitualAltar && RequestingCharacter && HasAuthority())
-	{
-		RitualAltar->Server_StartRitual(RequestingCharacter);
-	}
-}
-
-void ARitualPosition::SendPlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
-{
-	if (RitualAltar && InputCharacter && InputTag.IsValid() && HasAuthority())
-	{
-		RitualAltar->Server_HandlePlayerInput(InputCharacter, InputTag);
-	}
-}
-
-void ARitualPosition::SendPlayerOccupiedPosition_Implementation(ACharacter* InputCharacter)
-{
-	if (RitualAltar && InputCharacter && HasAuthority())
-	{
-		RitualAltar->Server_OccupyPosition(InputCharacter, this);
-	}
-}
-
 
 void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 {
@@ -128,8 +104,6 @@ void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 		return;
 	}
 	
-	// Call the ritual altar to handle occupation
-	// RitualAltar->OccupyPosition(InteractingCharacter, this);
 }
 
 

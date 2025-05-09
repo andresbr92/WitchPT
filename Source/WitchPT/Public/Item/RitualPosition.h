@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Item/BaseInteractionPosition.h"
 #include "GameplayTagContainer.h" // Added for FGameplayTag
-#include "MechanicsInterface.h"
+#include "MechanicsInterface.h" // For GetRitualAltarActor & IsOccuppied if still needed
 #include "RitualPosition.generated.h"
 
 // Forward Declarations
@@ -35,15 +35,13 @@ public:
 	virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
 	//~ End IInteraction Interface
 	
-	
-	virtual ARitualAltar* GetRitualAltarActor_Implementation() const override;
-	virtual void SendStartRitualRequest_Implementation(ACharacter* RequestingCharacter) override;
-	virtual void SendPlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag) override;
-	virtual void SendPlayerOccupiedPosition_Implementation(ACharacter* InputCharacter) override;
-	
-	
+	// Still part of IMechanicsInterface if these are general queries
+	UFUNCTION(BlueprintCallable)
+	virtual ARitualAltar* GetRitualAltarActor() const;
+    // IsOccuppied is likely part of BaseInteractionPosition or IMechanicsInterface directly, ensure it's handled.
+    // virtual bool IsOccuppied() const override; // Example if it was from IMechanicsInterface
+
 	void SetRitualAltar(ARitualAltar* Altar) { RitualAltar = Altar; }
-	//~ End Setters
 
 protected:
 	// Reference to the parent altar

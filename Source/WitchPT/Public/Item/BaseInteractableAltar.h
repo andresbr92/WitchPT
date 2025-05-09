@@ -81,8 +81,7 @@ public:
     TArray<FPlayerPositionTagEntry> PlayerPositionTags;
     
     // Basic interaction methods
-    UFUNCTION(Server, Reliable)
-    void Server_OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
+    void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
 
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
     virtual void CreateAltarPositions();

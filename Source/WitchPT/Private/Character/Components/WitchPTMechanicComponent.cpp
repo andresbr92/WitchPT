@@ -5,6 +5,7 @@
 #include "Item/CauldronAltar.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
+#include "Item/RitualAltar.h"
 
 // Sets default values for this component's properties
 UWitchPTMechanicComponent::UWitchPTMechanicComponent()
@@ -137,6 +138,18 @@ void UWitchPTMechanicComponent::RequestFinalizePlacement_Implementation(ACauldro
 		TargetAltar->FinalizePlacement();
 	}
 
+}
+
+void UWitchPTMechanicComponent::RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar,
+	ABaseInteractionPosition* Position)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		TargetAltar->OccupyPosition(Character, Position);
+	}
+	
 }
 
 

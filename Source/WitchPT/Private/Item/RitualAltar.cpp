@@ -86,7 +86,7 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 }
 
 
-void ARitualAltar::Server_StartRitual_Implementation(ACharacter* RequestingCharacter)
+void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
 {
 	if (!HasAuthority() || !RequestingCharacter)
 	{
@@ -108,7 +108,7 @@ void ARitualAltar::Server_StartRitual_Implementation(ACharacter* RequestingChara
 	// First, check ritual positions
 	for (ABaseInteractionPosition* Position : InteractionPositions)
 	{
-		if (Position && Position->IsOccuppied_Implementation())
+		if (Position && Position->IsOccupied())
 		{
 			ACharacter* OccupyingCharacter = Position->GetOccupyingCharacter();
 			if (OccupyingCharacter)
@@ -197,7 +197,7 @@ void ARitualAltar::GenerateInputSequence()
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Generated sequence with %d inputs: %s"), InputSequence.Num(), *SequenceStr);
 }
 
-void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character, const FGameplayTag& InputTag)
+void ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag)
 {
 	if (!Character || !HasAuthority())
 	{
@@ -536,7 +536,7 @@ bool ARitualAltar::IsPlayerEligibleForTurn(ACharacter* Player) const
 	bool bIsInPosition = false;
 	for (const ABaseInteractionPosition* Position : InteractionPositions)
 	{
-		if (Position && Position->IsOccuppied_Implementation() && Position->GetOccupyingCharacter() == Player)
+		if (Position && Position->IsOccupied() && Position->GetOccupyingCharacter() == Player)
 		{
 			bIsInPosition = true;
 			break;

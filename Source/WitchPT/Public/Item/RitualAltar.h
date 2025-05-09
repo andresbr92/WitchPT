@@ -77,12 +77,9 @@ public:
 	FOnSequenceCompleted OnSequenceCompleted;
 	
 	
-	// RPCs for client-server communication
-	UFUNCTION(Server, Reliable)
-	void Server_StartRitual(ACharacter* RequestingCharacter);
-	
-	UFUNCTION(Server, Reliable)
-	void Server_HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
+	// Functions to be called by WitchPTMechanicComponent
+	void StartRitual(ACharacter* RequestingCharacter);
+	void HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
 	
 	virtual void Multicast_OnInputSuccess_Implementation(ACharacter* Character) override;
 	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;

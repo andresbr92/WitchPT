@@ -52,7 +52,7 @@ void ABaseInteractableAltar::Tick(float DeltaTime)
     // Child classes will implement specific tick behavior
 }
 
-void ABaseInteractableAltar::Server_OccupyPosition_Implementation(ACharacter* Player, ABaseInteractionPosition* Position)
+void ABaseInteractableAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
 {
     if (!Player || !Position || !HasAuthority())
     {
@@ -60,6 +60,11 @@ void ABaseInteractableAltar::Server_OccupyPosition_Implementation(ACharacter* Pl
     }
 
     // Set the position as occupied
+    if (Position->IsOccupied())
+    {
+        //broadcast
+        return;
+    }
     Position->SetOccupied(Player);
 
     // Track which position this player is at

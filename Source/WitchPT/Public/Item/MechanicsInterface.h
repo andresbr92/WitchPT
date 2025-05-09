@@ -7,6 +7,7 @@
 #include "UObject/Interface.h"
 #include "MechanicsInterface.generated.h"
 
+class ABaseInteractionPosition;
 class ACauldronAltar;
 class ARitualPosition;
 class ARitualAltar;
@@ -42,6 +43,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
 	void RequestStartRitual(ARitualAltar* TargetAltar);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
+	void RequestOccupyPosition(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position);
+
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
 	void RequestStartBrewingPotion(ACauldronAltar* TargetAltar);
@@ -62,109 +66,25 @@ public:
 	void RequestFinalizePlacement(ACauldronAltar* TargetAltar);
 
 	
-	
-	
-	
-	
-	
-	// LEGACY
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
+	// General Queries that might be implemented by positions or other interactables
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Mechanics|Query")
 	ARitualAltar* GetRitualAltarActor() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
-	void SendStartRitualRequest(ACharacter* RequestingCharacter);
-
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
-	void SendPlayerInput(ACharacter* InputCharacter, const FGameplayTag& InputTag);
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
-	void SendPlayerOccupiedPosition(ACharacter* InputCharacter);
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Queyr")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Mechanics|Query")
 	bool IsOccuppied() const;
 
 
-	// CAULDRON IMPLEMENTATION
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
-	void SendStartBrewingPotionRequest(ACharacter* RequestingCharacter);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
-	void SendStartCarryCauldronRequest(ACharacter* RequestingCharacter);
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
-	void SendStartPlacementPreview(ACharacter* RequestingCharacter);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
-	void SendUpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
-	void SendCancelPlacementPreview();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
-	void SendFinalizePlacement();
-
-
-	// /***
-	//  * Ritual Altar interface functions
-	//  */
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
-	// void HandleStartRitualRequest(ACharacter* RequestingCharacter);
-	//
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
-	// void HandlePlayerInput(ACharacter* InputCharacter, const FGameplayTag& InputTag);
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
-	// void HandleSetRitualPosition(ARitualPosition* InRitualPosition);
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
-	// ARitualPosition* GetRitualPosition() const;
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
-	// void GetRitualPositionTag(FGameplayTag& OutPositionTag) const;
-	//
-	//
-	//
-	//
-	//
-	// /**
-	//  * Ritual Position interface functions
-	//  */
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
-	// bool IsRitualPositionOccupied() const;
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Interaction")
-	// void SetRitualPositionOccupied(ACharacter* OccupyingCharacter);
-	//
-	//
-	// /**
-	//  * Cauldron Altar interface functions
-	//  */
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
-	// ACauldronAltar* GetCauldronAltar();
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
-	// void HandleSetCauldronAltar(ACauldronAltar* InCauldronAltar);
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
-	// void HandleRemoveCauldronAltar();
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
-	// void HandleStartBrewingPotion(ACharacter* InteractingCharacter);
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
-	// void HandleStartCarryCauldron(ACharacter* InteractingCharacter);
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
-	// void HandleStopBrewingPotion(ACharacter* InteractingCharacter);
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Interaction")
-	// void HandleStopCarryCauldron(ACharacter* InteractingCharacter);
-
-
-	
-	
-	
+	// CAULDRON LEGACY - These were for CauldronAltar to implement, now handled by WitchPTMechanicComponent
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
+	// void SendStartBrewingPotionRequest(ACharacter* RequestingCharacter);
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
+	// void SendStartCarryCauldronRequest(ACharacter* RequestingCharacter);
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
+	// void SendStartPlacementPreview(ACharacter* RequestingCharacter);
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
+	// void SendUpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
+	// void SendCancelPlacementPreview();
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
+	// void SendFinalizePlacement();
 };
