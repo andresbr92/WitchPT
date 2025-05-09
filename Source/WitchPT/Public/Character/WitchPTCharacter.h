@@ -11,6 +11,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "WitchPTCharacter.generated.h"
 
+class UWitchPTMechanicComponent;
 class ACauldronAltar;
 class ARitualPosition;
 
@@ -26,6 +27,8 @@ public:
 	virtual void OnRep_PlayerState() override;
 	
 	virtual void InitAbilityActorInfo() override;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UWitchPTMechanicComponent> MechanicComponent;
 	
 
 	

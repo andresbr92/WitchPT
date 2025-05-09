@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "WitchPTAbilitySystemLibrary.generated.h"
 
+class IMechanicsInterface;
 /**
  * 
  */
@@ -13,4 +14,6 @@ UCLASS()
 class WITCHPT_API UWitchPTAbilitySystemLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+	UFUNCTION(BlueprintPure, Category = "Ability|Mechanics", meta = (DisplayName = "Get Mechanics Interface", DeterminesOutputType = "IMechanicsInterface"))
+	static TScriptInterface<IMechanicsInterface> GetMechanicsInterface(AActor* Actor);
 };

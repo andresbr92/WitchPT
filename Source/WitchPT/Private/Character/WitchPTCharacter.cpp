@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAttributeSet.h"
+#include "Character/Components/WitchPTMechanicComponent.h"
 #include "Item/RitualAltar.h"
 #include "Item/RitualPosition.h"
 #include "Player/WitchPTPlayerState.h"
@@ -17,6 +18,8 @@ AWitchPTCharacter::AWitchPTCharacter(const class FObjectInitializer& ObjectIniti
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	// Initialize the MechanicComponent
+	MechanicComponent = CreateDefaultSubobject<UWitchPTMechanicComponent>(TEXT("MechanicComponent"));
 	
 }
 
