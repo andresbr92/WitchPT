@@ -80,15 +80,15 @@ void ACauldronAltar::SendCancelPlacementPreview_Implementation()
 
 void ACauldronAltar::SendFinalizePlacement_Implementation()
 {
-    if (HasAuthority())
-    {
+    
         Server_FinalizePlacement();
-    }
+    
 }
 
 void ACauldronAltar::SendStartPlacementPreview_Implementation(ACharacter* RequestingCharacter)
 {
-    if (RequestingCharacter && HasAuthority())
+    
+    if (RequestingCharacter)
     {
         Server_StartPlacementPreview(RequestingCharacter);
     }
@@ -134,12 +134,12 @@ void ACauldronAltar::Server_StartBrewingPotion_Implementation(ACharacter* Intera
         return;
     }
     
-    // If the cauldron is being carried by this character, detach it
-    if (IsBeingCarried() && CarryingCharacter == InteractingCharacter)
-    {
-        Server_StartPlacementPreview(InteractingCharacter);
-        return;
-    }
+    // // If the cauldron is being carried by this character, detach it
+    // if (IsBeingCarried() && CarryingCharacter == InteractingCharacter)
+    // {
+    //     Server_StartPlacementPreview(InteractingCharacter);
+    //     return;
+    // }
     
     // Otherwise, try to position the character for brewing
     PositionCharacterForBrewing(InteractingCharacter);
@@ -347,7 +347,7 @@ ABaseInteractionPosition* ACauldronAltar::GetAvailableBrewingPosition(ACharacter
 
 void ACauldronAltar::Server_StartPlacementPreview_Implementation(ACharacter* Character)
 {
-    if (!Character || !HasAuthority() || Character != CarryingCharacter)
+    if (!Character || Character != CarryingCharacter)
     {
         return;
     }
@@ -402,7 +402,7 @@ void ACauldronAltar::Server_StartPlacementPreview_Implementation(ACharacter* Cha
 
 void ACauldronAltar::Client_UpdatePlacementPreview_Implementation(const FVector& HitLocation, const FVector& HitNormal)
 {
-    if (!IsInPlacementPreview() || !HasAuthority())
+    if (!IsInPlacementPreview())
     {
         return;
     }
@@ -429,11 +429,9 @@ void ACauldronAltar::Client_UpdatePlacementPreview_Implementation(const FVector&
     }
     
     PreviewRotation = AdjustedRotation;
-    
-    // Establecer la nueva posición y rotación
     SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
     SetActorLocation(PreviewLocation);
-    // SetActorRotation(PreviewRotation);
+    
     
     // Verificar si la posición es válida
     CurrentPlacementState = IsPlacementValid() ? ECauldronPlacementState::Valid : ECauldronPlacementState::Invalid;
@@ -483,10 +481,12 @@ void ACauldronAltar::Server_FinalizePlacement_Implementation()
     
     // Crear posiciones de elaboración alrededor del caldero
     CreateAltarPositions();
+
+    // Multicast finalizar placement
+    // Multicast_FinalizePlacement(this);
     
+
     UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::Server_FinalizePlacement: Cauldron placed successfully"));
-    
-    return;
 }
 
 void ACauldronAltar::Server_CancelPlacement_Implementation()
@@ -514,6 +514,14 @@ void ACauldronAltar::Server_CancelPlacement_Implementation()
     }
     
     UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::Server_CancelPlacement: Placement canceled"));
+}
+
+void ACauldronAltar::Multicast_FinalizePlacement_Implementation(ACauldronAltar* Cauldron)
+{
+    
+
+    // Reset de scale for all clients
+    Cauldron->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
 }
 
 ECauldronPlacementState ACauldronAltar::GetPlacementState() const

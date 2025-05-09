@@ -196,6 +196,8 @@ public:
      */
     UFUNCTION(Server, Reliable)
     void Server_FinalizePlacement();
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_FinalizePlacement(ACauldronAltar* Cauldron);
     
     /**
      * Cancela el modo de previsualización y vuelve a adjuntar el caldero al personaje

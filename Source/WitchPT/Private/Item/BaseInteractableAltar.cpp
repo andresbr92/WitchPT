@@ -147,10 +147,7 @@ void ABaseInteractableAltar::CreateAltarPositions()
             
             UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CreateBrewingPositions: Created position at %s"), *Location.ToString());
         }
-        
-      
     }
-   
 }
 
 
