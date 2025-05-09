@@ -74,7 +74,7 @@ public:
     
     
     // Positions for interaction
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction|Setup")
+    UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Interaction|Setup")
     TArray<TObjectPtr<ABaseInteractionPosition>> InteractionPositions;
 
     UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Interaction|Setup")
@@ -90,6 +90,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
     virtual void DestroyAltarPositions();
+
     
     
     // Multicast RPCs for notifications

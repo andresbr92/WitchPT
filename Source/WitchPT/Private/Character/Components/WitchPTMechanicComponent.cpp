@@ -2,102 +2,142 @@
 
 
 #include "Character/Components/WitchPTMechanicComponent.h"
-
+#include "Item/CauldronAltar.h"
+#include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
 
 // Sets default values for this component's properties
 UWitchPTMechanicComponent::UWitchPTMechanicComponent()
 {
-
+	// Set this component to be initialized when the game starts, and to be ticked every frame.
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
-
-
 }
 
 void UWitchPTMechanicComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	// Agregar propiedades replicadas aquí si es necesario
 }
 
-ARitualAltar* UWitchPTMechanicComponent::GetRitualAltarActor_Implementation() const
-{
-	return IMechanicsInterface::GetRitualAltarActor_Implementation();
-}
-
-void UWitchPTMechanicComponent::SendStartRitualRequest_Implementation(ACharacter* RequestingCharacter)
-{
-	IMechanicsInterface::SendStartRitualRequest_Implementation(RequestingCharacter);
-}
-
-void UWitchPTMechanicComponent::SendPlayerInput_Implementation(ACharacter* InputCharacter, const FGameplayTag& InputTag)
-{
-	IMechanicsInterface::SendPlayerInput_Implementation(InputCharacter, InputTag);
-}
-
-void UWitchPTMechanicComponent::SendPlayerOccupiedPosition_Implementation(ACharacter* InputCharacter)
-{
-	IMechanicsInterface::SendPlayerOccupiedPosition_Implementation(InputCharacter);
-}
-
-bool UWitchPTMechanicComponent::IsOccuppied_Implementation() const
-{
-	return IMechanicsInterface::IsOccuppied_Implementation();
-}
-
-void UWitchPTMechanicComponent::SendStartBrewingPotionRequest_Implementation(ACharacter* RequestingCharacter)
-{
-	if (GetOwner()->HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("RequestingCharacter has authority"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("RequestingCharacter does not have authority"));
-	}
-}
-
-void UWitchPTMechanicComponent::SendStartCarryCauldronRequest_Implementation(ACharacter* RequestingCharacter)
-{
-	IMechanicsInterface::SendStartCarryCauldronRequest_Implementation(RequestingCharacter);
-}
-
-void UWitchPTMechanicComponent::SendStartPlacementPreview_Implementation(ACharacter* RequestingCharacter)
-{
-	IMechanicsInterface::SendStartPlacementPreview_Implementation(RequestingCharacter);
-}
-
-void UWitchPTMechanicComponent::SendUpdatePlacementPreview_Implementation(const FVector& HitLocation,
-	const FVector& HitNormal)
-{
-	IMechanicsInterface::SendUpdatePlacementPreview_Implementation(HitLocation, HitNormal);
-}
-
-void UWitchPTMechanicComponent::SendCancelPlacementPreview_Implementation()
-{
-	IMechanicsInterface::SendCancelPlacementPreview_Implementation();
-}
-
-void UWitchPTMechanicComponent::SendFinalizePlacement_Implementation()
-{
-	IMechanicsInterface::SendFinalizePlacement_Implementation();
-}
-
-
+// Called when the game starts
 void UWitchPTMechanicComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 	
 }
 
-
-
+// Called every frame
 void UWitchPTMechanicComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
 
+// --- RITUAL IMPLEMENTATION ---
+void UWitchPTMechanicComponent::RequestStartBrewingPotion_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar)
+	{
+		return;
+	}
+
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (!Character)
+	{
+		return;
+	}
+	
+	if (Character->HasAuthority())
+	{
+		TargetAltar->StartBrewingPotion(Character);
+	}
+}
+
+void UWitchPTMechanicComponent::RequestStartCarryCauldron_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar)
+	{
+		return;
+	}
+
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (!Character)
+	{
+		return;
+	}
+	
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		// Si estamos en el servidor, llamamos directamente
+		TargetAltar->StartCarryCauldron(Character);
+	}
+	
+}
+
+void UWitchPTMechanicComponent::RequestStartPlacementPreview_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar)
+	{
+		return;
+	}
+
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (!Character)
+	{
+		return;
+	}
+	
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		// Si estamos en el servidor, llamamos directamente
+		TargetAltar->StartPlacementPreview(Character);
+	}
+}
+
+void UWitchPTMechanicComponent::RequestUpdatePlacementPreview_Implementation(ACauldronAltar* TargetAltar, const FVector& HitLocation, const FVector& HitNormal)
+{
+	if (!TargetAltar)
+	{
+		return;
+	}
+	
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		// Si estamos en el servidor, llamamos directamente
+		TargetAltar->UpdatePlacementPreview(HitLocation, HitNormal);
+	}
+}
+
+void UWitchPTMechanicComponent::RequestCancelPlacementPreview_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar)
+	{
+		return;
+	}
+	
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		// Si estamos en el servidor, llamamos directamente
+		TargetAltar->CancelPlacement();
+	}
+	
+}
+
+void UWitchPTMechanicComponent::RequestFinalizePlacement_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar)
+	{
+		return;
+	}
+	
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		// Si estamos en el servidor, llamamos directamente
+		TargetAltar->FinalizePlacement();
+	}
 
 }
+
+
 

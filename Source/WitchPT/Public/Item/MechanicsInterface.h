@@ -10,6 +10,8 @@
 class ACauldronAltar;
 class ARitualPosition;
 class ARitualAltar;
+class ACharacter;
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UMechanicsInterface : public UInterface
@@ -28,6 +30,44 @@ class WITCHPT_API IMechanicsInterface
 	
 public:
 	//RITUAL IMPLEMENTATION
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
+	void RequestStartSequence(int32 SequenceIndex);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
+	void RequestMoveToRitual(ACauldronAltar* TargetAltar);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
+	void RequestRitualInput(ARitualAltar* TargetAltar, const FGameplayTag& InputTag);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
+	void RequestStartRitual(ARitualAltar* TargetAltar);
+
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestStartBrewingPotion(ACauldronAltar* TargetAltar);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestStartCarryCauldron(ACauldronAltar* TargetAltar);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestStartPlacementPreview(ACauldronAltar* TargetAltar);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestUpdatePlacementPreview(ACauldronAltar* TargetAltar, const FVector& HitLocation, const FVector& HitNormal);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestCancelPlacementPreview(ACauldronAltar* TargetAltar);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestFinalizePlacement(ACauldronAltar* TargetAltar);
+
+	
+	
+	
+	
+	
+	
+	// LEGACY
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Ritual Query")
 	ARitualAltar* GetRitualAltarActor() const;
@@ -47,22 +87,22 @@ public:
 
 
 	// CAULDRON IMPLEMENTATION
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
 	void SendStartBrewingPotionRequest(ACharacter* RequestingCharacter);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
 	void SendStartCarryCauldronRequest(ACharacter* RequestingCharacter);
 	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
 	void SendStartPlacementPreview(ACharacter* RequestingCharacter);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
 	void SendUpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
 	void SendCancelPlacementPreview();
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Cauldron Query")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cauldron Query")
 	void SendFinalizePlacement();
 
 

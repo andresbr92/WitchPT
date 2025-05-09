@@ -74,93 +74,58 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
-    // --- New functions for interaction ---
-    virtual void SendStartBrewingPotionRequest_Implementation(ACharacter* RequestingCharacter) override;
-    virtual void SendStartCarryCauldronRequest_Implementation(ACharacter* RequestingCharacter) override;
-    virtual void SendStartPlacementPreview_Implementation(ACharacter* RequestingCharacter) override;
-    virtual void SendUpdatePlacementPreview_Implementation(const FVector& HitLocation, const FVector& HitNormal) override;
-    virtual void SendCancelPlacementPreview_Implementation() override;
-    virtual void SendFinalizePlacement_Implementation() override;
-    
-    void LocalStartBrewingPotion(ACharacter* InteractingCharacter);
-    
-    UFUNCTION(Server, Reliable)
-    void Server_StartBrewingPotion(ACharacter* InteractingCharacter);
+    // --- Modified functions for interaction without RPC ---
 
     
-   
-    UFUNCTION(Server, Reliable)
-    void Server_StartCarryCauldron(ACharacter* InteractingCharacter);
+
     
+    // Funciones normales que reemplazan a los RPCs
+    void StartBrewingPotion(ACharacter* InteractingCharacter);
+    void StartCarryCauldron(ACharacter* InteractingCharacter);
+    void StartPlacementPreview(ACharacter* Character);
+    void UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+    void FinalizePlacement();
+    void CancelPlacement();
+
+    UFUNCTION(Client, Reliable)
+    void Client_OnCharacterPositioned();
     
     UFUNCTION()
     void AttachToCharacter(ACharacter* Character);
     
-   
-    UFUNCTION(Server, Reliable)
-    void Server_DetachFromCharacter(ACharacter* Character);
-    
+    UFUNCTION()
+    void DetachFromCharacter(ACharacter* Character);
     
     UFUNCTION()
     void PositionCharacterForBrewing(ACharacter* Character);
     
-    
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     bool CanBePickedUp() const;
-    
     
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     bool IsBeingCarried() const;
     
-    
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     ACharacter* GetCarryingCharacter() const;
     
-  
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
     ABaseInteractionPosition* GetAvailableBrewingPosition(ACharacter* Character);
 
     UFUNCTION()
     void OnRep_CauldronPhysicState();
     
-    // -- New functions for placement preview --
+    // -- For placement preview functions --
     //Delegate
     UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
     FOnECauldronPhysicStateChanged OnECauldronPhysicStateChanged;
     UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
     FOnCharacterPositioned OnCharacterPositioned;
     
-    /**
-     * Activa el modo de previsualización para colocar el caldero
-     * @param Character El personaje que está colocando el caldero
-     */
-    UFUNCTION(Server, Reliable)
-    void Server_StartPlacementPreview(ACharacter* Character);
-    
-   
-    UFUNCTION(NetMulticast, Unreliable)
-    void Client_UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
-  
-    
-   
-    UFUNCTION(Server, Reliable)
-    void Server_FinalizePlacement();
-    UFUNCTION(NetMulticast, Reliable)
-    void Multicast_FinalizePlacement(ACauldronAltar* Cauldron);
-    
-    
-    UFUNCTION(Server, Reliable)
-    void Server_CancelPlacement();
-    
-   
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     ECauldronPlacementState GetPlacementState() const;
    
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     bool IsInPlacementPreview() const;
-    
-
-    
     
     // Material a aplicar durante la previsualización
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
@@ -177,6 +142,7 @@ public:
     // Altura máxima permitida para alineación con el suelo
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
     float MaxGroundAlignmentHeight = 20.0f;
+    void ApplyPlacementPreviewMaterial();
     
 private:
     // Character currently carrying the cauldron
@@ -200,7 +166,6 @@ private:
     TArray<UMaterialInterface*> OriginalMaterials;
     
     // Aplica el material de previsualización según el estado de colocación
-    void ApplyPlacementPreviewMaterial();
     
     // Restaura los materiales originales después de salir del modo previsualización
     void RestoreOriginalMaterials();
@@ -213,4 +178,11 @@ private:
     
     // Rotación guardada para la previsualización
     FRotator PreviewRotation;
+    
+    // RPCs ahora son funciones internas para responder a llamadas del MechanicComponent
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_FinalizePlacement();
+    
+    UFUNCTION(Client, Unreliable)
+    void Client_UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
 }; 

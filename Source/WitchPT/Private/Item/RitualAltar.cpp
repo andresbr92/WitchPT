@@ -254,6 +254,8 @@ void ARitualAltar::Server_HandlePlayerInput_Implementation(ACharacter* Character
 	}
 }
 
+
+
 void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character)
 {
 	

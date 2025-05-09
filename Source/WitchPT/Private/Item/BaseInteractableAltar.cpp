@@ -31,6 +31,7 @@ void ABaseInteractableAltar::GetLifetimeReplicatedProps(TArray<class FLifetimePr
     DOREPLIFETIME(ABaseInteractableAltar, CurrentState);
     DOREPLIFETIME(ABaseInteractableAltar, ParticipatingPlayers);
     DOREPLIFETIME(ABaseInteractableAltar, PlayerPositionTags);
+    DOREPLIFETIME(ABaseInteractableAltar, InteractionPositions);
   
 }
 
@@ -173,6 +174,7 @@ void ABaseInteractableAltar::DestroyAltarPositions()
     
     UE_LOG(LogTemp, Log, TEXT("Altar::DestroyAltarPositions: All altar positions destroyed"));
 }
+
 
 void ABaseInteractableAltar::Multicast_OnStateChanged_Implementation(EInteractionState NewState)
 {
