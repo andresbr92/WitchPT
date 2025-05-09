@@ -48,11 +48,20 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 
 void ACauldronAltar::SendStartBrewingPotionRequest_Implementation(ACharacter* RequestingCharacter)
 {
-    if (RequestingCharacter && HasAuthority())
+    
+    if (!RequestingCharacter->HasAuthority())
+    {
+        
+        
+    }
+    else
     {
         Server_StartBrewingPotion(RequestingCharacter);   
     }
     
+}
+void ACauldronAltar::LocalStartBrewingPotion(ACharacter* InteractingCharacter)
+{
 }
 
 void ACauldronAltar::SendStartCarryCauldronRequest_Implementation(ACharacter* RequestingCharacter)
@@ -84,6 +93,8 @@ void ACauldronAltar::SendFinalizePlacement_Implementation()
         Server_FinalizePlacement();
     
 }
+
+
 
 void ACauldronAltar::SendStartPlacementPreview_Implementation(ACharacter* RequestingCharacter)
 {

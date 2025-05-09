@@ -97,7 +97,6 @@ void ABaseInteractableAltar::CreateAltarPositions()
 {
     if (!HasAuthority() || !PositionClass)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::CreateBrewingPositions: Missing authority or position class"));
         return;
     }
     

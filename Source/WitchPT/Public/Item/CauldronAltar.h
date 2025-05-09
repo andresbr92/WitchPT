@@ -82,85 +82,41 @@ public:
     virtual void SendCancelPlacementPreview_Implementation() override;
     virtual void SendFinalizePlacement_Implementation() override;
     
-    /**
-     * Function called when the player performs a quick interaction with the cauldron
-     * This will position the player for potion making
-     * @param InteractingCharacter The character that is interacting with the cauldron
-     */
+    void LocalStartBrewingPotion(ACharacter* InteractingCharacter);
+    
     UFUNCTION(Server, Reliable)
     void Server_StartBrewingPotion(ACharacter* InteractingCharacter);
 
     
-    /**
-     * Function called when the player performs a hold interaction with the cauldron
-     * This will allow the player to carry the cauldron on their back
-     * @param InteractingCharacter The character that is interacting with the cauldron
-     */
+   
     UFUNCTION(Server, Reliable)
     void Server_StartCarryCauldron(ACharacter* InteractingCharacter);
     
-    /**
-     * Attaches the cauldron to the player's back
-     * @param Character The character to attach the cauldron to
-     */
+    
     UFUNCTION()
     void AttachToCharacter(ACharacter* Character);
     
-    /**
-     * Detaches the cauldron from the player and places it in the world
-     * @param Character The character the cauldron is currently attached to
-     */
+   
     UFUNCTION(Server, Reliable)
     void Server_DetachFromCharacter(ACharacter* Character);
     
-    /**
-     * Positions the character at one of the cauldron positions for brewing
-     * @param Character The character to position at the cauldron
-     * @return Whether the character was successfully positioned
-     */
+    
     UFUNCTION()
     void PositionCharacterForBrewing(ACharacter* Character);
     
-    /**
-     * Checks if the cauldron can be picked up
-     * @return True if the cauldron can be picked up
-     */
+    
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     bool CanBePickedUp() const;
     
-    /**
-     * Checks if the cauldron is currently being carried
-     * @return True if the cauldron is being carried
-     */
+    
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     bool IsBeingCarried() const;
     
-    /**
-     * Gets the character currently carrying the cauldron
-     * @return The character carrying the cauldron, or nullptr if not being carried
-     */
+    
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     ACharacter* GetCarryingCharacter() const;
     
-    /**
-     * Create brewing positions around the cauldron
-     * These are scene components in the Blueprint that define where players can stand
-     */
-   
-    
-    /**
-     * Removes all brewing positions created by the cauldron
-     */
-    
-
-    // delegate
-    
-    
-    /**
-     * Get an available brewing position for a character
-     * @param Character The character looking for a brewing position
-     * @return A valid brewing position, or nullptr if none available
-     */
+  
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
     ABaseInteractionPosition* GetAvailableBrewingPosition(ACharacter* Character);
 
@@ -181,41 +137,25 @@ public:
     UFUNCTION(Server, Reliable)
     void Server_StartPlacementPreview(ACharacter* Character);
     
-    /**
-     * Actualiza la posición de previsualización del caldero según el punto final del line trace
-     * @param HitLocation Ubicación donde se desea colocar el caldero
-     * @param HitNormal Normal de la superficie donde se colocará el caldero
-     */
+   
     UFUNCTION(NetMulticast, Unreliable)
     void Client_UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
   
     
-    /**
-     * Finaliza el modo de previsualización y coloca el caldero en la posición actual
-     * @return True si el caldero se colocó correctamente
-     */
+   
     UFUNCTION(Server, Reliable)
     void Server_FinalizePlacement();
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_FinalizePlacement(ACauldronAltar* Cauldron);
     
-    /**
-     * Cancela el modo de previsualización y vuelve a adjuntar el caldero al personaje
-     */
+    
     UFUNCTION(Server, Reliable)
     void Server_CancelPlacement();
     
-    /**
-     * Verifica si la posición actual es válida para colocar el caldero
-     * @return Estado de la posición (Válida/Inválida)
-     */
+   
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     ECauldronPlacementState GetPlacementState() const;
-    
-    /**
-     * Indica si el caldero está en modo de previsualización
-     * @return True si está en modo de previsualización
-     */
+   
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     bool IsInPlacementPreview() const;
     

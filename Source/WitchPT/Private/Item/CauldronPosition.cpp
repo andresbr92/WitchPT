@@ -15,43 +15,43 @@ void ACauldronPosition::BeginPlay()
 {
     Super::BeginPlay();
     
-    // Try to find the CauldronAltar if it wasn't set in the editor
-    if (!CauldronAltar)
-    {
-        FindCauldronAltar();
-    }
+    // // Try to find the CauldronAltar if it wasn't set in the editor
+    // if (!CauldronAltar)
+    // {
+    //     FindCauldronAltar();
+    // }
 }
 
 void ACauldronPosition::FindCauldronAltar()
 {
     // First check if we are attached to an altar
-    AActor* ParentActor = GetAttachParentActor();
-    if (ParentActor)
-    {
-        ACauldronAltar* PotentialAltar = Cast<ACauldronAltar>(ParentActor);
-        if (PotentialAltar)
-        {
-            CauldronAltar = PotentialAltar;
-            UE_LOG(LogTemp, Log, TEXT("[CauldronPosition] %s found attached CauldronAltar %s"), 
-                *GetName(), *CauldronAltar->GetName());
-            return;
-        }
-    }
-    
-    // If not attached, try to find any altar in the world
-    TArray<AActor*> FoundAltars;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACauldronAltar::StaticClass(), FoundAltars);
-    
-    if (FoundAltars.Num() > 0)
-    {
-        CauldronAltar = Cast<ACauldronAltar>(FoundAltars[0]);
-        UE_LOG(LogTemp, Log, TEXT("[CauldronPosition] %s found world CauldronAltar %s"), 
-            *GetName(), *CauldronAltar->GetName());
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("[CauldronPosition] %s couldn't find a CauldronAltar!"), *GetName());
-    }
+    // AActor* ParentActor = GetAttachParentActor();
+    // if (ParentActor)
+    // {
+    //     ACauldronAltar* PotentialAltar = Cast<ACauldronAltar>(ParentActor);
+    //     if (PotentialAltar)
+    //     {
+    //         CauldronAltar = PotentialAltar;
+    //         UE_LOG(LogTemp, Log, TEXT("[CauldronPosition] %s found attached CauldronAltar %s"), 
+    //             *GetName(), *CauldronAltar->GetName());
+    //         return;
+    //     }
+    // }
+    //
+    // // If not attached, try to find any altar in the world
+    // TArray<AActor*> FoundAltars;
+    // UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACauldronAltar::StaticClass(), FoundAltars);
+    //
+    // if (FoundAltars.Num() > 0)
+    // {
+    //     CauldronAltar = Cast<ACauldronAltar>(FoundAltars[0]);
+    //     UE_LOG(LogTemp, Log, TEXT("[CauldronPosition] %s found world CauldronAltar %s"), 
+    //         *GetName(), *CauldronAltar->GetName());
+    // }
+    // else
+    // {
+    //     UE_LOG(LogTemp, Warning, TEXT("[CauldronPosition] %s couldn't find a CauldronAltar!"), *GetName());
+    // }
 }
 
 void ACauldronPosition::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
