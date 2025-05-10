@@ -24,20 +24,27 @@ void UWitchPTInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeP
 
 void UWitchPTInventoryItemInstance::AddStatTagStack(FGameplayTag Tag, int32 StackCount)
 {
+	StatTags.AddStack(Tag, StackCount);
 }
 
 void UWitchPTInventoryItemInstance::RemoveStatTagStack(FGameplayTag Tag, int32 StackCount)
 {
+	StatTags.RemoveStack(Tag, StackCount);
 }
 
 int32 UWitchPTInventoryItemInstance::GetStatTagStackCount(FGameplayTag Tag) const
 {
-	return 1;
+	return StatTags.GetStackCount(Tag);
 }
 
 bool UWitchPTInventoryItemInstance::HasStatTag(FGameplayTag Tag) const
 {
-	return true;
+	return StatTags.ContainsTag(Tag);
+}
+
+void UWitchPTInventoryItemInstance::SetItemDef(TSubclassOf<UWitchPTInventoryItemDefinition> InDef)
+{
+	ItemDef = InDef;
 }
 
 const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragmentByClass(
@@ -51,6 +58,3 @@ const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragment
 	return nullptr;
 }
 
-void UWitchPTInventoryItemInstance::SetItemDef(TSubclassOf<UWitchPTInventoryItemDefinition> InDef)
-{
-}

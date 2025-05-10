@@ -8,11 +8,14 @@
 #include "InputActionValue.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "Input/WitchPTInputComponent.h"
+#include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "WitchPT/WitchPT.h"
 
 AWitchPTPlayerController::AWitchPTPlayerController()
 {
 	bReplicates = true;
+	InventoryManager = CreateDefaultSubobject<UWitchPTInventoryManagerComponent>("InventoryManager");
 }
 
 void AWitchPTPlayerController::PlayerTick(float DeltaTime)
@@ -32,6 +35,12 @@ void AWitchPTPlayerController::PostProcessInput(const float DeltaTime, const boo
 		WitchPtAbilitySystemComponent->ProcessAbilityInput(DeltaTime, bGamePaused);
 	}
 	Super::PostProcessInput(DeltaTime, bGamePaused);
+}
+
+void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AWitchPTPlayerController, InventoryManager);
 }
 
 void AWitchPTPlayerController::BeginPlay()

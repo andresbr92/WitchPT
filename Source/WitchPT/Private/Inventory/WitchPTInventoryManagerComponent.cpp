@@ -3,32 +3,318 @@
 
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 
-// Sets default values for this component's properties
-UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent()
-{
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+#include "Engine/ActorChannel.h"
+#include "Inventory/WitchPTInventoryItemDefinition.h"
+#include "Inventory/WitchPTInventoryItemFragment.h"
+#include "Inventory/WitchPTInventoryItemInstance.h"
+#include "Net/UnrealNetwork.h"
 
-	// ...
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(WitchPTInventoryManagerComponent)
+
+class FLifetimeProperty;
+struct FReplicationFlags;
+//////////////////////////////////////////////////////////////////////
+// FWitchPTInventoryEntry
+FString FWitchPTInventoryEntry::GetDebugString() const
+{
+	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef;
+	if (Instance != nullptr)
+	{
+		ItemDef = Instance->GetItemDef();
+	}
+
+	return FString::Printf(TEXT("%s (%d x %s)"), *GetNameSafe(Instance), StackCount, *GetNameSafe(ItemDef));
 }
 
 
-// Called when the game starts
-void UWitchPTInventoryManagerComponent::BeginPlay()
-{
-	Super::BeginPlay();
 
-	// ...
+//////////////////////////////////////////////////////////////////////
+// FWitchPTInventoryList
+void FWitchPTInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
+{
+	for (int32 Index : RemovedIndices)
+	{
+		FWitchPTInventoryEntry& Stack = Entries[Index];
+		BroadcastChangeMessage(Stack, /*OldCount=*/ Stack.StackCount, /*NewCount=*/ 0);
+		Stack.LastObservedCount = 0;
+	}
+}
+
+void FWitchPTInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+{
+	for (int32 Index : AddedIndices)
+	{
+		FWitchPTInventoryEntry& Stack = Entries[Index];
+		BroadcastChangeMessage(Stack, /*OldCount=*/ 0, /*NewCount=*/ Stack.StackCount);
+		Stack.LastObservedCount = Stack.StackCount;
+	}
+}
+
+void FWitchPTInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
+{
+	for (int32 Index : ChangedIndices)
+	{
+		FWitchPTInventoryEntry& Stack = Entries[Index];
+		check(Stack.LastObservedCount != INDEX_NONE);
+		BroadcastChangeMessage(Stack, /*OldCount=*/ Stack.LastObservedCount, /*NewCount=*/ Stack.StackCount);
+		Stack.LastObservedCount = Stack.StackCount;
+	}
+}
+
+void FWitchPTInventoryList::BroadcastChangeMessage(FWitchPTInventoryEntry& Entry, int32 OldCount, int32 NewCount)
+{
+	FWitchPTInventoryChangeMessage Message;
+	Message.InventoryOwner = OwnerComponent;
+	Message.Instance = Entry.Instance;
+	Message.NewCount = NewCount;
+	Message.Delta = NewCount - OldCount;
+
+	// UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwnerComponent->GetWorld());
+	// MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_StackChanged, Message);
+}
+UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef, int32 StackCount)
+{
+	UWitchPTInventoryItemInstance* Result = nullptr;
+
+	check(ItemDef != nullptr);
+	check(OwnerComponent);
+
+	AActor* OwningActor = OwnerComponent->GetOwner();
+	check(OwningActor->HasAuthority());
+
+
+	FWitchPTInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
+	NewEntry.Instance = NewObject<UWitchPTInventoryItemInstance>(OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
+	NewEntry.Instance->SetItemDef(ItemDef);
+	for (UWitchPTInventoryItemFragment* Fragment : GetDefault<UWitchPTInventoryItemDefinition>(ItemDef)->Fragments)
+	{
+		if (Fragment != nullptr)
+		{
+			Fragment->OnInstanceCreated(NewEntry.Instance);
+		}
+	}
+	NewEntry.StackCount = StackCount;
+	Result = NewEntry.Instance;
+
+	//const ULyraInventoryItemDefinition* ItemCDO = GetDefault<ULyraInventoryItemDefinition>(ItemDef);
+	MarkItemDirty(NewEntry);
+
+	return Result;
+}
+
+void FWitchPTInventoryList::AddEntry(UWitchPTInventoryItemInstance* Instance)
+{
+	unimplemented();
+}
+
+void FWitchPTInventoryList::RemoveEntry(UWitchPTInventoryItemInstance* Instance)
+{
+	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
+	{
+		FWitchPTInventoryEntry& Entry = *EntryIt;
+		if (Entry.Instance == Instance)
+		{
+			EntryIt.RemoveCurrent();
+			MarkArrayDirty();
+		}
+	}
+}
+TArray<UWitchPTInventoryItemInstance*> FWitchPTInventoryList::GetAllItems() const
+{
+	TArray<UWitchPTInventoryItemInstance*> Results;
+	Results.Reserve(Entries.Num());
+	for (const FWitchPTInventoryEntry& Entry : Entries)
+	{
+		if (Entry.Instance != nullptr) //@TODO: Would prefer to not deal with this here and hide it further?
+		{
+			Results.Add(Entry.Instance);
+		}
+	}
+	return Results;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
+	, InventoryList(this)
+{
+	SetIsReplicatedByDefault(true);
+}
+void UWitchPTInventoryManagerComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, InventoryList);
+}
+
+// --------------- Inventory Manager Component Functions ---------------------------
+
+TArray<UWitchPTInventoryItemInstance*> UWitchPTInventoryManagerComponent::GetAllItems() const
+{
+	return InventoryList.GetAllItems();
+}
+
+bool UWitchPTInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef,
+	int32 StackCount)
+{
+	//@TODO: Add support for stack limit / uniqueness checks / etc...
+	return true;
+}
+
+UWitchPTInventoryItemInstance* UWitchPTInventoryManagerComponent::AddItemDefinition(
+	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef, int32 StackCount)
+{
+	UWitchPTInventoryItemInstance* Result = nullptr;
+	if (ItemDef != nullptr)
+	{
+		Result = InventoryList.AddEntry(ItemDef, StackCount);
+		
+		if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && Result)
+		{
+			AddReplicatedSubObject(Result);
+		}
+	}
+	return Result;
+}
+
+void UWitchPTInventoryManagerComponent::AddItemInstance(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	InventoryList.AddEntry(ItemInstance);
+	if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && ItemInstance)
+	{
+		AddReplicatedSubObject(ItemInstance);
+	}
+}
+
+void UWitchPTInventoryManagerComponent::RemoveItemInstance(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	InventoryList.RemoveEntry(ItemInstance);
+
+	if (ItemInstance && IsUsingRegisteredSubObjectList())
+	{
+		RemoveReplicatedSubObject(ItemInstance);
+	}
+}
+
+
+UWitchPTInventoryItemInstance* UWitchPTInventoryManagerComponent::FindFirstItemStackByDefinition(
+	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef) const
+{
+	for (const FWitchPTInventoryEntry& Entry : InventoryList.Entries)
+	{
+		UWitchPTInventoryItemInstance* Instance = Entry.Instance;
+
+		if (IsValid(Instance))
+		{
+			if (Instance->GetItemDef() == ItemDef)
+			{
+				return Instance;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+int32 UWitchPTInventoryManagerComponent::GetTotalItemCountByDefinition(
+	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef) const
+{
+	int32 TotalCount = 0;
+	for (const FWitchPTInventoryEntry& Entry : InventoryList.Entries)
+	{
+		UWitchPTInventoryItemInstance* Instance = Entry.Instance;
+
+		if (IsValid(Instance))
+		{
+			if (Instance->GetItemDef() == ItemDef)
+			{
+				++TotalCount;
+			}
+		}
+	}
+
+	return TotalCount;
+}
+
+bool UWitchPTInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef,
+	int32 NumToConsume)
+{
+	AActor* OwningActor = GetOwner();
+	if (!OwningActor || !OwningActor->HasAuthority())
+	{
+		return false;
+	}
+
+	//@TODO: N squared right now as there's no acceleration structure
+	int32 TotalConsumed = 0;
+	while (TotalConsumed < NumToConsume)
+	{
+		if (UWitchPTInventoryItemInstance* Instance = UWitchPTInventoryManagerComponent::FindFirstItemStackByDefinition(ItemDef))
+		{
+			InventoryList.RemoveEntry(Instance);
+			++TotalConsumed;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return TotalConsumed == NumToConsume;
+}
+
+bool UWitchPTInventoryManagerComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
+	FReplicationFlags* RepFlags)
+{
+	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	for (FWitchPTInventoryEntry& Entry : InventoryList.Entries)
+	{
+		UWitchPTInventoryItemInstance* Instance = Entry.Instance;
+
+		if (Instance && IsValid(Instance))
+		{
+			WroteSomething |= Channel->ReplicateSubobject(Instance, *Bunch, *RepFlags);
+		}
+	}
+
+	return WroteSomething;
+}
+
+void UWitchPTInventoryManagerComponent::ReadyForReplication()
+{
+	Super::ReadyForReplication();
+
+	// Register existing ULyraInventoryItemInstance
+	UE_LOG(LogTemp, Warning, TEXT("The boolean value is %s"), (IsUsingRegisteredSubObjectList() ? TEXT("true") : TEXT("false") ));
 	
-}
+	UE_LOG(LogTemp, Warning, TEXT("The Actor's name is %s"), *UWitchPTInventoryManagerComponent::GetOwner()->GetName() );
+	if (IsUsingRegisteredSubObjectList())
+	{
+		for (const FWitchPTInventoryEntry& Entry : InventoryList.Entries)
+		{
+			UWitchPTInventoryItemInstance* Instance = Entry.Instance;
 
-
-// Called every frame
-void UWitchPTInventoryManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+			if (IsValid(Instance))
+			{
+				AddReplicatedSubObject(Instance);
+			}
+		}
+	}
 }
 

@@ -18,6 +18,7 @@ UCLASS(BlueprintType)
 class WITCHPT_API UWitchPTInventoryItemInstance : public UObject
 {
 	GENERATED_BODY()
+public:
 	UWitchPTInventoryItemInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 	//~UObject interface
@@ -63,7 +64,7 @@ private:
 	UPROPERTY(Replicated)
 	FGameplayTagStackContainer StatTags;
 
-	// The item definition
+	
 
 	
 	UPROPERTY(Replicated)

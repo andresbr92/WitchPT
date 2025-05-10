@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "WitchPTPlayerController.generated.h"
 
+class UWitchPTInventoryManagerComponent;
 struct FGameplayTag;
 class UWitchPTAbilitySystemComponent;
 class UWitchPTInputConfig;
@@ -24,11 +25,14 @@ public:
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
-private:
 	// Actions
 	UPROPERTY(EditAnywhere, Category="Input")
 	TObjectPtr<UInputMappingContext> WitchPtiInputMappingContext;
@@ -46,6 +50,7 @@ private:
 
 	UWitchPTAbilitySystemComponent* GetASC();
 	
+private:
 
 	void Move(const FInputActionValue& InputActionValue);
 
