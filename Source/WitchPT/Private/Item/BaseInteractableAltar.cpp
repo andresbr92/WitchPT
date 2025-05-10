@@ -59,16 +59,14 @@ void ABaseInteractableAltar::OccupyPosition(ACharacter* Player, ABaseInteraction
         return;
     }
 
-    // Set the position as occupied
+
     if (Position->IsOccupied())
     {
         //broadcast
         return;
     }
     Position->SetOccupied(Player);
-
-    // Track which position this player is at
-    // Buscar si ya existe una entrada para este jugador
+    
     bool bFound = false;
     for (FPlayerPositionTagEntry& Entry : PlayerPositionTags)
     {
@@ -99,6 +97,19 @@ void ABaseInteractableAltar::OccupyPosition(ACharacter* Player, ABaseInteraction
     // Child classes can override to add additional logic
 }
 
+void ABaseInteractableAltar::UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
+{
+    if (!Player || !Position || !HasAuthority())
+    {
+        return;
+    }
+
+    Position->SetOccupied(nullptr);
+
+    // Remove from participating players if they're not in the list
+    ParticipatingPlayers.Remove(Player);
+    
+}
 void ABaseInteractableAltar::CreateAltarPositions()
 {
     if (!HasAuthority() || !PositionClass)

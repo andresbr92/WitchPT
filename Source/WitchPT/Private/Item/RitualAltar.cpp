@@ -638,7 +638,7 @@ FGameplayTag ARitualAltar::GetCurrentExpectedInput() const
 {
 	if (InputSequence.Num() == 0 || CurrentSequenceIndex >= InputSequence.Num())
 	{
-		// Return an empty tag if there's no valid input
+		
 		return FGameplayTag();
 	}
 	
@@ -693,7 +693,6 @@ void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 			EventData.Instigator = this;
 			EventData.Target = Character;
 			
-			
 			EventData.OptionalObject = FailedAnimMontage;
 			
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, WitchPtGameplayTags.Event_Ritual_InputFailure, EventData);
@@ -716,7 +715,7 @@ void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 	// Example: Play celebratory effects at altar location
 	// UGameplayStatics::PlaySoundAtLocation(this, SuccessSound, GetActorLocation());
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SuccessParticles, GetActorTransform());
-	OnInteractionCompleted.Broadcast(true);
+	OnRitualCompleted.Broadcast(true);
 	DestroyAltarPositions();
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback"));
@@ -732,7 +731,7 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CatastrophicFailParticles, GetActorTransform());
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
-	OnSequenceCompleted.Broadcast(false);
+	OnRitualCompleted.Broadcast(false);
 }
 
 void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionState NewState)

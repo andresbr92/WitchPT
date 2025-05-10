@@ -238,6 +238,7 @@ void ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
         // Posicionar al personaje en esta posición
         // OnCharacterPositioned.Broadcast(true);
         Character->SetActorLocationAndRotation(BrewingPosition->GetActorLocation(), BrewingPosition->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
+        ParticipatingPlayers.Add(Character);
         Client_OnCharacterPositioned();
         return BrewingPosition->SetOccupied(Character);
 
@@ -437,6 +438,21 @@ void ACauldronAltar::CancelPlacement()
     
     UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CancelPlacement: Placement canceled"));
 }
+
+void ACauldronAltar::UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
+{
+    // Find the position occupied by the player
+    for(ABaseInteractionPosition* PositionOccupied : InteractionPositions)
+    {
+        if(PositionOccupied->GetOccupyingCharacter() == Player)
+        {
+            PositionOccupied->SetOccupied(nullptr);
+            break;
+        }
+    }
+    
+}
+
 
 void ACauldronAltar::Client_OnCharacterPositioned_Implementation()
 {

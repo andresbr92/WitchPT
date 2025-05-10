@@ -47,8 +47,18 @@ public:
 	FGameplayTag Ability_Jump;
 	FGameplayTag Ability_Crouch;
 	FGameplayTag Ability_Ritual_GoToPosition;
-	FGameplayTag Ability_Ritual_ParticipatingInAltar;
+	FGameplayTag Ability_Ritual_ParticipatingInRitual;
+	FGameplayTag Ability_Ritual_CancelParticipatingInRitual;
+	FGameplayTag Ability_Ritual_Start;
+	FGameplayTag Ability_Ritual_SendInput;
+
+
+
+
+
+	
 	FGameplayTag Ability_Cauldron_ParticipatingInCauldron;
+	FGameplayTag Ability_Cauldron_CancelParticipatingInCauldron;
 	FGameplayTag Ability_Cauldron_CarryingCauldron;
 	FGameplayTag Ability_Cauldron_LookingForPlaceCauldron;
 	FGameplayTag Ability_Cauldron_SetInPlace;
@@ -98,7 +108,7 @@ public:
 	
 
 	// --- Event Tags ---
-	FGameplayTag Event_Ritual_InputReceived; // Generic event when altar receives an input GE
+	FGameplayTag Event_Ritual_InputReceived;
 	FGameplayTag Event_Ritual_TurnAdvanced;
 	FGameplayTag Event_Ritual_SequenceFail;
 	FGameplayTag Event_Ritual_CatastrophicFail;

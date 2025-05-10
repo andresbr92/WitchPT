@@ -26,10 +26,14 @@ public:
 	virtual void RequestUpdatePlacementPreview_Implementation(ACauldronAltar* TargetAltar, const FVector& HitLocation, const FVector& HitNormal) override;
 	virtual void RequestCancelPlacementPreview_Implementation(ACauldronAltar* TargetAltar) override;
 	virtual void RequestFinalizePlacement_Implementation(ACauldronAltar* TargetAltar) override;
+	virtual void RequestUnOccupyPositionInCauldron_Implementation(ACauldronAltar* TargetCauldron) override;
 
 	
 	// --- RITUAL IMPLEMENTATION ---
+	virtual void RequestStartRitual_Implementation(ARitualAltar* TargetAltar) override;
+	virtual void RequestRitualInput_Implementation(ARitualAltar* TargetAltar, const FGameplayTag& InputTag) override;
 	virtual void RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position) override;
+	virtual void RequestUnOccupyPositionInRitual_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position) override;
 	
 
 	

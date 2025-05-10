@@ -83,6 +83,8 @@ public:
     void UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
     void FinalizePlacement();
     void CancelPlacement();
+    virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
+    
 
     UFUNCTION(Client, Reliable)
     void Client_OnCharacterPositioned();

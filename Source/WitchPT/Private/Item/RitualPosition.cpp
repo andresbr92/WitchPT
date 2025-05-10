@@ -86,7 +86,7 @@ void ARitualPosition::GatherInteractionOptions(const FInteractionQuery& Interact
 	// }
 }
 
-ARitualAltar* ARitualPosition::GetRitualAltarActor() const
+ARitualAltar* ARitualPosition::GetRitualAltarActor_Implementation() const
 {
 	if (RitualAltar)
 	{
@@ -94,6 +94,12 @@ ARitualAltar* ARitualPosition::GetRitualAltarActor() const
 	}
 	return nullptr;
 }
+
+bool ARitualPosition::IsOccupied_Implementation()
+{
+	return bIsOccupied;
+}
+
 
 void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 {

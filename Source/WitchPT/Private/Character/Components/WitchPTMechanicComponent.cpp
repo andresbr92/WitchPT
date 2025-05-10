@@ -140,8 +140,18 @@ void UWitchPTMechanicComponent::RequestFinalizePlacement_Implementation(ACauldro
 
 }
 
+void UWitchPTMechanicComponent::RequestUnOccupyPositionInCauldron_Implementation(ACauldronAltar* TargetCauldron)
+{
+	if (!TargetCauldron) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		TargetCauldron->UnoccupyPosition(Character, nullptr);
+	}
+}
+
 void UWitchPTMechanicComponent::RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar,
-	ABaseInteractionPosition* Position)
+                                                                     ABaseInteractionPosition* Position)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
@@ -150,6 +160,38 @@ void UWitchPTMechanicComponent::RequestOccupyPosition_Implementation(ARitualAlta
 		TargetAltar->OccupyPosition(Character, Position);
 	}
 	
+}
+
+void UWitchPTMechanicComponent::RequestUnOccupyPositionInRitual_Implementation(ARitualAltar* TargetAltar,
+	ABaseInteractionPosition* Position)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		TargetAltar->UnoccupyPosition(Character, Position);
+	}
+	
+}
+
+void UWitchPTMechanicComponent::RequestStartRitual_Implementation(ARitualAltar* TargetAltar)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		TargetAltar->StartRitual(Character);
+	}
+}
+
+void UWitchPTMechanicComponent::RequestRitualInput_Implementation(ARitualAltar* TargetAltar, const FGameplayTag& InputTag)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		TargetAltar->HandlePlayerInput(Character, InputTag);
+	}
 }
 
 

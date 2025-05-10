@@ -28,10 +28,15 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Ability_Sprint = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Sprint"));
 	GameplayTags.Ability_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Jump"));
 	GameplayTags.Ability_Crouch = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Crouch"));
+	
 	GameplayTags.Ability_Ritual_GoToPosition = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.GoToPosition"));
-	GameplayTags.Ability_Ritual_ParticipatingInAltar = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.ParticipatingInAltar"));
+	GameplayTags.Ability_Ritual_ParticipatingInRitual = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.ParticipatingInRitual"));
+	GameplayTags.Ability_Ritual_CancelParticipatingInRitual = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.CancelParticipatingInRitual"));
+	GameplayTags.Ability_Ritual_Start = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.Start"));
+	GameplayTags.Ability_Ritual_SendInput = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Ritual.SendInput"));
 	// Cauldron Abilities
 	GameplayTags.Ability_Cauldron_ParticipatingInCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.ParticipatingInCauldron"));
+	GameplayTags.Ability_Cauldron_CancelParticipatingInCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.CancelParticipatingInCauldron"));
 	GameplayTags.Ability_Cauldron_CarryingCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.CarryingCauldron"));
 	GameplayTags.Ability_Cauldron_LookingForPlaceCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.LookingForPlaceCauldron"));
 	GameplayTags.Ability_Cauldron_SetInPlace = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.SetInPlace"));

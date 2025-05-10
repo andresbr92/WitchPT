@@ -81,7 +81,9 @@ public:
     TArray<FPlayerPositionTagEntry> PlayerPositionTags;
     
     // Basic interaction methods
-    void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
+    virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
+    virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
+    
 
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
     virtual void CreateAltarPositions();

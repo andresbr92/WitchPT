@@ -20,7 +20,7 @@ enum class ERitualInput : uint8
 	None	UMETA(DisplayName = "None") // Optional: For default/invalid state
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceCompleted, bool, bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompleted, bool, bWasSuccessful);
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
 {
@@ -74,7 +74,7 @@ public:
 	
 
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnSequenceCompleted OnSequenceCompleted;
+	FOnRitualCompleted OnRitualCompleted;
 	
 	
 	// Functions to be called by WitchPTMechanicComponent

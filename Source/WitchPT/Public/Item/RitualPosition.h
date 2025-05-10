@@ -6,6 +6,7 @@
 #include "Item/BaseInteractionPosition.h"
 #include "GameplayTagContainer.h" // Added for FGameplayTag
 #include "MechanicsInterface.h" // For GetRitualAltarActor & IsOccuppied if still needed
+#include "PositionInterface.h"
 #include "RitualPosition.generated.h"
 
 // Forward Declarations
@@ -18,7 +19,7 @@ class UBoxComponent;
 class ACharacter;
 
 UCLASS()
-class WITCHPT_API ARitualPosition : public ABaseInteractionPosition
+class WITCHPT_API ARitualPosition : public ABaseInteractionPosition, public IPositionInterface
 {
 	GENERATED_BODY()
 
@@ -36,12 +37,11 @@ public:
 	//~ End IInteraction Interface
 	
 	// Still part of IMechanicsInterface if these are general queries
-	UFUNCTION(BlueprintCallable)
-	virtual ARitualAltar* GetRitualAltarActor() const;
-    // IsOccuppied is likely part of BaseInteractionPosition or IMechanicsInterface directly, ensure it's handled.
-    // virtual bool IsOccuppied() const override; // Example if it was from IMechanicsInterface
+	virtual ARitualAltar* GetRitualAltarActor_Implementation() const override;
+   
 
 	void SetRitualAltar(ARitualAltar* Altar) { RitualAltar = Altar; }
+	virtual bool IsOccupied_Implementation() override;
 
 protected:
 	// Reference to the parent altar
