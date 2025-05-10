@@ -3,15 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "Templates/SubclassOf.h"
 #include "WitchPTInventoryItemFragment.generated.h"
 
+template <typename T> class TSubclassOf;
+
+class UWitchPTInventoryItemInstance;
 /**
  * 
  */
-UCLASS()
+UCLASS(DefaultToInstanced, EditInlineNew, Abstract)
 class WITCHPT_API UWitchPTInventoryItemFragment : public UObject
 {
 	GENERATED_BODY()
+
+public:
+	virtual void OnInstanceCreated(UWitchPTInventoryItemInstance* Instance) const {}
 	
 };
