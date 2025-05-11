@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Input/WitchPTInputComponent.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -52,6 +53,7 @@ void AWitchPTPlayerController::BeginPlay()
 	{
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
+	CreateHUDWidget();
 }
 
 void AWitchPTPlayerController::SetupInputComponent()
@@ -115,6 +117,16 @@ void AWitchPTPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	if (GetASC())
 	{
 		GetASC()->AbilityInputTagHeld(InputTag);
+	}
+}
+
+void AWitchPTPlayerController::CreateHUDWidget()
+{
+	if (!IsLocalController()) return;
+	HUDWidget = CreateWidget<UPointerWidget>(this, HUDWidgetClass);
+	if (IsValid(HUDWidget))
+	{
+		HUDWidget->AddToViewport();
 	}
 }
 

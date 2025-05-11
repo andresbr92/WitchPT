@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Widgets/HUD/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
 class UWitchPTInventoryManagerComponent;
@@ -59,6 +60,14 @@ private:
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
+
+	void CreateHUDWidget();
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TSubclassOf<UPointerWidget> HUDWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UPointerWidget> HUDWidget;
 	
 };
 

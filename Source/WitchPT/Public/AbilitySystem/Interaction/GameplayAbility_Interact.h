@@ -116,8 +116,8 @@ protected:
     // Guarda el objeto con el que se inició la interacción para compararlo
     TScriptInterface<IInteractableTarget> InitialInteractableTarget;
 
-	// UPROPERTY(EditDefaultsOnly)
-	// TSoftClassPtr<UUserWidget> DefaultInteractionWidgetClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSoftClassPtr<UUserWidget> DefaultInteractionWidgetClass;
 
 	
 };
