@@ -7,6 +7,7 @@
 #include "Widgets/HUD/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
+class UWitchPTIndicatorManagerComponent;
 class UWitchPTInventoryManagerComponent;
 struct FGameplayTag;
 class UWitchPTAbilitySystemComponent;
@@ -68,6 +69,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UPointerWidget> HUDWidget;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UWitchPTIndicatorManagerComponent> IndicatorManager;
 	
 };
 

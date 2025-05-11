@@ -7,6 +7,7 @@
 #include "AbilitySystem/GameplayAbilities/WitchPTGameplayAbility.h"
 #include "GameplayAbility_Interact.generated.h"
 
+class UIndicatorDescriptor;
 class UObject;
 struct FFrame;
 struct FGameplayAbilityActorInfo;
@@ -118,6 +119,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSoftClassPtr<UUserWidget> DefaultInteractionWidgetClass;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UIndicatorDescriptor>> Indicators;
 
 	
 };
