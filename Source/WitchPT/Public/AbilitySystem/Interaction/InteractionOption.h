@@ -63,8 +63,8 @@ public:
 	//--------------------------------------------------------------
 
 	/** The widget to show for this kind of interaction. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftClassPtr<UUserWidget> InteractionWidgetClass;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// TSoftClassPtr<UUserWidget> InteractionWidgetClass;
 
 	//--------------------------------------------------------------
 

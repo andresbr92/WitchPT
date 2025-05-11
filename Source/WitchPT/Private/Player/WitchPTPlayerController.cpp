@@ -12,13 +12,11 @@
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "WitchPT/WitchPT.h"
-#include "WitchPT/Systems/IndicatorSystem/WitchPTIndicatorManagerComponent.h"
 
 AWitchPTPlayerController::AWitchPTPlayerController()
 {
 	bReplicates = true;
 	InventoryManager = CreateDefaultSubobject<UWitchPTInventoryManagerComponent>("InventoryManager");
-	IndicatorManager = CreateDefaultSubobject<UWitchPTIndicatorManagerComponent>("IndicatorManager");
 }
 
 void AWitchPTPlayerController::PlayerTick(float DeltaTime)
