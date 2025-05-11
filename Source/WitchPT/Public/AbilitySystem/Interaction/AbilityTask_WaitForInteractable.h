@@ -32,7 +32,7 @@ public:
 
 protected:
 
-	static void LineTrace(FHitResult& OutHitResult, const UWorld* World, const FVector& Start, const FVector& End, FName ProfileName, const FCollisionQueryParams Params);
+	static void LineTrace(FHitResult& OutHitResult, const UWorld* World, const FVector& Start, const FVector& End, ECollisionChannel CollisionChannel, const FCollisionQueryParams Params);
 
 	void AimWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, float MaxRange, FVector& OutTraceEnd, bool bIgnorePitch = false) const;
 
@@ -40,7 +40,7 @@ protected:
 
 	void UpdateInteractableOptions(const FInteractionQuery& InteractQuery, const TArray<TScriptInterface<IInteractableTarget>>& InteractableTargets);
 
-	FCollisionProfileName TraceProfile;
+	ECollisionChannel TraceProfile;
 
 	// Does the trace affect the aiming pitch
 	bool bTraceAffectsAimPitch = true;

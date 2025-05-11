@@ -4,6 +4,7 @@
 #include "AbilitySystem/Interaction/AT_WaitForInteractable_SLT.h"
 
 #include "AbilitySystem/Interaction/InteractionStatics.h"
+#include "Kismet/GameplayStatics.h"
 
 UAT_WaitForInteractable_SLT::UAT_WaitForInteractable_SLT(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -11,7 +12,7 @@ UAT_WaitForInteractable_SLT::UAT_WaitForInteractable_SLT(const FObjectInitialize
 }
 
 UAT_WaitForInteractable_SLT* UAT_WaitForInteractable_SLT::WaitForInteractableTargets_SingleLineTrace(
-	UGameplayAbility* OwningAbility, FInteractionQuery InteractionQuery, FCollisionProfileName TraceProfile,
+	UGameplayAbility* OwningAbility, FInteractionQuery InteractionQuery, ECollisionChannel TraceProfile,
 	FGameplayAbilityTargetingLocationInfo StartLocation, float InteractionScanRange, float InteractionScanRate,
 	bool bShowDebug)
 {
@@ -46,6 +47,7 @@ void UAT_WaitForInteractable_SLT::OnDestroy(bool AbilityEnded)
 void UAT_WaitForInteractable_SLT::PerformTrace()
 {
 	AActor* AvatarActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
+	
 	if (!AvatarActor)
 	{
 		return;
@@ -59,13 +61,20 @@ void UAT_WaitForInteractable_SLT::PerformTrace()
 	const bool bTraceComplex = false;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(UAT_WaitForInteractable_SLT), bTraceComplex);
 	Params.AddIgnoredActors(ActorsToIgnore);
+	if (!IsValid(GEngine) || !IsValid(GEngine->GameViewport)) return;
+	FVector2D ViewportSize;
+	GEngine->GameViewport->GetViewportSize(ViewportSize);
+	const FVector2D ViewportCenter = ViewportSize / 2.f;
+	FVector TraceStart;
+	FVector Forward;
+	if (!UGameplayStatics::DeprojectScreenToWorld(Ability->GetCurrentActorInfo()->PlayerController.Get(), ViewportCenter, TraceStart, Forward)) return;
 
-	FVector TraceStart = StartLocation.GetTargetingTransform().GetLocation();
+	
 	FVector TraceEnd;
 	AimWithPlayerController(AvatarActor, Params, TraceStart, InteractionScanRange, OUT TraceEnd);
 
 	FHitResult OutHitResult;
-	LineTrace(OutHitResult, World, TraceStart, TraceEnd, TraceProfile.Name, Params);
+	LineTrace(OutHitResult, World, TraceStart, TraceEnd, TraceProfile, Params);
 
 	TArray<TScriptInterface<IInteractableTarget>> InteractableTargets;
 	UInteractionStatics::AppendInteractableTargetsFromHitResult(OutHitResult, InteractableTargets);

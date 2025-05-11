@@ -13,21 +13,18 @@ UAbilityTask_WaitForInteractable::UAbilityTask_WaitForInteractable(const FObject
 	: Super(ObjectInitializer)
 {
 }
-void UAbilityTask_WaitForInteractable::LineTrace(FHitResult& OutHitResult, const UWorld* World, const FVector& Start, const FVector& End, FName ProfileName, const FCollisionQueryParams Params)
+void UAbilityTask_WaitForInteractable::LineTrace(FHitResult& OutHitResult, const UWorld* World, const FVector& Start, const FVector& End, ECollisionChannel CollisionChannel, const FCollisionQueryParams Params)
 {
 	check(World);
 
 	OutHitResult = FHitResult();
-	TArray<FHitResult> HitResults;
-	World->LineTraceMultiByProfile(HitResults, Start, End, ProfileName, Params);
-
+	FHitResult HitResult;
+	// World->LineTraceMultiByProfile(HitResults, Start, End, CollisionChannel, Params);
+	World->LineTraceSingleByChannel(HitResult, Start, End, CollisionChannel);
 	OutHitResult.TraceStart = Start;
 	OutHitResult.TraceEnd = End;
 
-	if (HitResults.Num() > 0)
-	{
-		OutHitResult = HitResults[0];
-	}
+	OutHitResult = HitResult;
 }
 
 void UAbilityTask_WaitForInteractable::AimWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, float MaxRange, FVector& OutTraceEnd, bool bIgnorePitch) const
@@ -51,7 +48,7 @@ void UAbilityTask_WaitForInteractable::AimWithPlayerController(const AActor* InS
 	ClipCameraRayToAbilityRange(ViewStart, ViewDir, TraceStart, MaxRange, ViewEnd);
 
 	FHitResult HitResult;
-	LineTrace(HitResult, InSourceActor->GetWorld(), ViewStart, ViewEnd, TraceProfile.Name, Params);
+	LineTrace(HitResult, InSourceActor->GetWorld(), ViewStart, ViewEnd, TraceProfile, Params);
 
 	const bool bUseTraceResult = HitResult.bBlockingHit && (FVector::DistSquared(TraceStart, HitResult.Location) <= (MaxRange * MaxRange));
 
