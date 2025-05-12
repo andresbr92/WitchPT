@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Widgets/HUD/PointerWidget.h"
+#include "UI/Widgets/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
 class UWitchPTInventoryManagerComponent;
@@ -30,6 +30,8 @@ public:
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
+	UPROPERTY()
+	TObjectPtr<UPointerWidget> HUDWidget;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -51,6 +53,10 @@ protected:
 
 	UWitchPTAbilitySystemComponent* GetASC();
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TSubclassOf<UPointerWidget> HUDWidgetClass;
+
+
 private:
 
 	void Move(const FInputActionValue& InputActionValue);
@@ -63,11 +69,6 @@ private:
 
 	void CreateHUDWidget();
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	TSubclassOf<UPointerWidget> HUDWidgetClass;
-
-	UPROPERTY()
-	TObjectPtr<UPointerWidget> HUDWidget;
 	
 };
 
