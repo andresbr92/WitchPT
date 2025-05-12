@@ -9,7 +9,9 @@
 #include "Character/Components/WitchPTMechanicComponent.h"
 #include "Item/RitualAltar.h"
 #include "Item/RitualPosition.h"
+#include "Player/WitchPTPlayerController.h"
 #include "Player/WitchPTPlayerState.h"
+#include "UI/HUD/WitchPTHUD.h"
 #include "WitchPT/WitchPT.h"
 
 
@@ -65,12 +67,22 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 		return;
 	}
 	
-	// TODO: delegates on ASC
-	// We call this function after de ability actor info to bind al functions to the ASC delegates
-	
-	// Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoHaveBeenSet();
+	AbilitySystemComponent->AbilityActorInfoHaveBeenSet();
 	AttributeSet = Cast<UWitchPTAttributeSet>( WitchPtPlayerState->GetAttributeSet());
-	// We can call this ONLY in the server because attributes are marked as replicated. But is ok doing it here.
+	
+
+	
+	/*
+	* Here we initialize the Overlay because we have all the data we need: the player controller, player state, ability system component and attribute set.
+	* Also, the HUD is accessible from the player controller.
+	*/
+	if (AWitchPTPlayerController* WitchPT_PC = Cast<AWitchPTPlayerController>(GetController()))
+	{
+		if (AWitchPTHUD* WitchPT_HUD = Cast<AWitchPTHUD>(WitchPT_PC->GetHUD()))
+		{
+			WitchPT_HUD->InitOverlay(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+		}
+	}
 	InitializeDefaultAttributes();
 }
 

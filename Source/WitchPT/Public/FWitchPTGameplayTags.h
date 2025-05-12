@@ -119,6 +119,10 @@ public:
 	FGameplayTag Cauldron_State_PotionReady;
 
 
+	// Communication tags
+	FGameplayTag Communication_Message;
+
+
 
 
 private:

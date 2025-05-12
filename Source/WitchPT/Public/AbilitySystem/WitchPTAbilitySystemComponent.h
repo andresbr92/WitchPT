@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "WitchPTAbilitySystemComponent.generated.h"
 
-
+DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer& /* Asset tags that the GE have*/)
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class WITCHPT_API UWitchPTAbilitySystemComponent : public UAbilitySystemComponent
 {
@@ -18,6 +18,9 @@ public:
 	void AbilityInputTagPressed(const FGameplayTag& InputTag);
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
+	void AbilityActorInfoHaveBeenSet();
+
+	FEffectAssetTags OnEffectAssetTags;
 	
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	
@@ -42,5 +45,7 @@ public:
 protected:
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
+	UFUNCTION(Client, Reliable)
+	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle);
 
 };

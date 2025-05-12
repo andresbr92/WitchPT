@@ -87,6 +87,10 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Cauldron_State_PotionReady = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.PotionReady"));
 
 
+	// Communication Messages
+	GameplayTags.Communication_Message = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Communication.Message"));
+
+
 
 	
 }

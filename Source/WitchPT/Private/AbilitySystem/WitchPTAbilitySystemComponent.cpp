@@ -88,6 +88,11 @@ void UWitchPTAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag&
 	}
 }
 
+void UWitchPTAbilitySystemComponent::AbilityActorInfoHaveBeenSet()
+{
+	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UWitchPTAbilitySystemComponent::ClientEffectApplied);
+}
+
 void UWitchPTAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
 		static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
@@ -220,4 +225,13 @@ void UWitchPTAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySp
 		// Invoke the InputReleased event. This is not replicated here. If someone is listening, they may replicate the InputReleased event to the server.
 		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, OriginalPredictionKey);
 	}
+}
+
+void UWitchPTAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent,
+	const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle)
+{
+	FGameplayTagContainer TagContainer;
+	EffectSpec.GetAllAssetTags(TagContainer);
+
+	OnEffectAssetTags.Broadcast(TagContainer);
 }
