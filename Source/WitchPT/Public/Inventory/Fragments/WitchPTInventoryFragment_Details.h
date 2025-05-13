@@ -14,7 +14,11 @@ class WITCHPT_API UWitchPTInventoryFragment_Details : public UWitchPTInventoryIt
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly) FText Description;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly) UTexture2D* Icon;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText Title;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText Description;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UUserWidget> IconWidget;
 	
 };

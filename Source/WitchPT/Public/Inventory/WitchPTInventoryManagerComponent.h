@@ -15,6 +15,7 @@ struct FFrame;
 struct FNetDeltaSerializeInfo;
 struct FWitchPTInventoryList;
 struct FReplicationFlags;
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemChanged, UWitchPTInventoryItemInstance*);
 /** A message when an item is added to the inventory */
 USTRUCT(BlueprintType)
 struct FWitchPTInventoryChangeMessage
@@ -140,7 +141,7 @@ class WITCHPT_API UWitchPTInventoryManagerComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-public:
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	bool CanAddItemDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef, int32 StackCount = 1);
 
@@ -161,6 +162,11 @@ public:
 
 	int32 GetTotalItemCountByDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef) const;
 	bool ConsumeItemsByDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef, int32 NumToConsume);
+
+	// Delegate
+	
+	FOnItemChanged OnItemAdded;
+	FOnItemChanged OnItemRemoved;
 
 	//~UObject interface
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;

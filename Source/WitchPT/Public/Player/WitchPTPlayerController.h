@@ -32,6 +32,7 @@ public:
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
 	UPROPERTY()
 	TObjectPtr<UPointerWidget> HUDWidget;
+	UWitchPTInventoryManagerComponent* GetInventoryManager() { return InventoryManager; }
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

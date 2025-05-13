@@ -9,8 +9,17 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemAddedSignature, UWitchPTInventoryItemInstance*, ItemAdded);
 UCLASS(BlueprintType, Blueprintable)
 class WITCHPT_API UInventoryWidgetController : public UWitchPTWidgetController
 {
 	GENERATED_BODY()
+	
+public:
+	UFUNCTION(BlueprintCallable)
+	virtual void BindCallbacksToDependencies() override;
+
+
+	UPROPERTY(BlueprintAssignable, Category="Inventory")
+	FOnItemAddedSignature OnItemAdded;
 };

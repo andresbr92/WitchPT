@@ -96,8 +96,8 @@ UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitc
 	}
 	NewEntry.StackCount = StackCount;
 	Result = NewEntry.Instance;
-
-	//const ULyraInventoryItemDefinition* ItemCDO = GetDefault<ULyraInventoryItemDefinition>(ItemDef);
+	
+	
 	MarkItemDirty(NewEntry);
 
 	return Result;
@@ -183,6 +183,10 @@ UWitchPTInventoryItemInstance* UWitchPTInventoryManagerComponent::AddItemDefinit
 	if (ItemDef != nullptr)
 	{
 		Result = InventoryList.AddEntry(ItemDef, StackCount);
+		if (GetOwner()->GetNetMode() == NM_ListenServer || GetOwner()->GetNetMode() == NM_Standalone)
+		{
+			OnItemAdded.Broadcast(Result);
+		}
 		
 		if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && Result)
 		{
@@ -195,6 +199,10 @@ UWitchPTInventoryItemInstance* UWitchPTInventoryManagerComponent::AddItemDefinit
 void UWitchPTInventoryManagerComponent::AddItemInstance(UWitchPTInventoryItemInstance* ItemInstance)
 {
 	InventoryList.AddEntry(ItemInstance);
+	if (GetOwner()->GetNetMode() == NM_ListenServer || GetOwner()->GetNetMode() == NM_Standalone)
+	{
+		OnItemAdded.Broadcast(ItemInstance);
+	}
 	if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && ItemInstance)
 	{
 		AddReplicatedSubObject(ItemInstance);
