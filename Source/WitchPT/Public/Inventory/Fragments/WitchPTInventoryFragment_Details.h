@@ -20,7 +20,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText Description;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UUserWidget> IconWidget;
+	TSubclassOf<UUserWidget> IconWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag TierTag;
 	

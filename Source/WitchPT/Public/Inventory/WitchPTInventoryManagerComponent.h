@@ -16,24 +16,9 @@ struct FNetDeltaSerializeInfo;
 struct FWitchPTInventoryList;
 struct FReplicationFlags;
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemChanged, UWitchPTInventoryItemInstance*);
+// DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStackChange, const FInv_SlotAvailabilityResult&, Result);
 /** A message when an item is added to the inventory */
-USTRUCT(BlueprintType)
-struct FWitchPTInventoryChangeMessage
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(BlueprintReadOnly, Category=Inventory)
-	TObjectPtr<UActorComponent> InventoryOwner = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, Category = Inventory)
-	TObjectPtr<UWitchPTInventoryItemInstance> Instance = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, Category=Inventory)
-	int32 NewCount = 0;
-
-	UPROPERTY(BlueprintReadOnly, Category=Inventory)
-	int32 Delta = 0;
-};
 USTRUCT(BlueprintType)
 struct FWitchPTInventoryEntry : public FFastArraySerializerItem
 {
@@ -50,12 +35,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UWitchPTInventoryItemInstance> Instance = nullptr;
-
-	UPROPERTY()
-	int32 StackCount = 0;
-
-	UPROPERTY(NotReplicated)
-	int32 LastObservedCount = INDEX_NONE;
+	
 };
 
 /** List of inventory items */
@@ -166,6 +146,7 @@ public:
 	// Delegate
 	
 	FOnItemChanged OnItemAdded;
+	FOnItemChanged OnItemStackChanged;
 	FOnItemChanged OnItemRemoved;
 
 	//~UObject interface

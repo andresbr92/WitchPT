@@ -17,30 +17,12 @@ UWitchPTInventoryItemInstance::UWitchPTInventoryItemInstance(const FObjectInitia
 void UWitchPTInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ThisClass, StatTags);
+	
 	DOREPLIFETIME(ThisClass, ItemDef);
+	DOREPLIFETIME(ThisClass, TotalStackCount);
 }
 
-void UWitchPTInventoryItemInstance::AddStatTagStack(FGameplayTag Tag, int32 StackCount)
-{
-	StatTags.AddStack(Tag, StackCount);
-}
 
-void UWitchPTInventoryItemInstance::RemoveStatTagStack(FGameplayTag Tag, int32 StackCount)
-{
-	StatTags.RemoveStack(Tag, StackCount);
-}
-
-int32 UWitchPTInventoryItemInstance::GetStatTagStackCount(FGameplayTag Tag) const
-{
-	return StatTags.GetStackCount(Tag);
-}
-
-bool UWitchPTInventoryItemInstance::HasStatTag(FGameplayTag Tag) const
-{
-	return StatTags.ContainsTag(Tag);
-}
 
 void UWitchPTInventoryItemInstance::SetItemDef(TSubclassOf<UWitchPTInventoryItemDefinition> InDef)
 {

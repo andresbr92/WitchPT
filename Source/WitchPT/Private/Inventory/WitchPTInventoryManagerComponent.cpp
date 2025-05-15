@@ -26,7 +26,7 @@ FString FWitchPTInventoryEntry::GetDebugString() const
 		ItemDef = Instance->GetItemDef();
 	}
 
-	return FString::Printf(TEXT("%s (%d x %s)"), *GetNameSafe(Instance), StackCount, *GetNameSafe(ItemDef));
+	return FString::Printf(TEXT("%s ( x %s)"), *GetNameSafe(Instance),  *GetNameSafe(ItemDef));
 }
 
 
@@ -37,9 +37,7 @@ void FWitchPTInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedI
 {
 	for (int32 Index : RemovedIndices)
 	{
-		FWitchPTInventoryEntry& Stack = Entries[Index];
-		BroadcastChangeMessage(Stack, /*OldCount=*/ Stack.StackCount, /*NewCount=*/ 0);
-		Stack.LastObservedCount = 0;
+		
 	}
 }
 
@@ -47,9 +45,7 @@ void FWitchPTInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndic
 {
 	for (int32 Index : AddedIndices)
 	{
-		FWitchPTInventoryEntry& Stack = Entries[Index];
-		BroadcastChangeMessage(Stack, /*OldCount=*/ 0, /*NewCount=*/ Stack.StackCount);
-		Stack.LastObservedCount = Stack.StackCount;
+		
 	}
 }
 
@@ -57,23 +53,13 @@ void FWitchPTInventoryList::PostReplicatedChange(const TArrayView<int32> Changed
 {
 	for (int32 Index : ChangedIndices)
 	{
-		FWitchPTInventoryEntry& Stack = Entries[Index];
-		check(Stack.LastObservedCount != INDEX_NONE);
-		BroadcastChangeMessage(Stack, /*OldCount=*/ Stack.LastObservedCount, /*NewCount=*/ Stack.StackCount);
-		Stack.LastObservedCount = Stack.StackCount;
+		
 	}
 }
 
 void FWitchPTInventoryList::BroadcastChangeMessage(FWitchPTInventoryEntry& Entry, int32 OldCount, int32 NewCount)
 {
-	FWitchPTInventoryChangeMessage Message;
-	Message.InventoryOwner = OwnerComponent;
-	Message.Instance = Entry.Instance;
-	Message.NewCount = NewCount;
-	Message.Delta = NewCount - OldCount;
-
-	// UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwnerComponent->GetWorld());
-	// MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_StackChanged, Message);
+	
 }
 UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef, int32 StackCount)
 {
@@ -89,6 +75,7 @@ UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitc
 	FWitchPTInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.Instance = NewObject<UWitchPTInventoryItemInstance>(OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
 	NewEntry.Instance->SetItemDef(ItemDef);
+	NewEntry.Instance->SetTotalStackCount(StackCount);
 	for (UWitchPTInventoryItemFragment* Fragment : GetDefault<UWitchPTInventoryItemDefinition>(ItemDef)->Fragments)
 	{
 		if (Fragment != nullptr)
@@ -96,7 +83,7 @@ UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitc
 			Fragment->OnInstanceCreated(NewEntry.Instance);
 		}
 	}
-	NewEntry.StackCount = StackCount;
+
 	Result = NewEntry.Instance;
 	
 	
@@ -137,20 +124,6 @@ TArray<UWitchPTInventoryItemInstance*> FWitchPTInventoryList::GetAllItems() cons
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
 	, InventoryList(this)
@@ -174,13 +147,19 @@ TArray<UWitchPTInventoryItemInstance*> UWitchPTInventoryManagerComponent::GetAll
 bool UWitchPTInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef,
 	int32 StackCount)
 {
+	if (!ItemDef)
+	{
+		return false;
+	}
 	
 	UWitchPTInventoryItemInstance* FoundItem = FindFirstItemStackByDefinition(ItemDef);
 	if (FoundItem)
 	{
-		
-		
-		
+		FoundItem->SetTotalStackCount(FoundItem->GetTotalStackCount() + StackCount);
+		if (GetOwner()->GetNetMode() == NM_ListenServer || GetOwner()->GetNetMode() == NM_Standalone)
+		{
+			OnItemStackChanged.Broadcast(FoundItem);
+		}
 		
 	}
 	else
@@ -189,7 +168,6 @@ bool UWitchPTInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<UWitchP
 		return true;
 	}
 	return false;
-	
 }
 
 UWitchPTInventoryItemInstance* UWitchPTInventoryManagerComponent::AddItemDefinition(
