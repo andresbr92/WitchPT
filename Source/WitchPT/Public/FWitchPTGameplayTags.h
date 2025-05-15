@@ -122,6 +122,21 @@ public:
 	// Communication tags
 	FGameplayTag Communication_Message;
 
+	// --- Items Tags ---
+	FGameplayTag Item;
+	FGameplayTag Item_Consumable;
+	FGameplayTag Item_Consumable_Potion;
+	FGameplayTag Item_Consumable_Potion_Tier_0;
+	FGameplayTag Item_Consumable_Potion_Tier_1;
+	FGameplayTag Item_Consumable_Potion_Tier_2;
+	FGameplayTag Item_Consumable_Potion_Tier_3;
+	
+	FGameplayTag Item_Consumable_Ingredient;
+	FGameplayTag Item_Consumable_Ingredient_Tier_0;
+	FGameplayTag Item_Consumable_Ingredient_Tier_1;
+	FGameplayTag Item_Consumable_Ingredient_Tier_2;
+	FGameplayTag Item_Consumable_Ingredient_Tier_3;
+
 
 
 

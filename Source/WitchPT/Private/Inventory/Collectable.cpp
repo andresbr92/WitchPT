@@ -40,7 +40,8 @@ void UCollectableStatics::AddPickupToInventory(UWitchPTInventoryManagerComponent
 
 		for (const FPickupTemplate& Template : PickupInventory.Templates)
 		{
-			InventoryComponent->AddItemDefinition(Template.ItemDef, Template.StackCount);
+			// InventoryComponent->AddItemDefinition(Template.ItemDef, Template.StackCount);
+			InventoryComponent->CanAddItemDefinition(Template.ItemDef, Template.StackCount);
 		}
 
 		for (const FPickupInstance& Instance : PickupInventory.Instances)

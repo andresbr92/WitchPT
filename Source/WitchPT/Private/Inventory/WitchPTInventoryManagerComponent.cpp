@@ -7,6 +7,8 @@
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/WitchPTInventoryItemFragment.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
+#include "Inventory/Fragments/WitchPTInventoryFragment_Stats.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientDetails.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -172,8 +174,22 @@ TArray<UWitchPTInventoryItemInstance*> UWitchPTInventoryManagerComponent::GetAll
 bool UWitchPTInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef,
 	int32 StackCount)
 {
-	//@TODO: Add support for stack limit / uniqueness checks / etc...
-	return true;
+	
+	UWitchPTInventoryItemInstance* FoundItem = FindFirstItemStackByDefinition(ItemDef);
+	if (FoundItem)
+	{
+		
+		
+		
+		
+	}
+	else
+	{
+		AddItemDefinition(ItemDef, StackCount);
+		return true;
+	}
+	return false;
+	
 }
 
 UWitchPTInventoryItemInstance* UWitchPTInventoryManagerComponent::AddItemDefinition(

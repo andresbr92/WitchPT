@@ -90,6 +90,23 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	// Communication Messages
 	GameplayTags.Communication_Message = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Communication.Message"));
 
+	// --- Items Tags ---
+	GameplayTags.Item = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item"));
+	GameplayTags.Item_Consumable = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable"));
+	GameplayTags.Item_Consumable_Potion = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion"));
+	GameplayTags.Item_Consumable_Potion_Tier_0 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_0"));
+	GameplayTags.Item_Consumable_Potion_Tier_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_1"));
+	GameplayTags.Item_Consumable_Potion_Tier_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_2"));
+	GameplayTags.Item_Consumable_Potion_Tier_3 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_3"));
+
+	GameplayTags.Item_Consumable_Ingredient = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient"));
+	GameplayTags.Item_Consumable_Ingredient_Tier_0 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_0"));
+	GameplayTags.Item_Consumable_Ingredient_Tier_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_1"));
+	GameplayTags.Item_Consumable_Ingredient_Tier_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_2"));
+	GameplayTags.Item_Consumable_Ingredient_Tier_3 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_3"));
+	
+
+	
 
 
 	

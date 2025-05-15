@@ -5,24 +5,20 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Inventory/WitchPTInventoryItemFragment.h"
-#include "WitchPTInventoryFragment_Details.generated.h"
+#include "WitchPTInventoryItemFragment_IngredientDetails.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class WITCHPT_API UWitchPTInventoryFragment_Details : public UWitchPTInventoryItemFragment
+class WITCHPT_API UWitchPTInventoryItemFragment_IngredientDetails : public UWitchPTInventoryItemFragment
 {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FText Title;
+	FGameplayTag IngredientTier;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FText Description;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UUserWidget> IconWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FGameplayTag TierTag;
-	
-	
+	FGameplayTag IngredientCategory;
+
+	virtual void OnInstanceCreated(UWitchPTInventoryItemInstance* Instance) const override;
 };
