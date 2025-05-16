@@ -8,6 +8,7 @@
 #include "Net/Serialization/FastArraySerializer.h"
 #include "WitchPTInventoryManagerComponent.generated.h"
 
+class UInventoryUserWidget;
 class UWitchPTInventoryItemDefinition;
 class UWitchPTInventoryItemInstance;
 class UWitchPTInventoryManagerComponent;
@@ -35,6 +36,8 @@ UCLASS(BlueprintType)
 class WITCHPT_API UWitchPTInventoryManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
+protected:
+	virtual void BeginPlay() override;
 
 public:	
 	/**
@@ -150,4 +153,18 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	FWitchPTInventoryList InventoryList;
+	UPROPERTY()
+	TObjectPtr<UInventoryUserWidget> InventoryMenu;
+
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInventoryUserWidget> InventoryMenuClass;
+
+	TWeakObjectPtr<APlayerController> OwningController;
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
+	void ToggleInventoryMenu();
+	void ConstructInventory();
+	bool bInventoryMenuOpen;
+	void OpenInventoryMenu();
+	void CloseInventoryMenu();
 };

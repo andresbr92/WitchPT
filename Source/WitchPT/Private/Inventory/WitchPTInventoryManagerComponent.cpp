@@ -3,6 +3,7 @@
 
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Engine/ActorChannel.h"
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
@@ -10,11 +11,17 @@
 #include "Inventory/Fragments/WitchPTInventoryFragment_Stackable.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientDetails.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/Widgets/Inventory/InventoryUserWidget.h"
 
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(WitchPTInventoryManagerComponent)
 
 
+void UWitchPTInventoryManagerComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	ConstructInventory();
+}
 
 UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
@@ -233,5 +240,55 @@ void UWitchPTInventoryManagerComponent::ReadyForReplication()
 			}
 		}
 	}
+}
+
+void UWitchPTInventoryManagerComponent::ToggleInventoryMenu()
+{
+	if (bInventoryMenuOpen)
+	{
+		CloseInventoryMenu();
+	}
+	else
+	{
+		OpenInventoryMenu();
+	}
+}
+
+void UWitchPTInventoryManagerComponent::ConstructInventory()
+{
+	OwningController = Cast<APlayerController>(GetOwner());
+	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
+	if (!OwningController->IsLocalController()) return;
+	InventoryMenu = CreateWidget<UInventoryUserWidget>(OwningController.Get(), InventoryMenuClass);
+	InventoryMenu->AddToViewport();
+	CloseInventoryMenu();
+}
+
+void UWitchPTInventoryManagerComponent::OpenInventoryMenu()
+{
+	if (!IsValid(InventoryMenu)) return;
+
+	InventoryMenu->SetVisibility(ESlateVisibility::Visible);
+	bInventoryMenuOpen = true;
+
+	if (!OwningController.IsValid()) return;
+
+	FInputModeGameAndUI InputMode;
+	OwningController->SetInputMode(InputMode);
+	OwningController->SetShowMouseCursor(true);
+}
+
+void UWitchPTInventoryManagerComponent::CloseInventoryMenu()
+{
+	if (!IsValid(InventoryMenu)) return;
+
+	InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
+	bInventoryMenuOpen = false;
+
+	if (!OwningController.IsValid()) return;
+
+	FInputModeGameOnly InputMode;
+	OwningController->SetInputMode(InputMode);
+	OwningController->SetShowMouseCursor(false);
 }
 
