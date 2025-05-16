@@ -84,8 +84,24 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_UpdateItemStackCount(UWitchPTInventoryItemInstance* ItemInstance, int32 NewCount);
 
-	// UFUNCTION(Server, Reliable)
-	// void RemoveItemInstance(UWitchPTInventoryItemInstance* ItemInstance);
+	/**
+	 * Server RPC to remove an item instance from the inventory
+	 * Completely removes the item from inventory list
+	 * 
+	 * @param ItemInstance - The specific item instance to remove
+	 */
+	UFUNCTION(Server, Reliable)
+	void Server_RemoveItemInstance(UWitchPTInventoryItemInstance* ItemInstance);
+
+	/**
+	 * Server RPC to reduce the stack count of a specific item
+	 * If count reaches zero, removes the item completely
+	 * 
+	 * @param ItemInstance - The specific item instance to update
+	 * @param AmountToRemove - How many stacks to remove from the item
+	 */
+	UFUNCTION(Server, Reliable)
+	void Server_RemoveItemStacks(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove);
 
 	/**
 	 * Get all items currently in the inventory

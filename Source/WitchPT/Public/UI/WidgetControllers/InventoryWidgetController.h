@@ -10,6 +10,8 @@
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemAddedSignature, UWitchPTInventoryItemInstance*, ItemAdded);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRemovedSignature, UWitchPTInventoryItemInstance*, ItemRemoved);
+
 UCLASS(BlueprintType, Blueprintable)
 class WITCHPT_API UInventoryWidgetController : public UWitchPTWidgetController
 {
@@ -18,10 +20,20 @@ class WITCHPT_API UInventoryWidgetController : public UWitchPTWidgetController
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void BindCallbacksToDependencies() override;
-
+						
+	/**
+	 * Removes a stack or specified amount from an inventory item instance
+	 * If there's only one stack left and count is 1, removes the item completely
+	 * @param ItemInstance - The item instance to remove from
+	 * @param AmountToRemove - The amount to remove, defaults to 1
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
 
 	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnItemAddedSignature OnItemAddedDelegate;
 	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnItemAddedSignature OnItemStackChangedDelegate;
+	UPROPERTY(BlueprintAssignable, Category="Inventory")
+	FOnItemRemovedSignature OnItemRemovedDelegate;
 };

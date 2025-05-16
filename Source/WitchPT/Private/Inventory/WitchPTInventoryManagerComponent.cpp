@@ -76,6 +76,47 @@ void UWitchPTInventoryManagerComponent::Server_UpdateItemStackCount_Implementati
 	}
 }
 
+void UWitchPTInventoryManagerComponent::Server_RemoveItemInstance_Implementation(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (IsValid(ItemInstance))
+	{
+		// Notificar antes de eliminar para que los listeners puedan usar la información del item
+		if (GetOwner()->GetNetMode() == NM_ListenServer || GetOwner()->GetNetMode() == NM_Standalone)
+		{
+			OnItemRemoved.Broadcast(ItemInstance);
+		}
+		
+		// Eliminar el item de la lista de inventario
+		InventoryList.RemoveEntry(ItemInstance);
+		
+		// Desregistrar el subobjeto para la replicación
+		if (IsUsingRegisteredSubObjectList())
+		{
+			RemoveReplicatedSubObject(ItemInstance);
+		}
+	}
+}
+
+void UWitchPTInventoryManagerComponent::Server_RemoveItemStacks_Implementation(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)
+{
+	if (IsValid(ItemInstance))
+	{
+		const int32 CurrentCount = ItemInstance->GetTotalStackCount();
+		const int32 NewCount = FMath::Max(0, CurrentCount - AmountToRemove);
+		
+		// Si el nuevo conteo es cero, eliminar el item completamente
+		if (NewCount <= 0)
+		{
+			Server_RemoveItemInstance(ItemInstance);
+		}
+		else
+		{
+			// Actualizar el conteo de stacks
+			Server_UpdateItemStackCount(ItemInstance, NewCount);
+		}
+	}
+}
+
 TArray<UWitchPTInventoryItemInstance*> UWitchPTInventoryManagerComponent::GetAllItems() const
 {
 	return InventoryList.GetAllItems();
