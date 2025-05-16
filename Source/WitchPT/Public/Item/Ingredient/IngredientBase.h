@@ -16,11 +16,11 @@ public:
 
 	AIngredientBase();
 	virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
-	virtual FInventoryPickup GetPickupInventory() const override;
+	virtual FItemManifest GetPickupInventory() const override;
 	
 protected:
 
 	UPROPERTY(EditAnywhere)
-	FInventoryPickup StaticInventory;
+	FItemManifest StaticInventory;
 
 };

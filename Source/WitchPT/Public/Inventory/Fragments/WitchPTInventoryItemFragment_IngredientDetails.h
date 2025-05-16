@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Inventory/WitchPTInventoryItemFragment.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
 #include "WitchPTInventoryItemFragment_IngredientDetails.generated.h"
 
 /**

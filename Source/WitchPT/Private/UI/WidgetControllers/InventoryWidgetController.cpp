@@ -16,11 +16,11 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 		{
 			InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
 			{
-				OnItemAdded.Broadcast(ItemAdded);
+				OnItemAddedDelegate.Broadcast(ItemAdded);
 			});
 			InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
 			{
-				OnItemStackChanged.Broadcast(ItemAdded);
+				OnItemStackChangedDelegate.Broadcast(ItemAdded);
 			});
 		}
 	}

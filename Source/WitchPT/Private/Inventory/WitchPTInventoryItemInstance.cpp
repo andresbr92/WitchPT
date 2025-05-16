@@ -5,7 +5,7 @@
 
 #include "GameplayTagContainer.h"
 #include "Inventory/WitchPTInventoryItemDefinition.h"
-#include "Inventory/WitchPTInventoryItemFragment.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
 #include "Net/UnrealNetwork.h"
 #include UE_INLINE_GENERATED_CPP_BY_NAME(WitchPTInventoryItemInstance)
 class FLifetimeProperty;
@@ -28,6 +28,7 @@ void UWitchPTInventoryItemInstance::SetItemDef(TSubclassOf<UWitchPTInventoryItem
 {
 	ItemDef = InDef;
 }
+
 
 const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragmentByClass(
 	TSubclassOf<UWitchPTInventoryItemFragment> FragmentClass) const

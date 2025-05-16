@@ -60,6 +60,7 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.InputTag_Ctrl = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Ctrl"));
 	GameplayTags.InputTag_Alt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Alt"));
 	GameplayTags.InputTag_Shift = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Shift"));
+	GameplayTags.InputTag_Tab = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Tab"));
 	// Ritual
 	GameplayTags.Ritual_Position_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.1"));
 	GameplayTags.Ritual_Position_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.2"));

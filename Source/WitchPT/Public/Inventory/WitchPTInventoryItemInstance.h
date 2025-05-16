@@ -20,6 +20,7 @@ class WITCHPT_API UWitchPTInventoryItemInstance : public UObject
 	GENERATED_BODY()
 public:
 	UWitchPTInventoryItemInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	friend struct FWitchPTInventoryList;
 	
 	//~UObject interface
 	virtual bool IsSupportedForNetworking() const override { return true; }
@@ -47,14 +48,10 @@ public:
 
 	void SetItemDef(TSubclassOf<UWitchPTInventoryItemDefinition> InDef);
 
-	friend struct FWitchPTInventoryList;
 
 private:
 	UPROPERTY(Replicated)
 	int32 TotalStackCount{0};
-
-	
-
 	
 	UPROPERTY(Replicated)
 	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef;

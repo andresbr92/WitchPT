@@ -85,6 +85,7 @@ public:
 	FGameplayTag InputTag_Ctrl;
 	FGameplayTag InputTag_Alt;
 	FGameplayTag InputTag_Shift;
+	FGameplayTag InputTag_Tab;
 
 
 	// --- Ritual Position Tags ---

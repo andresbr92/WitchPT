@@ -3,7 +3,7 @@
 
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 
-#include "Inventory/WitchPTInventoryItemFragment.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
 
 UWitchPTInventoryItemDefinition::UWitchPTInventoryItemDefinition(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)

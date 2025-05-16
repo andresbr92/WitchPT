@@ -21,7 +21,7 @@ public:
 
 
 	UPROPERTY(BlueprintAssignable, Category="Inventory")
-	FOnItemAddedSignature OnItemAdded;
+	FOnItemAddedSignature OnItemAddedDelegate;
 	UPROPERTY(BlueprintAssignable, Category="Inventory")
-	FOnItemAddedSignature OnItemStackChanged;
+	FOnItemAddedSignature OnItemStackChangedDelegate;
 };

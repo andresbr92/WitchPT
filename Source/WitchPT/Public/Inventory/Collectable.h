@@ -19,37 +19,13 @@ class UObject;
 struct FFrame;
 // ------------------------- STRUCTS ---------------------- //
 USTRUCT(BlueprintType)
-struct FPickupTemplate
+struct FItemManifest
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
-	int32 StackCount = 1;
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef;
-};
-USTRUCT(BlueprintType)
-struct FPickupInstance
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<UWitchPTInventoryItemInstance> Item = nullptr;
-};
-USTRUCT(BlueprintType)
-struct FInventoryPickup
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPickupInstance> Instances;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPickupTemplate> Templates;
 };
 
 
@@ -67,8 +43,11 @@ class WITCHPT_API ICollectable
 	GENERATED_BODY()
 
 public:
+	/**
+	 * This is the functions you call from the GA_Interact_Collect
+	 */
 	UFUNCTION(BlueprintCallable)
-	virtual FInventoryPickup GetPickupInventory() const = 0;
+	virtual FItemManifest GetPickupInventory() const = 0;
 };
 
 UCLASS()
@@ -78,8 +57,7 @@ class UCollectableStatics : public UBlueprintFunctionLibrary
 
 public:
 	UCollectableStatics();
-
-public:
+	
 	UFUNCTION(BlueprintPure)
 	static TScriptInterface<ICollectable> GetFirstPickupableFromActor(AActor* Actor);
 

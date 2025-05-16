@@ -17,6 +17,9 @@ AWitchPTPlayerController::AWitchPTPlayerController()
 {
 	bReplicates = true;
 	InventoryManager = CreateDefaultSubobject<UWitchPTInventoryManagerComponent>("InventoryManager");
+	InventoryManager->SetIsReplicated(true);
+	
+	
 }
 
 void AWitchPTPlayerController::PlayerTick(float DeltaTime)

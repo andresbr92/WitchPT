@@ -4,7 +4,7 @@
 #include "Inventory/WitchPTInventoryFunctionLibrary.h"
 
 #include "Inventory/WitchPTInventoryItemDefinition.h"
-#include "Inventory/WitchPTInventoryItemFragment.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
 
 const UWitchPTInventoryItemFragment* UWitchPTInventoryFunctionLibrary::FindItemDefinitionFragment(
 	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef, TSubclassOf<UWitchPTInventoryItemFragment> FragmentClass)

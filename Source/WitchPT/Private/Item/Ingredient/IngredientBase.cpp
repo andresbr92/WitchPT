@@ -16,7 +16,7 @@ void AIngredientBase::GatherInteractionOptions(const FInteractionQuery& Interact
 	Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
 }
 
-FInventoryPickup AIngredientBase::GetPickupInventory() const
+FItemManifest AIngredientBase::GetPickupInventory() const
 {
 	return StaticInventory;
 }
