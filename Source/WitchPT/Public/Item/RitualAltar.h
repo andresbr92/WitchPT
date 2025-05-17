@@ -98,6 +98,9 @@ public:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualCatastrophicFail();
+	
+	
+	virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
 
 
 

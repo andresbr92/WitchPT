@@ -52,7 +52,7 @@ void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetime
 	DOREPLIFETIME(AWitchPTPlayerController, InventoryManager);
 }
 
-void AWitchPTPlayerController::InitializeRitualUserWidget(ARitualAltar* RitualAltar)
+void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ARitualAltar* RitualAltar)
 {
 	if (!RitualAltar || !RitualAltar->RitualUserWidgetClass || !IsLocalController())
 	{
@@ -93,6 +93,14 @@ void AWitchPTPlayerController::InitializeRitualUserWidget(ARitualAltar* RitualAl
 bool AWitchPTPlayerController::HasRitualWidgetInitialized(ARitualAltar* RitualAltar)
 {
 	return InitializedRitualWidgets.Contains(RitualAltar);
+}
+
+void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(ARitualAltar* RitualAltar)
+{
+	if (!HasRitualWidgetInitialized(RitualAltar))
+	{
+		LocalInitializeRitualUserWidget(RitualAltar);
+	}
 }
 
 void AWitchPTPlayerController::BeginPlay()

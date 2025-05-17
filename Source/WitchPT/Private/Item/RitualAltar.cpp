@@ -709,6 +709,30 @@ void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 	
 }
 
+
+
+void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
+{
+	Super::OccupyPosition(Player, Position);
+	
+	if (Player->GetRemoteRole() == ROLE_SimulatedProxy)
+	{
+		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
+		if (!PC->HasRitualWidgetInitialized(this))
+		{
+			PC->LocalInitializeRitualUserWidget(this);
+		}
+		
+	} else if (HasAuthority() && Player->GetRemoteRole() == ROLE_AutonomousProxy)
+	{
+		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
+		if (!PC->HasRitualWidgetInitialized(this))
+		{
+			PC->Client_InitializeRitualUserWidget(this);
+		}
+	}
+}
+
 void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 {
 	// Client-side feedback for ritual success
@@ -755,26 +779,17 @@ void ARitualAltar::OnRep_CurrentRitualState()
 			{
 				
 			}
+		case EInteractionState::WaitingForPlayers:
+			{
+				
+			}
 		case EInteractionState::Preparing:
 			{
 				
 			}
 		case EInteractionState::Active:
 			{
-				AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-				if (LocalPC && LocalPC->IsLocalController())
-				{
-					// Comprobar si el jugador local está participando en el ritual
-					ACharacter* LocalCharacter = Cast<ACharacter>(LocalPC->GetPawn());
-					if (LocalCharacter && ParticipatingPlayers.Contains(LocalCharacter))
-					{
-						// Verificar si el widget ya ha sido inicializado para evitar duplicación
-						if (!LocalPC->HasRitualWidgetInitialized(this))
-						{
-							LocalPC->InitializeRitualUserWidget(this);
-						}
-					}
-				}
+				
 			}
 		case EInteractionState::Succeeded:
 			{
@@ -796,17 +811,7 @@ void ARitualAltar::OnRep_CurrentRitualState()
 
 void ARitualAltar::OnRep_CurrentSequenceIndex()
 {
-	// Update UI or trigger events
-	if (InputSequence.IsValidIndex(CurrentSequenceIndex))
-	{
-		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Sequence index updated to %d/%d. Expected input: %s"), 
-			CurrentSequenceIndex, InputSequence.Num()-1, *InputSequence[CurrentSequenceIndex].ToString());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Invalid sequence index: %d (sequence length: %d)"), 
-			CurrentSequenceIndex, InputSequence.Num());
-	}
+	
 }
 
 
@@ -830,28 +835,14 @@ void ARitualAltar::OnRep_CurrentActivePlayer()
 		}
 	}
 	
-	// Update UI or trigger events to show whose turn it is
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Active player changed to: %s"), 
-		CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"));
-	
-	// Log what input this player needs to enter
-	if (InputSequence.IsValidIndex(CurrentSequenceIndex))
-	{
-		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] %s needs to enter: %s"), 
-			CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"), 
-			*InputSequence[CurrentSequenceIndex].ToString());
-	}
 }
 
 void ARitualAltar::OnRep_CurrentInputTimer()
 {
-	// Update UI timer display
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Input timer updated: %.2f seconds remaining"), CurrentInputTimer);
+
 }
 
 void ARitualAltar::OnRep_CorruptionAmount()
 {
-	// Update UI corruption display
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Corruption updated: %.2f/%.2f (%.1f%%)"), 
-		CorruptionAmount, MaxCorruption, GetCorruptionPercentage());
+
 }

@@ -26,3 +26,11 @@ Content/fullscreen_flat_gui
 
 .codebuddy/.gitignore
 .idea/.idea.Aura.dir/.idea/workspace.xml
+
+Source/WitchPT/Public/AbilitySystem/Cauldron/GA_CauldronPlacementPreview.h
+
+Source/WitchPT/Private/AbilitySystem/Cauldron/GA_CauldronPlace.cpp
+
+Source/WitchPT/Private/AbilitySystem/Cauldron/GA_CauldronPlacementPreview.cpp
+
+Source/WitchPT/Public/AbilitySystem/Cauldron/GA_CauldronPlace.h

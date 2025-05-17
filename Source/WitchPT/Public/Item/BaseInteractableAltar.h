@@ -17,6 +17,7 @@ UENUM(BlueprintType)
 enum class EInteractionState : uint8
 {
     Inactive    UMETA(DisplayName = "Inactive"),
+    WaitingForPlayers UMETA(DisplayName = "Waiting For Players"), // At least one player in position
     Preparing   UMETA(DisplayName = "Preparing"), // Players occupying positions
     Active      UMETA(DisplayName = "Active"),    // Sequence running
     Succeeded   UMETA(DisplayName = "Succeeded"),

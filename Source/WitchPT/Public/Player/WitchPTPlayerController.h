@@ -29,8 +29,11 @@ public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void InitializeRitualUserWidget(ARitualAltar* RitualAltar);
+	void LocalInitializeRitualUserWidget(ARitualAltar* RitualAltar);
 	bool HasRitualWidgetInitialized(ARitualAltar* RitualAltar);
+
+	UFUNCTION(Client, Reliable)
+	void Client_InitializeRitualUserWidget(ARitualAltar* RitualAltar);
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
