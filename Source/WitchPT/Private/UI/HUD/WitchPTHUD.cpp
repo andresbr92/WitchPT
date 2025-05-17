@@ -5,6 +5,7 @@
 
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
+#include "UI/WidgetControllers/RitualWidgetController.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 
 UOverlayWidgetController* AWitchPTHUD::SetOverlayWidgetController(const FWidgetControllerParams& WCParams)
@@ -27,6 +28,18 @@ UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWid
 		InventoryWidgetController->BindCallbacksToDependencies();
 	}
 	return InventoryWidgetController;
+}
+
+URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetControllerParams WCParams)
+{
+	if (RitualWidgetController == nullptr)
+	{
+		RitualWidgetController = NewObject<URitualWidgetController>(this, RitualWidgetControllerClass);
+		RitualWidgetController->SetWidgetControllerParams(WCParams);
+		RitualWidgetController->BindCallbacksToDependencies();
+		//TODO: Remove callback dependencies when the ritual ends
+	}
+	return RitualWidgetController;
 }
 
 void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
