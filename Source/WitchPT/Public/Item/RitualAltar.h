@@ -23,6 +23,7 @@ enum class ERitualInput : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompleted, bool, bWasSuccessful);
 DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChanged, ACharacter* Character);
+DECLARE_DELEGATE_OneParam(FOnIsMyTurn, bool IsMyTurn);
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
 {
@@ -79,6 +80,7 @@ public:
 	FOnRitualCompleted OnRitualCompleted;
 
 	FOnCurrentActivePlayerChanged OnCurrentActivePlayerChanged;
+	FOnIsMyTurn IsMyTurn;
 	
 	
 	// Functions to be called by WitchPTMechanicComponent

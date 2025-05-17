@@ -60,6 +60,12 @@ void AWitchPTPlayerController::InitializeRitualUserWidget(ARitualAltar* RitualAl
 		return;
 	}
 	
+	// Registrar este altar como inicializado
+	if (!InitializedRitualWidgets.Contains(RitualAltar))
+	{
+		InitializedRitualWidgets.Add(RitualAltar);
+	}
+	
 	URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, RitualAltar->RitualUserWidgetClass);
 	
 	if (IsValid(RitualUserWidget))
@@ -82,6 +88,11 @@ void AWitchPTPlayerController::InitializeRitualUserWidget(ARitualAltar* RitualAl
 		// Add the widget to viewport
 		RitualUserWidget->AddToViewport();
 	}
+}
+
+bool AWitchPTPlayerController::HasRitualWidgetInitialized(ARitualAltar* RitualAltar)
+{
+	return InitializedRitualWidgets.Contains(RitualAltar);
 }
 
 void AWitchPTPlayerController::BeginPlay()

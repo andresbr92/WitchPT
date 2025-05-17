@@ -30,6 +30,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void InitializeRitualUserWidget(ARitualAltar* RitualAltar);
+	bool HasRitualWidgetInitialized(ARitualAltar* RitualAltar);
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
@@ -73,6 +74,9 @@ private:
 
 	void CreateHUDWidget();
 	
+	// Array de altares para los que ya se ha creado un widget
+	UPROPERTY()
+	TArray<ARitualAltar*> InitializedRitualWidgets;
 	
 };
 

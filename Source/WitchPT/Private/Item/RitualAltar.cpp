@@ -768,7 +768,11 @@ void ARitualAltar::OnRep_CurrentRitualState()
 					ACharacter* LocalCharacter = Cast<ACharacter>(LocalPC->GetPawn());
 					if (LocalCharacter && ParticipatingPlayers.Contains(LocalCharacter))
 					{
-						LocalPC->InitializeRitualUserWidget(this);
+						// Verificar si el widget ya ha sido inicializado para evitar duplicación
+						if (!LocalPC->HasRitualWidgetInitialized(this))
+						{
+							LocalPC->InitializeRitualUserWidget(this);
+						}
 					}
 				}
 			}
@@ -818,6 +822,10 @@ void ARitualAltar::OnRep_CurrentActivePlayer()
 			if (LocalCharacter == CurrentActivePlayer)
 			{
 				OnCurrentActivePlayerChanged.Execute(CurrentActivePlayer);
+				IsMyTurn.Execute(true);
+			} else
+			{
+				IsMyTurn.Execute(false);
 			}
 		}
 	}

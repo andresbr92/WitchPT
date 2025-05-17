@@ -45,33 +45,39 @@ void URitualWidgetController::BindCallbacksToDependencies()
     {
         // Subscribe to RitualAltar delegates
         
-        // For ritual state changes, we can subscribe to OnRep events
-        // through EventTags or create custom variables that call Multicast RPCs from the altar
-        
         // Subscribe to OnRitualCompleted
         RitualAltar->OnRitualCompleted.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
+        
         RitualAltar->OnCurrentActivePlayerChanged.BindLambda([this](ACharacter* Character)
         {
             if (IsLocalPlayerActive() && RitualAltar)
             {
                 // Get and broadcast the expected input
-                OnRitualActivePlayerChanged.Broadcast(Character);
+               
                 FGameplayTag ExpectedInput = RitualAltar->GetCurrentExpectedInput();
-                OnRitualExpectedInputChanged.Broadcast(ExpectedInput);
+                HandleTurnAdvanced(ExpectedInput, RitualAltar->GetCurrentSequenceProgress());
+               
             }
+        });
+        RitualAltar->IsMyTurn.BindLambda([this](bool IsMyTurn)
+        {
+            OnIsMyTurn.Broadcast(IsMyTurn);
         });
         
         // We can also watch for changes using AbilitySystem for ritual events
-        if (AbilitySystemComponent)
-        {
-            const FWitchPTGameplayTags& GameplayTags = FWitchPTGameplayTags::Get();
-            
-            // Listen for turn change events
-            // AbilitySystemComponent->RegisterGameplayTagEvent(
-            //     GameplayTags.Event_Ritual_TurnAdvanced, 
-            //     EGameplayTagEventType::NewOrRemoved
-            // ).AddUObject(this, &URitualWidgetController::HandleTurnAdvanced);
-        }
+        // if (AbilitySystemComponent)
+        // {
+        //     const FWitchPTGameplayTags& GameplayTags = FWitchPTGameplayTags::Get();
+        //     
+        //     // Listen for turn change events
+        //     AbilitySystemComponent->RegisterGameplayTagEvent(
+        //         GameplayTags.Event_Ritual_TurnAdvanced, 
+        //         EGameplayTagEventType::NewOrRemoved
+        //     ).AddLambda([this](FOnGameplayEffectTagCountChanged& Event)
+        //     {
+        //         
+        //     });
+        // }
     }
 }
 
@@ -117,7 +123,7 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
 void URitualWidgetController::HandleActivePlayerChanged(ACharacter* NewActivePlayer)
 {
     
-    // If it's the local player's turn, we can also broadcast the expected input
+    OnRitualActivePlayerChanged.Broadcast(NewActivePlayer);
    
 }
 

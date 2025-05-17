@@ -15,6 +15,9 @@ enum class EInteractionState : uint8;
 // Delegate to notify when the expected input in the ritual changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignature, FGameplayTag, ExpectedInput);
 
+// Delegate to notify when the expected input in the ritual changes
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurnSignature, bool, IsMyTurn);
+
 // Delegate to notify when the active player changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualActivePlayerChangedSignature, ACharacter*, ActivePlayer);
 
@@ -80,6 +83,9 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualCompletedSignature OnRitualCompleted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+	FOnIsMyTurnSignature OnIsMyTurn;
 	
 protected:
 	// Reference to the ritual altar that this widget controls
