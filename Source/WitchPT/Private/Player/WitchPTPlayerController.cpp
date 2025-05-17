@@ -54,7 +54,7 @@ void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetime
 
 void AWitchPTPlayerController::InitializeRitualUserWidget(ARitualAltar* RitualAltar)
 {
-	if (!RitualAltar || !RitualAltar->RitualUserWidgetClass)
+	if (!RitualAltar || !RitualAltar->RitualUserWidgetClass || !IsLocalController())
 	{
 		UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Invalid altar or widget class!"));
 		return;

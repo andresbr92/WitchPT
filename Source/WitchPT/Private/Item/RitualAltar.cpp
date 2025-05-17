@@ -761,15 +761,16 @@ void ARitualAltar::OnRep_CurrentRitualState()
 			}
 		case EInteractionState::Active:
 			{
-				for (auto& Player: ParticipatingPlayers)
+				AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+				if (LocalPC && LocalPC->IsLocalController())
 				{
-					AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-					if (LocalPC->IsLocalController())
+					// Comprobar si el jugador local está participando en el ritual
+					ACharacter* LocalCharacter = Cast<ACharacter>(LocalPC->GetPawn());
+					if (LocalCharacter && ParticipatingPlayers.Contains(LocalCharacter))
 					{
 						LocalPC->InitializeRitualUserWidget(this);
 					}
 				}
-				
 			}
 		case EInteractionState::Succeeded:
 			{
@@ -807,6 +808,20 @@ void ARitualAltar::OnRep_CurrentSequenceIndex()
 
 void ARitualAltar::OnRep_CurrentActivePlayer()
 {
+	AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (LocalPC && LocalPC->IsLocalController())
+	{
+		
+		ACharacter* LocalCharacter = Cast<ACharacter>(LocalPC->GetPawn());
+		if (LocalCharacter && ParticipatingPlayers.Contains(LocalCharacter))
+		{
+			if (LocalCharacter == CurrentActivePlayer)
+			{
+				OnCurrentActivePlayerChanged.Execute(CurrentActivePlayer);
+			}
+		}
+	}
+	
 	// Update UI or trigger events to show whose turn it is
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Active player changed to: %s"), 
 		CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"));

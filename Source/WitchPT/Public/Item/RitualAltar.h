@@ -22,6 +22,7 @@ enum class ERitualInput : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompleted, bool, bWasSuccessful);
+DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChanged, ACharacter* Character);
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
 {
@@ -73,9 +74,11 @@ public:
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
 	float DifficultyScalingMultiplier = 1.0f;
 	
-
+	// --------------- DELEGATES ------------ //
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnRitualCompleted OnRitualCompleted;
+
+	FOnCurrentActivePlayerChanged OnCurrentActivePlayerChanged;
 	
 	
 	// Functions to be called by WitchPTMechanicComponent

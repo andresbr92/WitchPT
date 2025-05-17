@@ -7,6 +7,7 @@
 #include "WitchPTWidgetController.h"
 #include "RitualWidgetController.generated.h"
 
+enum class ERitualInput : uint8;
 class ARitualAltar;
 class ACharacter;
 enum class EInteractionState : uint8;

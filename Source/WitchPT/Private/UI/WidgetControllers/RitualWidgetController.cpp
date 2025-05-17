@@ -50,6 +50,16 @@ void URitualWidgetController::BindCallbacksToDependencies()
         
         // Subscribe to OnRitualCompleted
         RitualAltar->OnRitualCompleted.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
+        RitualAltar->OnCurrentActivePlayerChanged.BindLambda([this](ACharacter* Character)
+        {
+            if (IsLocalPlayerActive() && RitualAltar)
+            {
+                // Get and broadcast the expected input
+                OnRitualActivePlayerChanged.Broadcast(Character);
+                FGameplayTag ExpectedInput = RitualAltar->GetCurrentExpectedInput();
+                OnRitualExpectedInputChanged.Broadcast(ExpectedInput);
+            }
+        });
         
         // We can also watch for changes using AbilitySystem for ritual events
         if (AbilitySystemComponent)
@@ -78,7 +88,7 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
     
     // Rebind and broadcast
     BindCallbacksToDependencies();
-    BroadcastInitialValues();
+    // BroadcastInitialValues();
 }
 
 bool URitualWidgetController::IsLocalPlayerActive() const
@@ -106,15 +116,9 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
 
 void URitualWidgetController::HandleActivePlayerChanged(ACharacter* NewActivePlayer)
 {
-    OnRitualActivePlayerChanged.Broadcast(NewActivePlayer);
     
     // If it's the local player's turn, we can also broadcast the expected input
-    if (IsLocalPlayerActive() && RitualAltar)
-    {
-        // Get and broadcast the expected input
-        FGameplayTag ExpectedInput = RitualAltar->GetCurrentExpectedInput();
-        OnRitualExpectedInputChanged.Broadcast(ExpectedInput);
-    }
+   
 }
 
 void URitualWidgetController::HandleInputTimerChanged(float NewTime)
