@@ -47,7 +47,7 @@ public:
 	virtual void BindCallbacksToDependencies() override;
 	
 	// Method to set the associated ritual altar
-	UFUNCTION(BlueprintCallable, Category = "Ritual")
+	UFUNCTION(Category = "Ritual")
 	void SetRitualAltar(ARitualAltar* InRitualAltar);
 	
 	// Getter for the current ritual altar

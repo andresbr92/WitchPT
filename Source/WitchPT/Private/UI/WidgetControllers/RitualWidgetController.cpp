@@ -68,7 +68,7 @@ void URitualWidgetController::BindCallbacksToDependencies()
 void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
 {
     // Unbind any existing callbacks first
-    if (RitualAltar)
+    if (RitualAltar != nullptr)
     {
         RitualAltar->OnRitualCompleted.RemoveAll(this);
     }

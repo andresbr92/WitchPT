@@ -10,7 +10,12 @@
 #include "Blueprint/UserWidget.h"
 #include "Input/WitchPTInputComponent.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Item/RitualAltar.h"
+#include "Item/Ritual/RitualFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/HUD/WitchPTHUD.h"
+#include "UI/WidgetControllers/RitualWidgetController.h"
+#include "UI/Widgets/Inventory/RitualUserWidget.h"
 #include "WitchPT/WitchPT.h"
 
 AWitchPTPlayerController::AWitchPTPlayerController()
@@ -45,6 +50,38 @@ void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetime
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AWitchPTPlayerController, InventoryManager);
+}
+
+void AWitchPTPlayerController::InitializeRitualUserWidget(ARitualAltar* RitualAltar)
+{
+	if (!RitualAltar || !RitualAltar->RitualUserWidgetClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Invalid altar or widget class!"));
+		return;
+	}
+	
+	URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, RitualAltar->RitualUserWidgetClass);
+	
+	if (IsValid(RitualUserWidget))
+	{
+		// Get or create the ritual widget controller
+		URitualWidgetController* RitualWidgetController = URitualFunctionLibrary::SetRitualWidgetController(this);
+		
+		if (!RitualWidgetController)
+		{
+			UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Failed to get or create RitualWidgetController!"));
+			return;
+		}
+		
+		// Set widget controller reference for the user widget
+		RitualUserWidget->SetWidgetController(RitualWidgetController);
+		
+		// Set ritual altar in the controller
+		RitualWidgetController->SetRitualAltar(RitualAltar);
+		
+		// Add the widget to viewport
+		RitualUserWidget->AddToViewport();
+	}
 }
 
 void AWitchPTPlayerController::BeginPlay()

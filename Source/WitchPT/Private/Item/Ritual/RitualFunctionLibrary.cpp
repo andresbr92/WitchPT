@@ -8,7 +8,7 @@
 #include "UI/HUD/WitchPTHUD.h"
 #include "UI/WidgetControllers/WitchPTWidgetController.h"
 
-URitualWidgetController* URitualFunctionLibrary::SetInventoryWidgetController(const UObject* WorldContextObject)
+URitualWidgetController* URitualFunctionLibrary::SetRitualWidgetController(const UObject* WorldContextObject)
 {
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
 	{

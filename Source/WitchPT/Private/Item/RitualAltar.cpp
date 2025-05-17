@@ -14,6 +14,7 @@
 #include "FWitchPTGameplayTags.h"
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/WitchPTPlayerController.h"
 
 // Sets default values
 ARitualAltar::ARitualAltar()
@@ -131,6 +132,7 @@ void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Cannot start ritual: initiator is not occupying a position or no players found"));
 		return;
 	}
+	
 	
 	// Change state to preparing
 	CurrentRitualState = EInteractionState::Preparing;
@@ -738,14 +740,51 @@ void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionSta
 {
 	// Client-side feedback for state change
 	// This would typically update UI or play transition effects
+
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual state changed to %d"), static_cast<int32>(NewState));
+	
 }
 
 void ARitualAltar::OnRep_CurrentRitualState()
 {
 	// Call multicast function to notify all clients
 	Multicast_OnRitualStateChanged(CurrentRitualState);
+	switch (CurrentRitualState)
+	{
+		case EInteractionState::Inactive:
+			{
+				
+			}
+		case EInteractionState::Preparing:
+			{
+				
+			}
+		case EInteractionState::Active:
+			{
+				for (auto& Player: ParticipatingPlayers)
+				{
+					AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+					if (LocalPC->IsLocalController())
+					{
+						LocalPC->InitializeRitualUserWidget(this);
+					}
+				}
+				
+			}
+		case EInteractionState::Succeeded:
+			{
+				
+			}
+		case EInteractionState::Failed:
+			{
+				
+			}
+		case EInteractionState::FailedCatastrophically:
+			{
+				
+			}
+	
+	}
 	
 	
 }

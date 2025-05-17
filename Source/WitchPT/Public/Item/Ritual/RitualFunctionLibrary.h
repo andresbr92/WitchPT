@@ -14,6 +14,7 @@ UCLASS()
 class WITCHPT_API URitualFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-	UFUNCTION(BlueprintPure, Category="Inventory")
-	static URitualWidgetController* SetInventoryWidgetController(const UObject* WorldContextObject);
+public:
+	UFUNCTION(Category="Inventory")
+	static URitualWidgetController* SetRitualWidgetController(const UObject* WorldContextObject);
 };

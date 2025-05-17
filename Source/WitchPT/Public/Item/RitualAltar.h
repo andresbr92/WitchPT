@@ -7,6 +7,7 @@
 #include "GameplayTagContainer.h" // Include for FGameplayTag
 #include "RitualAltar.generated.h"
 
+class URitualUserWidget;
 class ARitualPosition;
 
 // Enum defining the possible inputs for the ritual sequence
@@ -93,6 +94,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualCatastrophicFail();
 
+
+
 	
 
 	
@@ -122,6 +125,9 @@ public:
 	// Delegate specifically for ritual inputs
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnInputReceived OnRitualInputReceived;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<URitualUserWidget> RitualUserWidgetClass;
 
 protected:
 	virtual void BeginPlay() override;
