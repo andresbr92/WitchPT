@@ -55,7 +55,7 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
     
     // Current interaction state
-    UPROPERTY(ReplicatedUsing = OnRep_CurrentState, BlueprintReadOnly, Category = "Interaction|State")
+    UPROPERTY(Replicated, BlueprintReadOnly, Category = "Interaction|State")
     EInteractionState CurrentState = EInteractionState::Inactive;
 
     // Transforms defining brewing positions around the cauldron
@@ -121,9 +121,7 @@ protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
     
-    // OnRep functions for replicated properties
-    UFUNCTION()
-    virtual void OnRep_CurrentState();
+
     
     UFUNCTION()
     virtual void OnRep_ParticipatingPlayers();

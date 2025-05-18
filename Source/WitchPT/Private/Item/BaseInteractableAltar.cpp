@@ -211,10 +211,6 @@ void ABaseInteractableAltar::Multicast_OnInputFailed_Implementation(ACharacter* 
 }
 
 
-void ABaseInteractableAltar::OnRep_CurrentState()
-{
-    // Update client-side visuals based on state
-}
 
 void ABaseInteractableAltar::OnRep_ParticipatingPlayers()
 {

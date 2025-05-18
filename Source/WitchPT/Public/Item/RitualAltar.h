@@ -24,6 +24,7 @@ enum class ERitualInput : uint8
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompleted, bool, bWasSuccessful);
 DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChanged, ACharacter* Character);
 DECLARE_DELEGATE_OneParam(FOnIsMyTurn, bool IsMyTurn);
+DECLARE_DELEGATE_OneParam(FOnRitualStateChanged, EInteractionState RitualState);
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
 {
@@ -35,7 +36,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	// Current ritual state
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentRitualState, BlueprintReadOnly, Category = "Ritual|State")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual|State")
 	EInteractionState CurrentRitualState = EInteractionState::Inactive;
 	
 	// Current sequence of inputs required for the ritual
@@ -78,7 +79,8 @@ public:
 	// --------------- DELEGATES ------------ //
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnRitualCompleted OnRitualCompleted;
-
+	
+	FOnRitualStateChanged OnRitualStateChanged;
 	FOnCurrentActivePlayerChanged OnCurrentActivePlayerChanged;
 	FOnIsMyTurn IsMyTurn;
 	
@@ -91,7 +93,7 @@ public:
 	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;
 	// Multicast RPCs for notifications
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnRitualStateChanged(EInteractionState NewState);
+	void Multicast_OnRitualStateChanged(EInteractionState RitualState);
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualSucceeded();
@@ -101,11 +103,6 @@ public:
 	
 	
 	virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
-
-
-
-	
-
 	
 	// Getters for Blueprint/HUD access
 	UFUNCTION(BlueprintPure, Category = "Ritual")
@@ -140,10 +137,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	
-	// OnRep functions for replicated properties
-	UFUNCTION()
-	void OnRep_CurrentRitualState();
 	
 	UFUNCTION()
 	void OnRep_CurrentSequenceIndex();

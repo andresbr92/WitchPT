@@ -96,66 +96,31 @@ void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
 	}
 	
 	// Check if the ritual is already active
-	if (CurrentRitualState != EInteractionState::Inactive)
+	if (CurrentRitualState != EInteractionState::WaitingForPlayers)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Cannot start ritual: already in state %d"), static_cast<int32>(CurrentRitualState));
 		return;
 	}
 	
-	// Find all players with State.Ritual.OccupyingPosition tag
-	ParticipatingPlayers.Empty();
-	bool bFoundInitiator = false;
-	
-	// First, check ritual positions
-	for (ABaseInteractionPosition* Position : InteractionPositions)
-	{
-		if (Position && Position->IsOccupied())
-		{
-			ACharacter* OccupyingCharacter = Position->GetOccupyingCharacter();
-			if (OccupyingCharacter)
-			{
-				ParticipatingPlayers.Add(OccupyingCharacter);
-				UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Found participant: %s at position %s"), 
-					*OccupyingCharacter->GetName(), *Position->GetName());
-				
-				if (OccupyingCharacter == RequestingCharacter)
-				{
-					bFoundInitiator = true;
-				}
-			}
-		}
-	}
-	
-	// Check if we have at least one player (the initiator)
-	if (ParticipatingPlayers.Num() == 0 || !bFoundInitiator)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Cannot start ritual: initiator is not occupying a position or no players found"));
-		return;
-	}
-	
-	
-	// Change state to preparing
 	CurrentRitualState = EInteractionState::Preparing;
-	OnRep_CurrentRitualState();
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] State changed to PREPARING"));
+	Multicast_OnRitualStateChanged(EInteractionState::Preparing);
+	
+	
 	
 	// Generate input sequence
 	GenerateInputSequence();
 	
 	// Set current active player to the initiator
 	CurrentActivePlayer = RequestingCharacter;
-	OnRep_CurrentActivePlayer();
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] First active player is: %s"), *RequestingCharacter->GetName());
+	
 	
 	// Set state to active
 	CurrentRitualState = EInteractionState::Active;
-	OnRep_CurrentRitualState();
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] State changed to ACTIVE"));
+	Multicast_OnRitualStateChanged(EInteractionState::Active);
 	
 	// Start the input timer
 	StartInputTimer();
 	
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Ritual started with %d participants"), ParticipatingPlayers.Num());
 }
 
 void ARitualAltar::GenerateInputSequence()
@@ -188,7 +153,7 @@ void ARitualAltar::GenerateInputSequence()
 	
 	// Reset sequence index
 	CurrentSequenceIndex = 0;
-	OnRep_CurrentSequenceIndex();
+	
 	
 	// Log the full sequence for debugging
 	FString SequenceStr;
@@ -256,8 +221,6 @@ void ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 	}
 }
 
-
-
 void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character)
 {
 	
@@ -299,8 +262,6 @@ void ARitualAltar::Multicast_OnInputSuccess_Implementation(ACharacter* Character
 	}
 }
 
-
-
 void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 {
 	if (!HasAuthority() || !Player)
@@ -325,7 +286,7 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	{
 		// Ritual succeeded
 		CurrentRitualState = EInteractionState::Succeeded;
-		OnRep_CurrentRitualState();
+		
 		
 		// Spawn reward and notify
 		SpawnReward();
@@ -369,7 +330,6 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	{
 		// Ritual failed catastrophically
 		CurrentRitualState = EInteractionState::FailedCatastrophically;
-		OnRep_CurrentRitualState();
 		
 		// Apply catastrophic penalties to all players
 		for (ACharacter* ParticipatingPlayer : ParticipatingPlayers)
@@ -410,7 +370,7 @@ void ARitualAltar::StartInputTimer()
 	
 	// Set the timer value for client display
 	CurrentInputTimer = ScaledTimeWindow;
-	OnRep_CurrentInputTimer();
+	
 	
 	// Start the timer
 	GetWorldTimerManager().SetTimer(
@@ -633,9 +593,6 @@ void ARitualAltar::CleanupRitual()
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up"));
 }
 
-
-
-
 FGameplayTag ARitualAltar::GetCurrentExpectedInput() const
 {
 	if (InputSequence.Num() == 0 || CurrentSequenceIndex >= InputSequence.Num())
@@ -714,6 +671,7 @@ void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
 {
 	Super::OccupyPosition(Player, Position);
+	CurrentRitualState = EInteractionState::WaitingForPlayers;
 	
 	if (Player->GetRemoteRole() == ROLE_SimulatedProxy)
 	{
@@ -731,6 +689,7 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 			PC->Client_InitializeRitualUserWidget(this);
 		}
 	}
+	Multicast_OnRitualStateChanged(EInteractionState::WaitingForPlayers);
 }
 
 void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
@@ -760,54 +719,55 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	OnRitualCompleted.Broadcast(false);
 }
 
-void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionState NewState)
+void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionState RitualState)
 {
 	// Client-side feedback for state change
 	// This would typically update UI or play transition effects
+	OnRitualStateChanged.ExecuteIfBound(RitualState);
+	
 
 	
 	
 }
 
-void ARitualAltar::OnRep_CurrentRitualState()
-{
-	// Call multicast function to notify all clients
-	Multicast_OnRitualStateChanged(CurrentRitualState);
-	switch (CurrentRitualState)
-	{
-		case EInteractionState::Inactive:
-			{
-				
-			}
-		case EInteractionState::WaitingForPlayers:
-			{
-				
-			}
-		case EInteractionState::Preparing:
-			{
-				
-			}
-		case EInteractionState::Active:
-			{
-				
-			}
-		case EInteractionState::Succeeded:
-			{
-				
-			}
-		case EInteractionState::Failed:
-			{
-				
-			}
-		case EInteractionState::FailedCatastrophically:
-			{
-				
-			}
-	
-	}
-	
-	
-}
+// void ARitualAltar::OnRep_CurrentRitualState()
+// {
+// 	// Call multicast function to notify all clients
+// 	switch (CurrentRitualState)
+// 	{
+// 		case EInteractionState::Inactive:
+// 			{
+// 				
+// 			}
+// 		case EInteractionState::WaitingForPlayers:
+// 			{
+// 				
+// 			}
+// 		case EInteractionState::Preparing:
+// 			{
+// 				
+// 			}
+// 		case EInteractionState::Active:
+// 			{
+// 				
+// 			}
+// 		case EInteractionState::Succeeded:
+// 			{
+// 				
+// 			}
+// 		case EInteractionState::Failed:
+// 			{
+// 				
+// 			}
+// 		case EInteractionState::FailedCatastrophically:
+// 			{
+// 				
+// 			}
+// 	
+// 	}
+// 	
+// 	
+// }
 
 void ARitualAltar::OnRep_CurrentSequenceIndex()
 {
@@ -817,23 +777,23 @@ void ARitualAltar::OnRep_CurrentSequenceIndex()
 
 void ARitualAltar::OnRep_CurrentActivePlayer()
 {
-	AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (LocalPC && LocalPC->IsLocalController())
-	{
-		
-		ACharacter* LocalCharacter = Cast<ACharacter>(LocalPC->GetPawn());
-		if (LocalCharacter && ParticipatingPlayers.Contains(LocalCharacter))
-		{
-			if (LocalCharacter == CurrentActivePlayer)
-			{
-				OnCurrentActivePlayerChanged.Execute(CurrentActivePlayer);
-				IsMyTurn.Execute(true);
-			} else
-			{
-				IsMyTurn.Execute(false);
-			}
-		}
-	}
+	// AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	// if (LocalPC && LocalPC->IsLocalController())
+	// {
+	// 	
+	// 	ACharacter* LocalCharacter = Cast<ACharacter>(LocalPC->GetPawn());
+	// 	if (LocalCharacter && ParticipatingPlayers.Contains(LocalCharacter))
+	// 	{
+	// 		if (LocalCharacter == CurrentActivePlayer)
+	// 		{
+	// 			OnCurrentActivePlayerChanged.Execute(CurrentActivePlayer);
+	// 			IsMyTurn.Execute(true);
+	// 		} else
+	// 		{
+	// 			IsMyTurn.Execute(false);
+	// 		}
+	// 	}
+	// }
 	
 }
 

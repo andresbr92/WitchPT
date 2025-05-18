@@ -59,6 +59,10 @@ void URitualWidgetController::BindCallbacksToDependencies()
                
             }
         });
+        RitualAltar->OnRitualStateChanged.BindLambda([this] (EInteractionState RitualState)
+        {
+            OnRitualStateChanged.Broadcast(RitualState);
+        });
         RitualAltar->IsMyTurn.BindLambda([this](bool IsMyTurn)
         {
             OnIsMyTurn.Broadcast(IsMyTurn);
