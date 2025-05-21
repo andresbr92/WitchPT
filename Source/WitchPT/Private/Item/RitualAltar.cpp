@@ -34,6 +34,7 @@ ARitualAltar::ARitualAltar()
 	CorruptionIncreasePerFail = 10.0f;
 	BaseInputTimeWindow = 20.f;
 	DifficultyScalingMultiplier = 1.0f;
+	StartCountdown = 3;
 }
 
 void ARitualAltar::BeginPlay()
@@ -84,8 +85,20 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 	DOREPLIFETIME(ARitualAltar, CorruptionIncreasePerFail);
 	DOREPLIFETIME(ARitualAltar, BaseInputTimeWindow);
 	DOREPLIFETIME(ARitualAltar, DifficultyScalingMultiplier);
+	DOREPLIFETIME(ARitualAltar, ReadyPlayers);
+	DOREPLIFETIME(ARitualAltar, StartCountdown);
 }
 
+void ARitualAltar::Multicast_PlayersReadyNumberChanged_Implementation(int32 TotalPlayers, int32 PlayersReady)
+{
+	OnReadyPlayersNumberChangedDelegate.ExecuteIfBound(TotalPlayers, PlayersReady);
+}
+
+void ARitualAltar::Multicast_CurrentActivePlayerChanged_Implementation(const ACharacter* Character)
+{
+	OnCurrentActivePlayerChanged.ExecuteIfBound(Character);
+	
+}
 
 void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
 {
@@ -95,32 +108,171 @@ void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
 		return;
 	}
 	
-	// Check if the ritual is already active
-	if (CurrentRitualState != EInteractionState::WaitingForPlayers)
+	// Check if the ritual is in a valid state
+	if (CurrentRitualState != EInteractionState::Inactive && 
+	    CurrentRitualState != EInteractionState::WaitingForPlayers)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Cannot start ritual: already in state %d"), static_cast<int32>(CurrentRitualState));
 		return;
 	}
 	
+	// Process the ready request
+	ProcessRitualReadyRequest(RequestingCharacter);
+}
+
+void ARitualAltar::ProcessRitualReadyRequest(ACharacter* RequestingCharacter)
+{
+	if (!HasAuthority() || !RequestingCharacter)
+	{
+		return;
+	}
+	
+	// Check if player is already in the ready list
+	if (ReadyPlayers.Contains(RequestingCharacter))
+	{
+		// Player is already ready, could allow them to un-ready if desired
+		ReadyPlayers.Remove(RequestingCharacter);
+		Multicast_PlayersReadyNumberChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
+		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Player %s canceled ready status"), *RequestingCharacter->GetName());
+		return;
+	}
+	
+	// Add player to ready list
+	ReadyPlayers.Add(RequestingCharacter);
+	Multicast_PlayersReadyNumberChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
+	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Player %s is ready"), *RequestingCharacter->GetName());
+	
+	// Check if all players are ready
+	if (AreAllPlayersReady())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] All players are ready. Starting countdown!"));
+		StartRitualCountdown();
+	}
+}
+
+bool ARitualAltar::IsPlayerReady(ACharacter* Player) const
+{
+	return ReadyPlayers.Contains(Player);
+}
+
+float ARitualAltar::GetReadyPlayersPercentage() const
+{
+	if (ParticipatingPlayers.Num() == 0)
+	{
+		return 0.0f;
+	}
+	
+	return (float)ReadyPlayers.Num() / (float)ParticipatingPlayers.Num() * 100.0f;
+}
+
+bool ARitualAltar::AreAllPlayersReady() const
+{
+	// Check if all participating players are in the ready list
+	if (ParticipatingPlayers.Num() == 0 || ReadyPlayers.Num() == 0)
+	{
+		return false;
+	}
+	
+	for (ACharacter* Player : ParticipatingPlayers)
+	{
+		if (!ReadyPlayers.Contains(Player))
+		{
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+void ARitualAltar::StartRitualCountdown()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	// Set the state to preparing
 	CurrentRitualState = EInteractionState::Preparing;
 	Multicast_OnRitualStateChanged(EInteractionState::Preparing);
 	
+	// Reset countdown value
+	StartCountdown = 3;
 	
+	// Broadcast first countdown value
+	Multicast_OnCountdownTick(StartCountdown);
+	
+	// Start countdown timer
+	GetWorldTimerManager().SetTimer(
+		RitualStartCountdownHandle,
+		this,
+		&ARitualAltar::ProcessCountdownTick,
+		1.0f,  // Fire every second
+		true   // Looping
+	);
+}
+
+void ARitualAltar::ProcessCountdownTick()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	// Decrease countdown
+	StartCountdown--;
+	
+	// Broadcast new value
+	Multicast_OnCountdownTick(StartCountdown);
+	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Countdown: %d"), StartCountdown);
+	
+	// If countdown reaches zero, start the ritual
+	if (StartCountdown <= 0)
+	{
+		GetWorldTimerManager().ClearTimer(RitualStartCountdownHandle);
+		ActivateRitual();
+	}
+}
+
+void ARitualAltar::ActivateRitual()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
 	
 	// Generate input sequence
 	GenerateInputSequence();
 	
-	// Set current active player to the initiator
-	CurrentActivePlayer = RequestingCharacter;
+	// Set initial active player (from ready list)
+	int32 RandomStartingPlayer = FMath::RandRange(0, ReadyPlayers.Num() - 1);
+	
+	// Fallback
+	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	
 	
 	// Set state to active
 	CurrentRitualState = EInteractionState::Active;
 	Multicast_OnRitualStateChanged(EInteractionState::Active);
+
+	Multicast_CurrentActivePlayerChanged(CurrentActivePlayer);
+
+	
 	
 	// Start the input timer
 	StartInputTimer();
 	
+	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Ritual activated with player %s as first active player"), 
+		CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"));
+}
+
+
+
+
+
+void ARitualAltar::Multicast_OnCountdownTick_Implementation(int32 CountdownValue)
+{
+	// Fire delegate for UI updates
+	// OnRitualCountdownTick.Broadcast(CountdownValue);
 }
 
 void ARitualAltar::GenerateInputSequence()
@@ -274,7 +426,6 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	
 	// Advance to the next input
 	CurrentSequenceIndex++;
-	OnRep_CurrentSequenceIndex();
 	
 	// Send success feedback
 	
@@ -317,7 +468,6 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	
 	// Increase corruption
 	CorruptionAmount += CorruptionIncreasePerFail;
-	OnRep_CorruptionAmount();
 	
 	// Apply age penalty to the player
 	ApplyAgePenalty(Player);
@@ -462,8 +612,6 @@ void ARitualAltar::AdvanceToNextPlayer()
 		CurrentActivePlayer = ParticipatingPlayers[0];
 	}
 	
-	// Notify clients
-	OnRep_CurrentActivePlayer();
 	
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Advanced turn from %s to %s"), 
 		PreviousPlayer ? *PreviousPlayer->GetName() : TEXT("None"), 
@@ -472,19 +620,8 @@ void ARitualAltar::AdvanceToNextPlayer()
 	// Trigger turn advanced event (useful for UI updates)
 	// This could be done by broadcasting a gameplay event to all interested parties
 	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
-	if (CurrentActivePlayer)
-	{
-		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CurrentActivePlayer);
-		if (ASC)
-		{
-			FGameplayEventData EventData;
-			EventData.EventTag = WitchPtGameplayTags.Event_Ritual_TurnAdvanced;
-			EventData.Instigator = this;
-			EventData.Target = CurrentActivePlayer;
-			
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(CurrentActivePlayer, WitchPtGameplayTags.Event_Ritual_TurnAdvanced, EventData);
-		}
-	}
+	Multicast_CurrentActivePlayerChanged(CurrentActivePlayer);
+	
 }
 
 bool ARitualAltar::IsPlayerEligibleForTurn(ACharacter* Player) const
@@ -604,6 +741,8 @@ FGameplayTag ARitualAltar::GetCurrentExpectedInput() const
 	return InputSequence[CurrentSequenceIndex];
 }
 
+
+
 FGameplayTag ARitualAltar::ConvertERitualInputToTag(ERitualInput Input)
 {
 	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
@@ -667,6 +806,9 @@ void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 }
 
 
+void ARitualAltar::OnRep_CurrentActivePlayer()
+{
+}
 
 void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
 {
@@ -689,7 +831,7 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 			PC->Client_InitializeRitualUserWidget(this);
 		}
 	}
-	Multicast_OnRitualStateChanged(EInteractionState::WaitingForPlayers);
+	Multicast_PlayersReadyNumberChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
 }
 
 void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
@@ -700,7 +842,7 @@ void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 	// Example: Play celebratory effects at altar location
 	// UGameplayStatics::PlaySoundAtLocation(this, SuccessSound, GetActorLocation());
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SuccessParticles, GetActorTransform());
-	OnRitualCompleted.Broadcast(true);
+	// OnRitualCompleted.Broadcast(true);
 	DestroyAltarPositions();
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback"));
@@ -716,16 +858,14 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CatastrophicFailParticles, GetActorTransform());
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
-	OnRitualCompleted.Broadcast(false);
+	// OnRitualCompleted.Broadcast(false);
 }
 
 void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionState RitualState)
 {
 	// Client-side feedback for state change
 	// This would typically update UI or play transition effects
-	OnRitualStateChanged.ExecuteIfBound(RitualState);
-	
-
+	// OnRitualStateChanged.ExecuteIfBound(RitualState);
 	
 	
 }
@@ -769,14 +909,6 @@ void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionSta
 // 	
 // }
 
-void ARitualAltar::OnRep_CurrentSequenceIndex()
-{
-	
-}
-
-
-void ARitualAltar::OnRep_CurrentActivePlayer()
-{
 	// AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	// if (LocalPC && LocalPC->IsLocalController())
 	// {
@@ -794,15 +926,3 @@ void ARitualAltar::OnRep_CurrentActivePlayer()
 	// 		}
 	// 	}
 	// }
-	
-}
-
-void ARitualAltar::OnRep_CurrentInputTimer()
-{
-
-}
-
-void ARitualAltar::OnRep_CorruptionAmount()
-{
-
-}

@@ -43,45 +43,20 @@ void URitualWidgetController::BindCallbacksToDependencies()
     // Bind to altar delegations if it exists
     if (RitualAltar)
     {
-        // Subscribe to RitualAltar delegates
-        
-        // Subscribe to OnRitualCompleted
-        RitualAltar->OnRitualCompleted.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
-        
-        RitualAltar->OnCurrentActivePlayerChanged.BindLambda([this](ACharacter* Character)
+        RitualAltar->OnReadyPlayersNumberChangedDelegate.BindLambda([this](int32 TotalPlayers, int32 PlayersReady)
         {
-            if (IsLocalPlayerActive() && RitualAltar)
-            {
-                // Get and broadcast the expected input
-               
-                FGameplayTag ExpectedInput = RitualAltar->GetCurrentExpectedInput();
-                HandleTurnAdvanced(ExpectedInput, RitualAltar->GetCurrentSequenceProgress());
-               
-            }
+            OnReadyPlayersNumberChangedSignature.Broadcast(TotalPlayers, PlayersReady);
         });
-        RitualAltar->OnRitualStateChanged.BindLambda([this] (EInteractionState RitualState)
-        {
-            OnRitualStateChanged.Broadcast(RitualState);
-        });
-        RitualAltar->IsMyTurn.BindLambda([this](bool IsMyTurn)
-        {
-            OnIsMyTurn.Broadcast(IsMyTurn);
-        });
+
+        RitualAltar->OnCurrentActivePlayerChanged.BindLambda([this](const ACharacter* Character)
+      {
+            // Broadcast true if the player controller of the character is the same 
+            OnIsMyTurnChangedSignature.Broadcast(IsLocalPlayerActive());
+      });
+
         
-        // We can also watch for changes using AbilitySystem for ritual events
-        // if (AbilitySystemComponent)
-        // {
-        //     const FWitchPTGameplayTags& GameplayTags = FWitchPTGameplayTags::Get();
-        //     
-        //     // Listen for turn change events
-        //     AbilitySystemComponent->RegisterGameplayTagEvent(
-        //         GameplayTags.Event_Ritual_TurnAdvanced, 
-        //         EGameplayTagEventType::NewOrRemoved
-        //     ).AddLambda([this](FOnGameplayEffectTagCountChanged& Event)
-        //     {
-        //         
-        //     });
-        // }
+       
+        
     }
 }
 
@@ -90,7 +65,7 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
     // Unbind any existing callbacks first
     if (RitualAltar != nullptr)
     {
-        RitualAltar->OnRitualCompleted.RemoveAll(this);
+        // RitualAltar->OnRitualCompleted.RemoveAll(this);
     }
     
     // Assign the new altar
@@ -160,16 +135,18 @@ void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
     OnRitualCompleted.Broadcast(bWasSuccessful);
 }
 
-void URitualWidgetController::HandleTurnAdvanced(const FGameplayTag& Tag, int32 NewCount)
+
+void URitualWidgetController::HandleTurnAdvanced(FGameplayTag Tag, int32 NewCount)
 {
-    // Only process if the tag was added
-    if (NewCount <= 0 || !RitualAltar)
-    {
-        return;
-    }
-    
-    // Update UI with current values
-    HandleActivePlayerChanged(RitualAltar->GetCurrentActivePlayer());
-    HandleInputTimerChanged(RitualAltar->GetCurrentInputTimeRemaining());
-    HandleSequenceIndexChanged(RitualAltar->CurrentSequenceIndex);
+    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Turn Advanced!"));
+    // // Only process if the tag was added
+    // if (NewCount <= 0 || !RitualAltar)
+    // {
+    //     return;
+    // }
+    //
+    // // Update UI with current values
+    // HandleActivePlayerChanged(RitualAltar->GetCurrentActivePlayer());
+    // HandleInputTimerChanged(RitualAltar->GetCurrentInputTimeRemaining());
+    // HandleSequenceIndexChanged(RitualAltar->CurrentSequenceIndex);
 } 

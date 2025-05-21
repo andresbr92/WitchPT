@@ -14,6 +14,10 @@ enum class EInteractionState : uint8;
 
 // Delegate to notify when the expected input in the ritual changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignature, FGameplayTag, ExpectedInput);
+// Delegate to notify when the expected input in the ritual changes
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnReadyPlayersNumberChangedSignature, int32, TotalPlayers, int32, PlayersReady);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurn, bool, bIsMyturn);
 
 // Delegate to notify when the expected input in the ritual changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurnSignature, bool, IsMyTurn);
@@ -65,6 +69,12 @@ public:
 	// Delegates for widgets to subscribe to
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualExpectedInputChangedSignature OnRitualExpectedInputChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+	FOnReadyPlayersNumberChangedSignature OnReadyPlayersNumberChangedSignature;
+
+	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+	FOnIsMyTurn OnIsMyTurnChangedSignature;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualActivePlayerChangedSignature OnRitualActivePlayerChanged;
@@ -112,5 +122,5 @@ protected:
 	void HandleRitualCompleted(bool bWasSuccessful);
 	
 	// Callback for AbilitySystem events
-	void HandleTurnAdvanced(const FGameplayTag& Tag, int32 NewCount);
+	void HandleTurnAdvanced(FGameplayTag Tag, int32 NewCount);
 }; 

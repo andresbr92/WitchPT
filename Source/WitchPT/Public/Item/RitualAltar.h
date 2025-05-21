@@ -21,10 +21,10 @@ enum class ERitualInput : uint8
 	None	UMETA(DisplayName = "None") // Optional: For default/invalid state
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompleted, bool, bWasSuccessful);
-DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChanged, ACharacter* Character);
-DECLARE_DELEGATE_OneParam(FOnIsMyTurn, bool IsMyTurn);
-DECLARE_DELEGATE_OneParam(FOnRitualStateChanged, EInteractionState RitualState);
+
+DECLARE_DELEGATE_TwoParams(FOnReadyPlayersChanged, int32 TotalPlayers, int32 PlayersReady);
+DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChanged, const ACharacter* Character);
+
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
 {
@@ -34,7 +34,7 @@ public:
 	// Sets default values for this actor's properties
 	ARitualAltar();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-	
+	// ----------------------------------- PROPERTIES ---------------------------------------------- //
 	// Current ritual state
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual|State")
 	EInteractionState CurrentRitualState = EInteractionState::Inactive;
@@ -44,20 +44,27 @@ public:
 	TArray<FGameplayTag> InputSequence;
 
 	// Current index in the sequence
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentSequenceIndex, BlueprintReadOnly, Category = "Ritual")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual")
 	int32 CurrentSequenceIndex = 0;
 	
+	// Players who have confirmed they're ready to start
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual|State")
+	TArray<TObjectPtr<ACharacter>> ReadyPlayers;
+	
+	// Current countdown value (when starting ritual)
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual|State")
+	int32 StartCountdown = 3;
 	
 	// Current player whose turn it is to input
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentActivePlayer, BlueprintReadOnly, Category = "Ritual|State")
 	TObjectPtr<ACharacter> CurrentActivePlayer;
 	
 	// Timer for the current input
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentInputTimer, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
+	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
 	float CurrentInputTimer;
 	
 	// Current corruption level
-	UPROPERTY(ReplicatedUsing = OnRep_CorruptionAmount, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
+	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
 	float CorruptionAmount = 0.0f;
 
 	// Maximum corruption allowed before catastrophic failure
@@ -75,22 +82,37 @@ public:
 	// Scaling multiplier for difficulty
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
 	float DifficultyScalingMultiplier = 1.0f;
-	
-	// --------------- DELEGATES ------------ //
-	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnRitualCompleted OnRitualCompleted;
-	
-	FOnRitualStateChanged OnRitualStateChanged;
+	// ----------------------------------- DELEGATES ---------------------------------------------- //
+	FOnReadyPlayersChanged OnReadyPlayersNumberChangedDelegate;
 	FOnCurrentActivePlayerChanged OnCurrentActivePlayerChanged;
-	FOnIsMyTurn IsMyTurn;
+
+	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayersReadyNumberChanged(int32 TotalPlayers, int32 PlayersReady);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_CurrentActivePlayerChanged(const ACharacter* Character);
 	
 	
-	// Functions to be called by WitchPTMechanicComponent
+	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	void StartRitual(ACharacter* RequestingCharacter);
 	void HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
 	
+	// New function to check player ready status
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	bool IsPlayerReady(ACharacter* Player) const;
+	
+	// New function to get the percentage of ready players
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	float GetReadyPlayersPercentage() const;
+	
+	// New function to check if all players are ready
+	UFUNCTION(BlueprintPure, Category = "Ritual")
+	bool AreAllPlayersReady() const;
+	
 	virtual void Multicast_OnInputSuccess_Implementation(ACharacter* Character) override;
 	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;
+	
 	// Multicast RPCs for notifications
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualStateChanged(EInteractionState RitualState);
@@ -100,6 +122,15 @@ public:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualCatastrophicFail();
+	
+	
+	// New multicast RPC for countdown
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_OnCountdownTick(int32 CountdownValue);
+
+	// --------------- ON REPS FUNCTIONS -----------------//
+	UFUNCTION()
+	void OnRep_CurrentActivePlayer();
 	
 	
 	virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
@@ -123,9 +154,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Ritual")
 	FGameplayTag GetCurrentExpectedInput() const;
 
-	// Delegates
 	
-
 
 	// Delegate specifically for ritual inputs
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
@@ -138,19 +167,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	
-	UFUNCTION()
-	void OnRep_CurrentSequenceIndex();
-	
-	
-	
-	UFUNCTION()
-	void OnRep_CurrentActivePlayer();
-	
-	UFUNCTION()
-	void OnRep_CurrentInputTimer();
-	
-	UFUNCTION()
-	void OnRep_CorruptionAmount();
+	// Timer handle for the ritual start countdown
+	FTimerHandle RitualStartCountdownHandle;
 	
 	// Timer handles
 	FTimerHandle InputTimerHandle;
@@ -171,6 +189,12 @@ protected:
 	void SpawnReward();
 	void SpawnDemon();
 	bool IsPlayerEligibleForTurn(ACharacter* Player) const;
+	
+	// New helper functions for the ready system
+	void ProcessRitualReadyRequest(ACharacter* RequestingCharacter);
+	void StartRitualCountdown();
+	void ProcessCountdownTick();
+	void ActivateRitual();
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> PrimaryAnimMontage;

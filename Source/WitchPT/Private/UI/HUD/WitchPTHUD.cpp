@@ -36,7 +36,6 @@ URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetCon
 	{
 		RitualWidgetController = NewObject<URitualWidgetController>(this, RitualWidgetControllerClass);
 		RitualWidgetController->SetWidgetControllerParams(WCParams);
-		RitualWidgetController->BindCallbacksToDependencies();
 		//TODO: Remove callback dependencies when the ritual ends
 	}
 	return RitualWidgetController;

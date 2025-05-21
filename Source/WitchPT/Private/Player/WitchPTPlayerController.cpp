@@ -79,11 +79,11 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ARitualAltar* Rit
 			return;
 		}
 		
+		RitualWidgetController->SetRitualAltar(RitualAltar);
 		// Set widget controller reference for the user widget
 		RitualUserWidget->SetWidgetController(RitualWidgetController);
 		
 		// Set ritual altar in the controller
-		RitualWidgetController->SetRitualAltar(RitualAltar);
 		
 		// Add the widget to viewport
 		RitualUserWidget->AddToViewport();
