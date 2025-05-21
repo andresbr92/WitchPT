@@ -23,7 +23,9 @@ enum class ERitualInput : uint8
 
 
 DECLARE_DELEGATE_TwoParams(FOnReadyPlayersChanged, int32 TotalPlayers, int32 PlayersReady);
-DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChanged, const ACharacter* Character);
+DECLARE_DELEGATE_TwoParams(FOnCurrentActivePlayerChanged, const ACharacter* Character, FGameplayTag ExptectedInput);
+DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChanged, int32 SequenceIndex);
+
 
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
@@ -36,27 +38,27 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	// ----------------------------------- PROPERTIES ---------------------------------------------- //
 	// Current ritual state
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual|State")
+	UPROPERTY(Replicated, Category = "Ritual|State", VisibleAnywhere)
 	EInteractionState CurrentRitualState = EInteractionState::Inactive;
 	
 	// Current sequence of inputs required for the ritual
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual")
+	UPROPERTY(Replicated, Category = "Ritual", VisibleAnywhere)
 	TArray<FGameplayTag> InputSequence;
 
 	// Current index in the sequence
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual")
+	UPROPERTY(Replicated, Category = "Ritual", VisibleAnywhere)
 	int32 CurrentSequenceIndex = 0;
 	
 	// Players who have confirmed they're ready to start
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual|State")
+	UPROPERTY(Replicated, Category = "Ritual|State", VisibleAnywhere)
 	TArray<TObjectPtr<ACharacter>> ReadyPlayers;
 	
 	// Current countdown value (when starting ritual)
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Ritual|State")
+	UPROPERTY(Replicated, Category = "Ritual|State", VisibleAnywhere)
 	int32 StartCountdown = 3;
 	
 	// Current player whose turn it is to input
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentActivePlayer, BlueprintReadOnly, Category = "Ritual|State")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual|State")
 	TObjectPtr<ACharacter> CurrentActivePlayer;
 	
 	// Timer for the current input
@@ -85,6 +87,7 @@ public:
 	// ----------------------------------- DELEGATES ---------------------------------------------- //
 	FOnReadyPlayersChanged OnReadyPlayersNumberChangedDelegate;
 	FOnCurrentActivePlayerChanged OnCurrentActivePlayerChanged;
+	FOnCurrentSequenceIndexChanged OnCurrentSequenceIndexChanged;
 
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	UFUNCTION(NetMulticast, Reliable)
@@ -92,19 +95,18 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_CurrentActivePlayerChanged(const ACharacter* Character);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_CurrentSequenceIndexChanged(int32 SequenceIndex);
 	
 	
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	void StartRitual(ACharacter* RequestingCharacter);
 	void HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
+	// -----------------------------------END MAIN FUNCTIONS ------------------------------------------- //
 	
 	// New function to check player ready status
 	UFUNCTION(BlueprintPure, Category = "Ritual")
 	bool IsPlayerReady(ACharacter* Player) const;
-	
-	// New function to get the percentage of ready players
-	UFUNCTION(BlueprintPure, Category = "Ritual")
-	float GetReadyPlayersPercentage() const;
 	
 	// New function to check if all players are ready
 	UFUNCTION(BlueprintPure, Category = "Ritual")
@@ -129,36 +131,26 @@ public:
 	void Multicast_OnCountdownTick(int32 CountdownValue);
 
 	// --------------- ON REPS FUNCTIONS -----------------//
-	UFUNCTION()
-	void OnRep_CurrentActivePlayer();
 	
 	
 	virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
 	
-	// Getters for Blueprint/HUD access
-	UFUNCTION(BlueprintPure, Category = "Ritual")
+	// Getters for Blueprint/HUD access frown RitualWidgetController
+	
 	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }
 	
-	UFUNCTION(BlueprintPure, Category = "Ritual")
 	ACharacter* GetCurrentActivePlayer() const { return CurrentActivePlayer; }
 	
-	UFUNCTION(BlueprintPure, Category = "Ritual")
 	float GetCorruptionPercentage() const { return MaxCorruption > 0.0f ? (CorruptionAmount / MaxCorruption) * 100.0f : 0.0f; }
 	
-	UFUNCTION(BlueprintPure, Category = "Ritual")
 	float GetCurrentInputTimeRemaining() const { return CurrentInputTimer; }
 	
-	UFUNCTION(BlueprintPure, Category = "Ritual")
 	int32 GetCurrentSequenceProgress() const { return InputSequence.Num() > 0 ? (CurrentSequenceIndex * 100) / InputSequence.Num() : 0; }
 	
-	UFUNCTION(BlueprintPure, Category = "Ritual")
 	FGameplayTag GetCurrentExpectedInput() const;
 
 	
 
-	// Delegate specifically for ritual inputs
-	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnInputReceived OnRitualInputReceived;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<URitualUserWidget> RitualUserWidgetClass;

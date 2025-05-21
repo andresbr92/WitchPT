@@ -96,8 +96,13 @@ void ARitualAltar::Multicast_PlayersReadyNumberChanged_Implementation(int32 Tota
 
 void ARitualAltar::Multicast_CurrentActivePlayerChanged_Implementation(const ACharacter* Character)
 {
-	OnCurrentActivePlayerChanged.ExecuteIfBound(Character);
+	OnCurrentActivePlayerChanged.ExecuteIfBound(Character, InputSequence[CurrentSequenceIndex]);
 	
+}
+
+void ARitualAltar::Multicast_CurrentSequenceIndexChanged_Implementation(int32 SequenceIndex)
+{
+	OnCurrentSequenceIndexChanged.ExecuteIfBound(SequenceIndex);
 }
 
 void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
@@ -155,15 +160,7 @@ bool ARitualAltar::IsPlayerReady(ACharacter* Player) const
 	return ReadyPlayers.Contains(Player);
 }
 
-float ARitualAltar::GetReadyPlayersPercentage() const
-{
-	if (ParticipatingPlayers.Num() == 0)
-	{
-		return 0.0f;
-	}
-	
-	return (float)ReadyPlayers.Num() / (float)ParticipatingPlayers.Num() * 100.0f;
-}
+
 
 bool ARitualAltar::AreAllPlayersReady() const
 {
@@ -194,6 +191,9 @@ void ARitualAltar::StartRitualCountdown()
 	// Set the state to preparing
 	CurrentRitualState = EInteractionState::Preparing;
 	Multicast_OnRitualStateChanged(EInteractionState::Preparing);
+
+	// Generate the ritual input sequence
+	GenerateInputSequence();
 	
 	// Reset countdown value
 	StartCountdown = 3;
@@ -240,18 +240,15 @@ void ARitualAltar::ActivateRitual()
 		return;
 	}
 	
-	// Generate input sequence
-	GenerateInputSequence();
-	
 	// Set initial active player (from ready list)
 	int32 RandomStartingPlayer = FMath::RandRange(0, ReadyPlayers.Num() - 1);
 	
 	// Fallback
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
+	CurrentRitualState = EInteractionState::Active;
 	
 	
 	// Set state to active
-	CurrentRitualState = EInteractionState::Active;
 	Multicast_OnRitualStateChanged(EInteractionState::Active);
 
 	Multicast_CurrentActivePlayerChanged(CurrentActivePlayer);
@@ -261,8 +258,7 @@ void ARitualAltar::ActivateRitual()
 	// Start the input timer
 	StartInputTimer();
 	
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Ritual activated with player %s as first active player"), 
-		CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"));
+
 }
 
 
@@ -305,15 +301,8 @@ void ARitualAltar::GenerateInputSequence()
 	
 	// Reset sequence index
 	CurrentSequenceIndex = 0;
+	Multicast_CurrentSequenceIndexChanged(CurrentSequenceIndex);
 	
-	
-	// Log the full sequence for debugging
-	FString SequenceStr;
-	for (int32 i = 0; i < InputSequence.Num(); ++i)
-	{
-		SequenceStr += FString::Printf(TEXT("[%d]=%s "), i, *InputSequence[i].ToString());
-	}
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Generated sequence with %d inputs: %s"), InputSequence.Num(), *SequenceStr);
 }
 
 void ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag)
@@ -426,6 +415,7 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	
 	// Advance to the next input
 	CurrentSequenceIndex++;
+	Multicast_CurrentSequenceIndexChanged(CurrentSequenceIndex);
 	
 	// Send success feedback
 	

@@ -48,11 +48,27 @@ void URitualWidgetController::BindCallbacksToDependencies()
             OnReadyPlayersNumberChangedSignature.Broadcast(TotalPlayers, PlayersReady);
         });
 
-        RitualAltar->OnCurrentActivePlayerChanged.BindLambda([this](const ACharacter* Character)
-      {
-            // Broadcast true if the player controller of the character is the same 
-            OnIsMyTurnChangedSignature.Broadcast(IsLocalPlayerActive());
-      });
+        RitualAltar->OnCurrentActivePlayerChanged.BindUObject(this, &URitualWidgetController::HandleActivePlayerChanged);
+        // BindLambda([this](const ACharacter* Character, FGameplayTag ExpectedInput)
+        // {
+        //         // Broadcast true if the player controller of the character is the same
+        //         ACharacter* LocalCharacter = Cast<ACharacter>(PlayerController->GetPawn());
+        //         if (LocalCharacter && LocalCharacter == Character && RitualAltar->GetCurrentRitualState() == EInteractionState::Active)
+        //        
+        //         {
+        //             OnIsMyTurnChangedSignature.Broadcast(true, ExpectedInput);
+        //             
+        //         }
+        //         else
+        //         {
+        //             OnIsMyTurnChangedSignature.Broadcast(false, FGameplayTag::EmptyTag);
+        //         }
+        //         
+        // });
+        RitualAltar->OnCurrentSequenceIndexChanged.BindLambda([this](int32 NewIndex)
+        {
+            HandleSequenceIndexChanged(NewIndex);
+        });
 
         
        
@@ -99,10 +115,22 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleActivePlayerChanged(ACharacter* NewActivePlayer)
+void URitualWidgetController::HandleActivePlayerChanged(const ACharacter* NewActivePlayer, FGameplayTag ExpectedInput) const
 {
     
-    OnRitualActivePlayerChanged.Broadcast(NewActivePlayer);
+    // Broadcast true if the player controller of the character is the same
+    ACharacter* LocalCharacter = Cast<ACharacter>(PlayerController->GetPawn());
+    if (LocalCharacter && LocalCharacter == NewActivePlayer)
+    
+    {
+        OnIsMyTurnChangedSignature.Broadcast(true, RitualAltar->GetCurrentExpectedInput());
+        
+    }
+    else
+    {
+        OnIsMyTurnChangedSignature.Broadcast(false, FGameplayTag::EmptyTag);
+    }
+    
    
 }
 
@@ -149,4 +177,7 @@ void URitualWidgetController::HandleTurnAdvanced(FGameplayTag Tag, int32 NewCoun
     // HandleActivePlayerChanged(RitualAltar->GetCurrentActivePlayer());
     // HandleInputTimerChanged(RitualAltar->GetCurrentInputTimeRemaining());
     // HandleSequenceIndexChanged(RitualAltar->CurrentSequenceIndex);
-} 
+}
+
+UFUNCTION(NetMulticast, Reliable)
+void Multicast_CurrentActivePlayerChanged(const ACharacter* Character, FGameplayTag ExpectedInput); 

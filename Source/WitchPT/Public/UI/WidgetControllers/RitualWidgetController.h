@@ -17,7 +17,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignatu
 // Delegate to notify when the expected input in the ritual changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnReadyPlayersNumberChangedSignature, int32, TotalPlayers, int32, PlayersReady);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurn, bool, bIsMyturn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIsMyTurn, bool, bIsMyturn, FGameplayTag, ExpectedInput);
 
 // Delegate to notify when the expected input in the ritual changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurnSignature, bool, IsMyTurn);
@@ -94,8 +94,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualCompletedSignature OnRitualCompleted;
 
-	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnIsMyTurnSignature OnIsMyTurn;
 	
 protected:
 	// Reference to the ritual altar that this widget controls
@@ -106,8 +104,8 @@ protected:
 	UFUNCTION()
 	void HandleRitualStateChanged(EInteractionState NewState);
 	
-	UFUNCTION()
-	void HandleActivePlayerChanged(ACharacter* NewActivePlayer);
+	
+	void HandleActivePlayerChanged(const ACharacter* NewActivePlayer, FGameplayTag ExpectedInput) const;
 	
 	UFUNCTION()
 	void HandleInputTimerChanged(float NewTime);
