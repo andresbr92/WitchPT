@@ -94,11 +94,11 @@ void ARitualAltar::Multicast_NumberOfPlayersReadyHasChanged_Implementation(int32
 	OnNumberOfReadyPlayersHasChangedDelegate.ExecuteIfBound(TotalPlayers, PlayersReady);
 }
 
-void ARitualAltar::Multicast_CurrentActivePlayerChanged_Implementation(const ACharacter* Character)
-{
-	OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(Character, InputSequence[CurrentSequenceIndex]);
-	
-}
+// void ARitualAltar::Multicast_CurrentActivePlayerChanged_Implementation(const ACharacter* Character)
+// {
+// 	OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(Character, InputSequence[CurrentSequenceIndex]);
+// 	
+// }
 
 void ARitualAltar::Multicast_CurrentSequenceIndexChanged_Implementation(int32 SequenceIndex)
 {
@@ -245,6 +245,12 @@ void ARitualAltar::ActivateRitual()
 	
 	// Fallback
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
+	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
+	{
+		OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(CurrentActivePlayer);
+	}
+	
+	
 	CurrentRitualState = EInteractionState::Active;
 	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
 	
@@ -264,7 +270,7 @@ void ARitualAltar::ActivateRitual()
 void ARitualAltar::Multicast_OnCountdownTick_Implementation(int32 CountdownValue)
 {
 	// Fire delegate for UI updates
-	// OnRitualCountdownTick.Broadcast(CountdownValue);
+	OnRitualCountdownTickDelegate.ExecuteIfBound(CountdownValue);
 }
 
 void ARitualAltar::GenerateInputSequence()
@@ -584,6 +590,10 @@ void ARitualAltar::AdvanceToNextPlayer()
 		{
 			CurrentActivePlayer = NextPlayer;
 			bFoundEligiblePlayer = true;
+			if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
+			{
+				OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(CurrentActivePlayer);
+			}
 			break;
 		}
 		
@@ -606,7 +616,7 @@ void ARitualAltar::AdvanceToNextPlayer()
 	// Trigger turn advanced event (useful for UI updates)
 	// This could be done by broadcasting a gameplay event to all interested parties
 	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
-	Multicast_CurrentActivePlayerChanged(CurrentActivePlayer);
+
 	
 }
 
@@ -924,4 +934,12 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
 {
 	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
+}
+
+void ARitualAltar::OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer)
+{
+	if (CurrentActivePlayer->IsLocallyControlled())
+	{
+		OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(CurrentActivePlayer);
+	}
 }

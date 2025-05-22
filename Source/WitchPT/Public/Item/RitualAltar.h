@@ -24,7 +24,8 @@ enum class ERitualInput : uint8
 
 DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
 DECLARE_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState RitualState);
-DECLARE_DELEGATE_TwoParams(FOnCurrentActivePlayerChangedSignature, const ACharacter* Character, FGameplayTag ExptectedInput);
+DECLARE_DELEGATE_OneParam(FOnRitualCountdownTickSignature, int32 CountdownValue);
+DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChangedSignature, const ACharacter* Character);
 DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChangedSignature, int32 SequenceIndex);
 
 
@@ -59,7 +60,7 @@ public:
 	int32 StartCountdown = 3;
 	
 	// Current player whose turn it is to input
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual|State")
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentActivePlayer, VisibleAnywhere, Category = "Ritual|State")
 	TObjectPtr<ACharacter> CurrentActivePlayer;
 	
 	// Timer for the current input
@@ -88,19 +89,21 @@ public:
 	// ----------------------------------- DELEGATES ---------------------------------------------- //
 	FOnNumberOfReadyPlayersHasChangedSignature OnNumberOfReadyPlayersHasChangedDelegate;
 	FOnRitualStateChangedSignature OnRitualStateChangedDelegate;
+	FOnRitualCountdownTickSignature OnRitualCountdownTickDelegate;
 	
 	FOnCurrentActivePlayerChangedSignature OnCurrentActivePlayerChangedDelegate;
 	FOnCurrentSequenceIndexChangedSignature OnCurrentSequenceIndexChangedDelegate;
 	// ----------------------------------- REPS FUNCTIONS ---------------------------------------------- //
 	UFUNCTION()
 	void OnRep_CurrentRitualState(EInteractionState NewState);
+	UFUNCTION()
+	void OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer);
 
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_NumberOfPlayersReadyHasChanged(int32 TotalPlayers, int32 PlayersReady);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_CurrentActivePlayerChanged(const ACharacter* Character);
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_CurrentSequenceIndexChanged(int32 SequenceIndex);
 

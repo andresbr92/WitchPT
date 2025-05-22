@@ -16,14 +16,11 @@ enum class EInteractionState : uint8;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignature_WC, FGameplayTag, ExpectedInput);
 // Delegate to notify when the expected input in the ritual changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNumberOfReadyPlayersNumberChangedSignature_WC, int32, TotalPlayers, int32, PlayersReady);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIsMyTurn, bool, bIsMyturn, FGameplayTag, ExpectedInput);
-
-// Delegate to notify when the expected input in the ritual changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurnSignature, bool, IsMyTurn);
+// Delegate to notify when the countDown start and with the value
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCountdownTickSignature_WC, int32, CountdownValue);
 
 // Delegate to notify when the active player changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualActivePlayerChangedSignature_WC, ACharacter*, ActivePlayer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualActivePlayerChangedSignature_WC, const ACharacter*, ActivePlayer);
 
 // Delegate to notify ritual state changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature_WC, EInteractionState, NewState);
@@ -74,10 +71,10 @@ public:
 	FOnNumberOfReadyPlayersNumberChangedSignature_WC OnReadyPlayersNumberChangedSignature;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnIsMyTurn OnIsMyTurnChangedSignature;
+	FOnRitualCountdownTickSignature_WC OnRitualCountdownTickDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualActivePlayerChangedSignature_WC OnRitualActivePlayerChanged;
+	FOnRitualActivePlayerChangedSignature_WC OnRitualActivePlayerChangedDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualStateChangedSignature_WC OnRitualStateChanged;
@@ -105,7 +102,7 @@ protected:
 	void HandleRitualStateChanged(EInteractionState NewState);
 	
 	
-	void HandleActivePlayerChanged(const ACharacter* NewActivePlayer, FGameplayTag ExpectedInput) const;
+	void HandleActivePlayerChanged(const ACharacter* NewActivePlayer) const;
 	
 	UFUNCTION()
 	void HandleInputTimerChanged(float NewTime);

@@ -49,24 +49,19 @@ void URitualWidgetController::BindCallbacksToDependencies()
     if (RitualAltar)
     {
         RitualAltar->OnRitualStateChangedDelegate.BindUObject(this, &URitualWidgetController::HandleRitualStateChanged);
-        // RitualAltar->OnNumberOfReadyPlayersHasChangedDelegate.BindUObject(this, &URitualWidgetController::HandleNumberOfReadyPlayersChanged);
-
-
-
-
-
-
-
-
-
-
-
-
+        
         
         RitualAltar->OnNumberOfReadyPlayersHasChangedDelegate.BindLambda([this](int32 TotalPlayers, int32 PlayersReady)
         {
             OnReadyPlayersNumberChangedSignature.Broadcast(TotalPlayers, PlayersReady);
         });
+        RitualAltar->OnRitualCountdownTickDelegate.BindLambda([this](int32 CountdownValue)
+        {
+            // todo: assign this to the RitualAltar useWidget
+            OnRitualCountdownTickDelegate.Broadcast(CountdownValue);
+        });
+        
+        RitualAltar->OnCurrentActivePlayerChangedDelegate.BindUObject(this, &URitualWidgetController::HandleActivePlayerChanged);
 
         
 
@@ -115,21 +110,10 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleActivePlayerChanged(const ACharacter* NewActivePlayer, FGameplayTag ExpectedInput) const
+void URitualWidgetController::HandleActivePlayerChanged(const ACharacter* NewActivePlayer) const
 {
     
-    // Broadcast true if the player controller of the character is the same
-    ACharacter* LocalCharacter = Cast<ACharacter>(PlayerController->GetPawn());
-    if (LocalCharacter && LocalCharacter == NewActivePlayer)
-    
-    {
-        OnIsMyTurnChangedSignature.Broadcast(true, RitualAltar->GetCurrentExpectedInput());
-        
-    }
-    else
-    {
-        OnIsMyTurnChangedSignature.Broadcast(false, FGameplayTag::EmptyTag);
-    }
+    OnRitualActivePlayerChangedDelegate.Broadcast(NewActivePlayer);
     
    
 }
