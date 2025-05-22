@@ -89,20 +89,20 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 	DOREPLIFETIME(ARitualAltar, StartCountdown);
 }
 
-void ARitualAltar::Multicast_PlayersReadyNumberChanged_Implementation(int32 TotalPlayers, int32 PlayersReady)
+void ARitualAltar::Multicast_NumberOfPlayersReadyHasChanged_Implementation(int32 TotalPlayers, int32 PlayersReady)
 {
-	OnReadyPlayersNumberChangedDelegate.ExecuteIfBound(TotalPlayers, PlayersReady);
+	OnNumberOfReadyPlayersHasChangedDelegate.ExecuteIfBound(TotalPlayers, PlayersReady);
 }
 
 void ARitualAltar::Multicast_CurrentActivePlayerChanged_Implementation(const ACharacter* Character)
 {
-	OnCurrentActivePlayerChanged.ExecuteIfBound(Character, InputSequence[CurrentSequenceIndex]);
+	OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(Character, InputSequence[CurrentSequenceIndex]);
 	
 }
 
 void ARitualAltar::Multicast_CurrentSequenceIndexChanged_Implementation(int32 SequenceIndex)
 {
-	OnCurrentSequenceIndexChanged.ExecuteIfBound(SequenceIndex);
+	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(SequenceIndex);
 }
 
 void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
@@ -137,14 +137,14 @@ void ARitualAltar::ProcessRitualReadyRequest(ACharacter* RequestingCharacter)
 	{
 		// Player is already ready, could allow them to un-ready if desired
 		ReadyPlayers.Remove(RequestingCharacter);
-		Multicast_PlayersReadyNumberChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
+		Multicast_NumberOfPlayersReadyHasChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
 		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Player %s canceled ready status"), *RequestingCharacter->GetName());
 		return;
 	}
 	
 	// Add player to ready list
 	ReadyPlayers.Add(RequestingCharacter);
-	Multicast_PlayersReadyNumberChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
+	Multicast_NumberOfPlayersReadyHasChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Player %s is ready"), *RequestingCharacter->GetName());
 	
 	// Check if all players are ready
@@ -190,7 +190,8 @@ void ARitualAltar::StartRitualCountdown()
 	
 	// Set the state to preparing
 	CurrentRitualState = EInteractionState::Preparing;
-	Multicast_OnRitualStateChanged(EInteractionState::Preparing);
+	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
+
 
 	// Generate the ritual input sequence
 	GenerateInputSequence();
@@ -221,11 +222,10 @@ void ARitualAltar::ProcessCountdownTick()
 	// Decrease countdown
 	StartCountdown--;
 	
-	// Broadcast new value
-	Multicast_OnCountdownTick(StartCountdown);
+	
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Countdown: %d"), StartCountdown);
 	
-	// If countdown reaches zero, start the ritual
+	
 	if (StartCountdown <= 0)
 	{
 		GetWorldTimerManager().ClearTimer(RitualStartCountdownHandle);
@@ -246,12 +246,8 @@ void ARitualAltar::ActivateRitual()
 	// Fallback
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	CurrentRitualState = EInteractionState::Active;
+	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
 	
-	
-	// Set state to active
-	Multicast_OnRitualStateChanged(EInteractionState::Active);
-
-	Multicast_CurrentActivePlayerChanged(CurrentActivePlayer);
 
 	
 	
@@ -796,32 +792,48 @@ void ARitualAltar::Multicast_OnInputFailed_Implementation(ACharacter* Character)
 }
 
 
-void ARitualAltar::OnRep_CurrentActivePlayer()
-{
-}
 
 void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
 {
+	// Print the local role por the RitualAltar and the Player
+	UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player LocalRole Role: %s"), *UEnum::GetValueAsString(Player->GetLocalRole()));
+	UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player RemoteRole Role: %s"), *UEnum::GetValueAsString(Player->GetRemoteRole()));
+	if (Player->IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is locally controlled"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is NOT locally controlled"));
+	}
+	
+	
 	Super::OccupyPosition(Player, Position);
 	CurrentRitualState = EInteractionState::WaitingForPlayers;
 	
-	if (Player->GetRemoteRole() == ROLE_SimulatedProxy)
+	
+
+	// Call the ritual state delegate for Listen Server
+	if (Player->GetLocalRole() == ROLE_Authority && Player->IsLocallyControlled()) // Im the listen server
 	{
 		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
 		if (!PC->HasRitualWidgetInitialized(this))
 		{
 			PC->LocalInitializeRitualUserWidget(this);
+			OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
 		}
-		
-	} else if (HasAuthority() && Player->GetRemoteRole() == ROLE_AutonomousProxy)
+	} else if (Player->HasAuthority() && !Player->IsLocallyControlled()) // The call is from the client
 	{
 		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
 		if (!PC->HasRitualWidgetInitialized(this))
 		{
 			PC->Client_InitializeRitualUserWidget(this);
 		}
+		
 	}
-	Multicast_PlayersReadyNumberChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
+	
+	
+	Multicast_NumberOfPlayersReadyHasChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
 }
 
 void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
@@ -851,14 +863,7 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	// OnRitualCompleted.Broadcast(false);
 }
 
-void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionState RitualState)
-{
-	// Client-side feedback for state change
-	// This would typically update UI or play transition effects
-	// OnRitualStateChanged.ExecuteIfBound(RitualState);
-	
-	
-}
+
 
 // void ARitualAltar::OnRep_CurrentRitualState()
 // {
@@ -916,3 +921,7 @@ void ARitualAltar::Multicast_OnRitualStateChanged_Implementation(EInteractionSta
 	// 		}
 	// 	}
 	// }
+void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
+{
+	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
+}

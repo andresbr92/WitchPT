@@ -13,9 +13,9 @@ class ACharacter;
 enum class EInteractionState : uint8;
 
 // Delegate to notify when the expected input in the ritual changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignature, FGameplayTag, ExpectedInput);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignature_WC, FGameplayTag, ExpectedInput);
 // Delegate to notify when the expected input in the ritual changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnReadyPlayersNumberChangedSignature, int32, TotalPlayers, int32, PlayersReady);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNumberOfReadyPlayersNumberChangedSignature_WC, int32, TotalPlayers, int32, PlayersReady);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIsMyTurn, bool, bIsMyturn, FGameplayTag, ExpectedInput);
 
@@ -23,22 +23,22 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIsMyTurn, bool, bIsMyturn, FGame
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurnSignature, bool, IsMyTurn);
 
 // Delegate to notify when the active player changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualActivePlayerChangedSignature, ACharacter*, ActivePlayer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualActivePlayerChangedSignature_WC, ACharacter*, ActivePlayer);
 
 // Delegate to notify ritual state changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState, NewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature_WC, EInteractionState, NewState);
 
 // Delegate to notify input timer changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualInputTimerChangedSignature, float, RemainingTime);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualInputTimerChangedSignature_WC, float, RemainingTime);
 
 // Delegate to notify corruption changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCorruptionChangedSignature, float, CorruptionPercentage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCorruptionChangedSignature_WC, float, CorruptionPercentage);
 
 // Delegate to notify sequence progress changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualSequenceProgressChangedSignature, int32, ProgressPercentage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualSequenceProgressChangedSignature_WC, int32, ProgressPercentage);
 
 // Delegate to notify when the ritual is completed
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompletedSignature, bool, bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompletedSignature_WC, bool, bWasSuccessful);
 
 /**
  * Widget Controller to manage the ritual UI
@@ -68,31 +68,31 @@ public:
 	
 	// Delegates for widgets to subscribe to
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualExpectedInputChangedSignature OnRitualExpectedInputChanged;
+	FOnRitualExpectedInputChangedSignature_WC OnRitualExpectedInputChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnReadyPlayersNumberChangedSignature OnReadyPlayersNumberChangedSignature;
+	FOnNumberOfReadyPlayersNumberChangedSignature_WC OnReadyPlayersNumberChangedSignature;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnIsMyTurn OnIsMyTurnChangedSignature;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualActivePlayerChangedSignature OnRitualActivePlayerChanged;
+	FOnRitualActivePlayerChangedSignature_WC OnRitualActivePlayerChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualStateChangedSignature OnRitualStateChanged;
+	FOnRitualStateChangedSignature_WC OnRitualStateChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualInputTimerChangedSignature OnRitualInputTimerChanged;
+	FOnRitualInputTimerChangedSignature_WC OnRitualInputTimerChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualCorruptionChangedSignature OnRitualCorruptionChanged;
+	FOnRitualCorruptionChangedSignature_WC OnRitualCorruptionChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualSequenceProgressChangedSignature OnRitualSequenceProgressChanged;
+	FOnRitualSequenceProgressChangedSignature_WC OnRitualSequenceProgressChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualCompletedSignature OnRitualCompleted;
+	FOnRitualCompletedSignature_WC OnRitualCompleted;
 
 	
 protected:
@@ -118,6 +118,9 @@ protected:
 	
 	UFUNCTION()
 	void HandleRitualCompleted(bool bWasSuccessful);
+
+	UFUNCTION()
+	void HandleNumberOfReadyPlayersChanged(int32 TotalPlayers, int32 PlayersReady);
 	
 	// Callback for AbilitySystem events
 	void HandleTurnAdvanced(FGameplayTag Tag, int32 NewCount);

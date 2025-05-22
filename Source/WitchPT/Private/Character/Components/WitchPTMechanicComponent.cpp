@@ -150,11 +150,22 @@ void UWitchPTMechanicComponent::RequestUnOccupyPositionInCauldron_Implementation
 	}
 }
 
-void UWitchPTMechanicComponent::RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar,
-                                                                     ABaseInteractionPosition* Position)
+void UWitchPTMechanicComponent::RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position)
 {
+	
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	// UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Local Role: %s"), *UEnum::GetValueAsString(Character->GetLocalRole()));
+	// UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player LocalRole Role: %s"), *UEnum::GetValueAsString(Character->GetLocalRole()));
+	// // Print if the character is locally controlled
+	// if (Character->IsLocallyControlled())
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is locally controlled"));
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is NOT locally controlled"));
+	// }
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		TargetAltar->OccupyPosition(Character, Position);

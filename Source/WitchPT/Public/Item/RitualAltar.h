@@ -22,9 +22,10 @@ enum class ERitualInput : uint8
 };
 
 
-DECLARE_DELEGATE_TwoParams(FOnReadyPlayersChanged, int32 TotalPlayers, int32 PlayersReady);
-DECLARE_DELEGATE_TwoParams(FOnCurrentActivePlayerChanged, const ACharacter* Character, FGameplayTag ExptectedInput);
-DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChanged, int32 SequenceIndex);
+DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
+DECLARE_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState RitualState);
+DECLARE_DELEGATE_TwoParams(FOnCurrentActivePlayerChangedSignature, const ACharacter* Character, FGameplayTag ExptectedInput);
+DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChangedSignature, int32 SequenceIndex);
 
 
 UCLASS()
@@ -38,7 +39,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	// ----------------------------------- PROPERTIES ---------------------------------------------- //
 	// Current ritual state
-	UPROPERTY(Replicated, Category = "Ritual|State", VisibleAnywhere)
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentRitualState, Category = "Ritual|State", VisibleAnywhere)
 	EInteractionState CurrentRitualState = EInteractionState::Inactive;
 	
 	// Current sequence of inputs required for the ritual
@@ -85,19 +86,27 @@ public:
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
 	float DifficultyScalingMultiplier = 1.0f;
 	// ----------------------------------- DELEGATES ---------------------------------------------- //
-	FOnReadyPlayersChanged OnReadyPlayersNumberChangedDelegate;
-	FOnCurrentActivePlayerChanged OnCurrentActivePlayerChanged;
-	FOnCurrentSequenceIndexChanged OnCurrentSequenceIndexChanged;
+	FOnNumberOfReadyPlayersHasChangedSignature OnNumberOfReadyPlayersHasChangedDelegate;
+	FOnRitualStateChangedSignature OnRitualStateChangedDelegate;
+	
+	FOnCurrentActivePlayerChangedSignature OnCurrentActivePlayerChangedDelegate;
+	FOnCurrentSequenceIndexChangedSignature OnCurrentSequenceIndexChangedDelegate;
+	// ----------------------------------- REPS FUNCTIONS ---------------------------------------------- //
+	UFUNCTION()
+	void OnRep_CurrentRitualState(EInteractionState NewState);
 
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_PlayersReadyNumberChanged(int32 TotalPlayers, int32 PlayersReady);
+	void Multicast_NumberOfPlayersReadyHasChanged(int32 TotalPlayers, int32 PlayersReady);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_CurrentActivePlayerChanged(const ACharacter* Character);
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_CurrentSequenceIndexChanged(int32 SequenceIndex);
+
+
 	
+
 	
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	void StartRitual(ACharacter* RequestingCharacter);
@@ -116,8 +125,7 @@ public:
 	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;
 	
 	// Multicast RPCs for notifications
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnRitualStateChanged(EInteractionState RitualState);
+
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualSucceeded();
@@ -129,13 +137,11 @@ public:
 	// New multicast RPC for countdown
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnCountdownTick(int32 CountdownValue);
-
-	// --------------- ON REPS FUNCTIONS -----------------//
 	
 	
 	virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
 	
-	// Getters for Blueprint/HUD access frown RitualWidgetController
+	// ---------------------------- -- GETTERS FOR WC ---------------------------- //
 	
 	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }
 	
@@ -148,8 +154,10 @@ public:
 	int32 GetCurrentSequenceProgress() const { return InputSequence.Num() > 0 ? (CurrentSequenceIndex * 100) / InputSequence.Num() : 0; }
 	
 	FGameplayTag GetCurrentExpectedInput() const;
-
 	
+	int32 GetNumberOfReadyPlayers() const { return ReadyPlayers.Num(); }
+
+	int32 GetNumberOfTotalPlayers() const { return ParticipatingPlayers.Num(); }
 
 
 	UPROPERTY(EditDefaultsOnly)

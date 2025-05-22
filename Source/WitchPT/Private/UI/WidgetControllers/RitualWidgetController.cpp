@@ -19,22 +19,27 @@ void URitualWidgetController::BroadcastInitialValues()
     if (RitualAltar)
     {
         // Broadcast current state
+        EInteractionState CurrentState = RitualAltar->GetCurrentRitualState();
+        
         OnRitualStateChanged.Broadcast(RitualAltar->GetCurrentRitualState());
+
+        OnReadyPlayersNumberChangedSignature.Broadcast(RitualAltar->GetNumberOfTotalPlayers(), RitualAltar->GetNumberOfReadyPlayers());
         
-        // Broadcast active player
-        OnRitualActivePlayerChanged.Broadcast(RitualAltar->GetCurrentActivePlayer());
         
-        // Broadcast expected input
-        OnRitualExpectedInputChanged.Broadcast(RitualAltar->GetCurrentExpectedInput());
-        
-        // Broadcast remaining time
-        OnRitualInputTimerChanged.Broadcast(RitualAltar->GetCurrentInputTimeRemaining());
-        
-        // Broadcast corruption
-        OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
-        
-        // Broadcast sequence progress
-        OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
+        // // Broadcast active player
+        // OnRitualActivePlayerChanged.Broadcast(RitualAltar->GetCurrentActivePlayer());
+        //
+        // // Broadcast expected input
+        // OnRitualExpectedInputChanged.Broadcast(RitualAltar->GetCurrentExpectedInput());
+        //
+        // // Broadcast remaining time
+        // OnRitualInputTimerChanged.Broadcast(RitualAltar->GetCurrentInputTimeRemaining());
+        //
+        // // Broadcast corruption
+        // OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
+        //
+        // // Broadcast sequence progress
+        // OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
     }
 }
 
@@ -43,32 +48,27 @@ void URitualWidgetController::BindCallbacksToDependencies()
     // Bind to altar delegations if it exists
     if (RitualAltar)
     {
-        RitualAltar->OnReadyPlayersNumberChangedDelegate.BindLambda([this](int32 TotalPlayers, int32 PlayersReady)
+        RitualAltar->OnRitualStateChangedDelegate.BindUObject(this, &URitualWidgetController::HandleRitualStateChanged);
+        // RitualAltar->OnNumberOfReadyPlayersHasChangedDelegate.BindUObject(this, &URitualWidgetController::HandleNumberOfReadyPlayersChanged);
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        RitualAltar->OnNumberOfReadyPlayersHasChangedDelegate.BindLambda([this](int32 TotalPlayers, int32 PlayersReady)
         {
             OnReadyPlayersNumberChangedSignature.Broadcast(TotalPlayers, PlayersReady);
         });
 
-        RitualAltar->OnCurrentActivePlayerChanged.BindUObject(this, &URitualWidgetController::HandleActivePlayerChanged);
-        // BindLambda([this](const ACharacter* Character, FGameplayTag ExpectedInput)
-        // {
-        //         // Broadcast true if the player controller of the character is the same
-        //         ACharacter* LocalCharacter = Cast<ACharacter>(PlayerController->GetPawn());
-        //         if (LocalCharacter && LocalCharacter == Character && RitualAltar->GetCurrentRitualState() == EInteractionState::Active)
-        //        
-        //         {
-        //             OnIsMyTurnChangedSignature.Broadcast(true, ExpectedInput);
-        //             
-        //         }
-        //         else
-        //         {
-        //             OnIsMyTurnChangedSignature.Broadcast(false, FGameplayTag::EmptyTag);
-        //         }
-        //         
-        // });
-        RitualAltar->OnCurrentSequenceIndexChanged.BindLambda([this](int32 NewIndex)
-        {
-            HandleSequenceIndexChanged(NewIndex);
-        });
+        
 
         
        
@@ -88,8 +88,8 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
     RitualAltar = InRitualAltar;
     
     // Rebind and broadcast
-    BindCallbacksToDependencies();
     // BroadcastInitialValues();
+    // BindCallbacksToDependencies();
 }
 
 bool URitualWidgetController::IsLocalPlayerActive() const
@@ -161,6 +161,11 @@ void URitualWidgetController::HandleSequenceIndexChanged(int32 NewIndex)
 void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
 {
     OnRitualCompleted.Broadcast(bWasSuccessful);
+}
+
+void URitualWidgetController::HandleNumberOfReadyPlayersChanged(int32 TotalPlayers, int32 PlayersReady)
+{
+    OnReadyPlayersNumberChangedSignature.Broadcast(TotalPlayers, PlayersReady);
 }
 
 
