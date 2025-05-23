@@ -25,7 +25,7 @@ enum class ERitualInput : uint8
 DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
 DECLARE_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState RitualState);
 DECLARE_DELEGATE_OneParam(FOnRitualCountdownTickSignature, int32 CountdownValue);
-DECLARE_DELEGATE_ThreeParams(FOnIsMyTurnChangedSignature, bool bIsMyTurn, FGameplayTag ExpectedInput, float RitualPercentageCompleted);
+DECLARE_DELEGATE_FourParams(FOnIsMyTurnChangedSignature, bool bIsMyTurn, FGameplayTag ExpectedInput, float RitualPercentageCompleted, float CorruptionPercentage);
 DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChangedSignature, int32 SequenceIndex);
 
 
@@ -149,7 +149,7 @@ public:
 	
 	ACharacter* GetCurrentActivePlayer() const { return CurrentActivePlayer; }
 	
-	float GetCorruptionPercentage() const { return MaxCorruption > 0.0f ? (CorruptionAmount / MaxCorruption) * 100.0f : 0.0f; }
+	float GetCorruptionPercentage() const;
 	
 	float GetCurrentInputTimeRemaining() const { return CurrentInputTimer; }
 	

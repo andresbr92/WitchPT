@@ -247,10 +247,10 @@ void ARitualAltar::ActivateRitual()
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress());
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress(), GetCorruptionPercentage());
 	} else
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress());
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress(), GetCorruptionPercentage());
 	}
 	
 	
@@ -595,10 +595,10 @@ void ARitualAltar::AdvanceToNextPlayer()
 			bFoundEligiblePlayer = true;
 			if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress());
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress(), GetCorruptionPercentage());
 			} else 
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress());
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress(), GetCorruptionPercentage());
 			}
 			break;
 		}
@@ -957,9 +957,19 @@ void ARitualAltar::OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer)
 	if (CurrentActivePlayer == nullptr) return;
 	if (CurrentActivePlayer->IsLocallyControlled())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress());
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress(), GetCorruptionPercentage());
 	} else
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress());
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress(), GetCorruptionPercentage());
 	}
+}
+
+float ARitualAltar::GetCorruptionPercentage() const
+{
+	if (MaxCorruption == 0.0f)
+	{
+		return 0.0f;
+	}
+	
+	return CorruptionAmount / MaxCorruption;
 }

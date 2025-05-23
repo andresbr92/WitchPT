@@ -110,9 +110,9 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput, float RitualPercentageCompleted) const
+void URitualWidgetController::HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput, float RitualPercentageCompleted, float CorruptionPercentage) const
 {
-    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged, ExpectedInput, RitualAltar->GetCurrentSequenceProgress());
+    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged, ExpectedInput, RitualAltar->GetCurrentSequenceProgress(), RitualAltar->GetCorruptionPercentage());
 }
 
 void URitualWidgetController::HandleInputTimerChanged(float NewTime)
