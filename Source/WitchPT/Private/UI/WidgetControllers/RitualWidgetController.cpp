@@ -110,10 +110,10 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleActivePlayerChanged(bool IsMyTurnChanged) const
+void URitualWidgetController::HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput) const
 {
     
-    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged);
+    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged, ExpectedInput);
 }
 
 void URitualWidgetController::HandleInputTimerChanged(float NewTime)

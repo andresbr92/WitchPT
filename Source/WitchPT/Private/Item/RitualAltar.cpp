@@ -247,10 +247,10 @@ void ARitualAltar::ActivateRitual()
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex]);
 	} else
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag);
 	}
 	
 	
@@ -595,10 +595,10 @@ void ARitualAltar::AdvanceToNextPlayer()
 			bFoundEligiblePlayer = true;
 			if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(true);
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex]);
 			} else 
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(false);
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag);
 			}
 			break;
 		}
@@ -946,9 +946,9 @@ void ARitualAltar::OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer)
 {
 	if (CurrentActivePlayer->IsLocallyControlled())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex]);
 	} else
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag);
 	}
 }
