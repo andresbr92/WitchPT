@@ -61,7 +61,7 @@ void URitualWidgetController::BindCallbacksToDependencies()
             OnRitualCountdownTickDelegate.Broadcast(CountdownValue);
         });
         
-        RitualAltar->OnCurrentActivePlayerChangedDelegate.BindUObject(this, &URitualWidgetController::HandleActivePlayerChanged);
+        RitualAltar->OnIsMyTurnChangedDelegate.BindUObject(this, &URitualWidgetController::HandleActivePlayerChanged);
 
         
 
@@ -110,12 +110,10 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleActivePlayerChanged(const ACharacter* NewActivePlayer) const
+void URitualWidgetController::HandleActivePlayerChanged(bool IsMyTurnChanged) const
 {
     
-    OnRitualActivePlayerChangedDelegate.Broadcast(NewActivePlayer);
-    
-   
+    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged);
 }
 
 void URitualWidgetController::HandleInputTimerChanged(float NewTime)

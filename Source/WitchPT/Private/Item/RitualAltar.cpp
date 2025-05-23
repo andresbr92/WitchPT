@@ -247,7 +247,10 @@ void ARitualAltar::ActivateRitual()
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 	{
-		OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(CurrentActivePlayer);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true);
+	} else
+	{
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false);
 	}
 	
 	
@@ -592,7 +595,10 @@ void ARitualAltar::AdvanceToNextPlayer()
 			bFoundEligiblePlayer = true;
 			if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 			{
-				OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(CurrentActivePlayer);
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(true);
+			} else 
+			{
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(false);
 			}
 			break;
 		}
@@ -940,6 +946,9 @@ void ARitualAltar::OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer)
 {
 	if (CurrentActivePlayer->IsLocallyControlled())
 	{
-		OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(CurrentActivePlayer);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true);
+	} else
+	{
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false);
 	}
 }

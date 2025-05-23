@@ -20,7 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNumberOfReadyPlayersNumberChange
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCountdownTickSignature_WC, int32, CountdownValue);
 
 // Delegate to notify when the active player changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualActivePlayerChangedSignature_WC, const ACharacter*, ActivePlayer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsMyTurnChangedSignature_WC, bool, bIsMyTurnChanged);
 
 // Delegate to notify ritual state changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature_WC, EInteractionState, NewState);
@@ -74,7 +74,7 @@ public:
 	FOnRitualCountdownTickSignature_WC OnRitualCountdownTickDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualActivePlayerChangedSignature_WC OnRitualActivePlayerChangedDelegate;
+	FOnIsMyTurnChangedSignature_WC OnIsMyTurnChangedDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualStateChangedSignature_WC OnRitualStateChanged;
@@ -102,7 +102,7 @@ protected:
 	void HandleRitualStateChanged(EInteractionState NewState);
 	
 	
-	void HandleActivePlayerChanged(const ACharacter* NewActivePlayer) const;
+	void HandleActivePlayerChanged(bool IsMyTurnChanged) const;
 	
 	UFUNCTION()
 	void HandleInputTimerChanged(float NewTime);

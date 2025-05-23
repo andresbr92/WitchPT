@@ -25,7 +25,7 @@ enum class ERitualInput : uint8
 DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
 DECLARE_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState RitualState);
 DECLARE_DELEGATE_OneParam(FOnRitualCountdownTickSignature, int32 CountdownValue);
-DECLARE_DELEGATE_OneParam(FOnCurrentActivePlayerChangedSignature, const ACharacter* Character);
+DECLARE_DELEGATE_OneParam(FOnIsMyTurnChangedSignature, bool bIsMyTurn);
 DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChangedSignature, int32 SequenceIndex);
 
 
@@ -91,7 +91,7 @@ public:
 	FOnRitualStateChangedSignature OnRitualStateChangedDelegate;
 	FOnRitualCountdownTickSignature OnRitualCountdownTickDelegate;
 	
-	FOnCurrentActivePlayerChangedSignature OnCurrentActivePlayerChangedDelegate;
+	FOnIsMyTurnChangedSignature OnIsMyTurnChangedDelegate;
 	FOnCurrentSequenceIndexChangedSignature OnCurrentSequenceIndexChangedDelegate;
 	// ----------------------------------- REPS FUNCTIONS ---------------------------------------------- //
 	UFUNCTION()
