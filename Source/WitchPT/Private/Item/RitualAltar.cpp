@@ -247,10 +247,10 @@ void ARitualAltar::ActivateRitual()
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex]);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress());
 	} else
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress());
 	}
 	
 	
@@ -595,10 +595,10 @@ void ARitualAltar::AdvanceToNextPlayer()
 			bFoundEligiblePlayer = true;
 			if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex]);
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress());
 			} else 
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag);
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress());
 			}
 			break;
 		}
@@ -730,6 +730,16 @@ void ARitualAltar::CleanupRitual()
 	// Reset positions? This depends on design - maybe players stay in position
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up"));
+}
+
+float ARitualAltar::GetCurrentSequenceProgress() const
+{
+	if (InputSequence.Num() == 0)
+	{
+		return 0.0f;
+	}
+	
+	return static_cast<float>(CurrentSequenceIndex) / static_cast<float>(InputSequence.Num());
 }
 
 FGameplayTag ARitualAltar::GetCurrentExpectedInput() const
@@ -944,11 +954,12 @@ void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
 
 void ARitualAltar::OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer)
 {
+	if (CurrentActivePlayer == nullptr) return;
 	if (CurrentActivePlayer->IsLocallyControlled())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex]);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress());
 	} else
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag);
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress());
 	}
 }

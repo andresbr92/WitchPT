@@ -25,8 +25,7 @@ enum class ERitualInput : uint8
 DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
 DECLARE_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState RitualState);
 DECLARE_DELEGATE_OneParam(FOnRitualCountdownTickSignature, int32 CountdownValue);
-DECLARE_DELEGATE_TwoParams(FOnIsMyTurnChangedSignature, bool bIsMyTurn, FGameplayTag ExpectedInput);
-DECLARE_DELEGATE_OneParam(FOnExpectedInputChangedSignature, FGameplayTag ExpectedInput);
+DECLARE_DELEGATE_ThreeParams(FOnIsMyTurnChangedSignature, bool bIsMyTurn, FGameplayTag ExpectedInput, float RitualPercentageCompleted);
 DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChangedSignature, int32 SequenceIndex);
 
 
@@ -92,7 +91,6 @@ public:
 	FOnRitualStateChangedSignature OnRitualStateChangedDelegate;
 	FOnRitualCountdownTickSignature OnRitualCountdownTickDelegate;
 	FOnIsMyTurnChangedSignature OnIsMyTurnChangedDelegate;
-	FOnExpectedInputChangedSignature OnExpectedInputChangedDelegate;
 	FOnCurrentSequenceIndexChangedSignature OnCurrentSequenceIndexChangedDelegate;
 	// ----------------------------------- REPS FUNCTIONS ---------------------------------------------- //
 	UFUNCTION()
@@ -155,7 +153,7 @@ public:
 	
 	float GetCurrentInputTimeRemaining() const { return CurrentInputTimer; }
 	
-	int32 GetCurrentSequenceProgress() const { return InputSequence.Num() > 0 ? (CurrentSequenceIndex * 100) / InputSequence.Num() : 0; }
+	float GetCurrentSequenceProgress() const;
 	
 	FGameplayTag GetCurrentExpectedInput() const;
 	

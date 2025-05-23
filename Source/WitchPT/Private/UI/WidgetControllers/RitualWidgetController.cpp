@@ -110,10 +110,9 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput) const
+void URitualWidgetController::HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput, float RitualPercentageCompleted) const
 {
-    
-    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged, ExpectedInput);
+    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged, ExpectedInput, RitualAltar->GetCurrentSequenceProgress());
 }
 
 void URitualWidgetController::HandleInputTimerChanged(float NewTime)
@@ -131,7 +130,7 @@ void URitualWidgetController::HandleSequenceIndexChanged(int32 NewIndex)
     // If we have a valid altar, we can calculate and send the progress
     if (RitualAltar)
     {
-        int32 Progress = RitualAltar->GetCurrentSequenceProgress();
+        float Progress = RitualAltar->GetCurrentSequenceProgress();
         OnRitualSequenceProgressChanged.Broadcast(Progress);
         
         // Also update the expected input

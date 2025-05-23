@@ -20,7 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNumberOfReadyPlayersNumberChange
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCountdownTickSignature_WC, int32, CountdownValue);
 
 // Delegate to notify when the active player changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIsMyTurnChangedSignature_WC, bool, bIsMyTurnChanged, FGameplayTag, ExpectedInput);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnIsMyTurnChangedSignature_WC, bool, bIsMyTurnChanged, FGameplayTag, ExpectedInput, float, RitualPercentageCompleted);
 
 // Delegate to notify ritual state changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature_WC, EInteractionState, NewState);
@@ -32,7 +32,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualInputTimerChangedSignature_
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCorruptionChangedSignature_WC, float, CorruptionPercentage);
 
 // Delegate to notify sequence progress changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualSequenceProgressChangedSignature_WC, int32, ProgressPercentage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualSequenceProgressChangedSignature_WC, float, ProgressPercentage);
 
 // Delegate to notify when the ritual is completed
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompletedSignature_WC, bool, bWasSuccessful);
@@ -102,7 +102,7 @@ protected:
 	void HandleRitualStateChanged(EInteractionState NewState);
 	
 	
-	void HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput) const;
+	void HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput, float RitualPercentageCompleted) const;
 	
 	UFUNCTION()
 	void HandleInputTimerChanged(float NewTime);
