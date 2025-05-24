@@ -64,27 +64,27 @@ public:
 	TObjectPtr<ACharacter> CurrentActivePlayer;
 	
 	// Timer for the current input
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual")
 	float CurrentInputTimer;
 	
 	// Current corruption level
-	UPROPERTY(Replicated, BlueprintReadWrite, VisibleAnywhere, Category = "Ritual")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual")
 	float CorruptionAmount = 0.0f;
 
 	// Maximum corruption allowed before catastrophic failure
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
 	float MaxCorruption = 100.0f;
 	
 	// Corruption increase per failure
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
 	float CorruptionIncreasePerFail = 10.0f;
 	
 	// Base time window for inputs
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
 	float BaseInputTimeWindow = 10.0f;
 	
 	// Scaling multiplier for difficulty
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
 	float DifficultyScalingMultiplier = 1.0f;
 	// ----------------------------------- DELEGATES ---------------------------------------------- //
 	FOnNumberOfReadyPlayersHasChangedSignature OnNumberOfReadyPlayersHasChangedDelegate;

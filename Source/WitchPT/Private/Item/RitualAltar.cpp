@@ -565,6 +565,11 @@ void ARitualAltar::AdvanceToNextPlayer()
 	{
 		return;
 	}
+	if (ParticipatingPlayers.Num() == 1)
+	{
+		// If there is only one player, force the onRep funciont setting the current active player to null.
+		CurrentActivePlayer = nullptr;
+	}
 	
 	ACharacter* PreviousPlayer = CurrentActivePlayer;
 	
