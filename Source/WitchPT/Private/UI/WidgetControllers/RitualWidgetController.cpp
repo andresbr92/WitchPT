@@ -61,11 +61,11 @@ void URitualWidgetController::BindCallbacksToDependencies()
             OnRitualCountdownTickDelegate.Broadcast(CountdownValue);
         });
         
-        RitualAltar->OnIsMyTurnChangedDelegate.BindUObject(this, &URitualWidgetController::HandleActivePlayerChanged);
+        RitualAltar->OnIsMyTurnChangedDelegate.BindUObject(this, &URitualWidgetController::HandleTurnChanged);
 
-        
+        RitualAltar->OnRitualCompletedDelegate.BindUObject(this, &URitualWidgetController::HandleRitualCompleted);
 
-        
+        RitualAltar->OnCorruptionAmountChangedDelegate.BindUObject(this, &URitualWidgetController::HandleCorruptionChanged);
        
         
     }
@@ -110,9 +110,9 @@ void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewStat
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput, float RitualPercentageCompleted, float CorruptionPercentage) const
+void URitualWidgetController::HandleTurnChanged(const FUIRitualData& UIRitualData) const
 {
-    OnIsMyTurnChangedDelegate.Broadcast(IsMyTurnChanged, ExpectedInput, RitualAltar->GetCurrentSequenceProgress(), RitualAltar->GetCorruptionPercentage());
+    OnIsMyTurnChangedDelegate.Broadcast(UIRitualData);
 }
 
 void URitualWidgetController::HandleInputTimerChanged(float NewTime)
@@ -122,7 +122,7 @@ void URitualWidgetController::HandleInputTimerChanged(float NewTime)
 
 void URitualWidgetController::HandleCorruptionChanged(float NewCorruption)
 {
-    OnRitualCorruptionChanged.Broadcast(NewCorruption);
+    OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
 }
 
 void URitualWidgetController::HandleSequenceIndexChanged(int32 NewIndex)
@@ -142,6 +142,17 @@ void URitualWidgetController::HandleSequenceIndexChanged(int32 NewIndex)
 void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
 {
     OnRitualCompleted.Broadcast(bWasSuccessful);
+    // unbind all the delegates
+    RitualAltar->OnRitualCompletedDelegate.Unbind();
+    RitualAltar->OnNumberOfReadyPlayersHasChangedDelegate.Unbind();
+    RitualAltar->OnRitualCountdownTickDelegate.Unbind();
+    RitualAltar->OnIsMyTurnChangedDelegate.Unbind();
+    RitualAltar->OnRitualCompletedDelegate.Unbind();
+
+    // Broadcast the completion
+    OnRitualCompleted.Broadcast(bWasSuccessful);
+    // Destroy the widget
+    
 }
 
 void URitualWidgetController::HandleNumberOfReadyPlayersChanged(int32 TotalPlayers, int32 PlayersReady)
@@ -164,6 +175,3 @@ void URitualWidgetController::HandleTurnAdvanced(FGameplayTag Tag, int32 NewCoun
     // HandleInputTimerChanged(RitualAltar->GetCurrentInputTimeRemaining());
     // HandleSequenceIndexChanged(RitualAltar->CurrentSequenceIndex);
 }
-
-UFUNCTION(NetMulticast, Reliable)
-void Multicast_CurrentActivePlayerChanged(const ACharacter* Character, FGameplayTag ExpectedInput); 

@@ -27,7 +27,7 @@ ARitualAltar::ARitualAltar()
 	
 	// Default values
 	CurrentRitualState = EInteractionState::Inactive;
-	CurrentSequenceIndex = 0;
+	CurrentSequenceIndex = -1;
 	CurrentInputTimer = 0.0f;
 	CorruptionAmount = 0.0f;
 	MaxCorruption = 100.0f;
@@ -245,12 +245,23 @@ void ARitualAltar::ActivateRitual()
 	
 	// Fallback
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
+	CurrentSequenceIndex = 0;
+
+	FUIRitualData UIRitualData;
+	
+	UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
+	UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
+
 	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress(), GetCorruptionPercentage());
-	} else
+		UIRitualData.bIsMyTurn = true;
+		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
+	} else 
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress(), GetCorruptionPercentage());
+		UIRitualData.bIsMyTurn = false;
+		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 	}
 	
 	
@@ -305,7 +316,6 @@ void ARitualAltar::GenerateInputSequence()
 	}
 	
 	// Reset sequence index
-	CurrentSequenceIndex = 0;
 	Multicast_CurrentSequenceIndexChanged(CurrentSequenceIndex);
 	
 }
@@ -463,6 +473,8 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	
 	// Increase corruption
 	CorruptionAmount += CorruptionIncreasePerFail;
+	// Advance to the next input
+	CurrentSequenceIndex++;
 	
 	// Apply age penalty to the player
 	ApplyAgePenalty(Player);
@@ -565,13 +577,7 @@ void ARitualAltar::AdvanceToNextPlayer()
 	{
 		return;
 	}
-	if (ParticipatingPlayers.Num() == 1)
-	{
-		// If there is only one player, force the onRep funciont setting the current active player to null.
-		CurrentActivePlayer = nullptr;
-	}
 	
-	ACharacter* PreviousPlayer = CurrentActivePlayer;
 	
 	// Find the index of the current active player
 	int32 CurrentPlayerIndex = ParticipatingPlayers.IndexOfByKey(CurrentActivePlayer);
@@ -598,12 +604,20 @@ void ARitualAltar::AdvanceToNextPlayer()
 		{
 			CurrentActivePlayer = NextPlayer;
 			bFoundEligiblePlayer = true;
+			FUIRitualData UIRitualData;
+			
+			UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
+			UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
 			if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress(), GetCorruptionPercentage());
+				UIRitualData.bIsMyTurn = true;
+				UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 			} else 
 			{
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress(), GetCorruptionPercentage());
+				UIRitualData.bIsMyTurn = false;
+				UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
+				OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 			}
 			break;
 		}
@@ -618,16 +632,6 @@ void ARitualAltar::AdvanceToNextPlayer()
 	{
 		CurrentActivePlayer = ParticipatingPlayers[0];
 	}
-	
-	
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Advanced turn from %s to %s"), 
-		PreviousPlayer ? *PreviousPlayer->GetName() : TEXT("None"), 
-		CurrentActivePlayer ? *CurrentActivePlayer->GetName() : TEXT("None"));
-	
-	// Trigger turn advanced event (useful for UI updates)
-	// This could be done by broadcasting a gameplay event to all interested parties
-	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
-
 	
 }
 
@@ -875,7 +879,7 @@ void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 	// Example: Play celebratory effects at altar location
 	// UGameplayStatics::PlaySoundAtLocation(this, SuccessSound, GetActorLocation());
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SuccessParticles, GetActorTransform());
-	// OnRitualCompleted.Broadcast(true);
+	OnRitualCompletedDelegate.ExecuteIfBound(true);
 	DestroyAltarPositions();
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback"));
@@ -891,67 +895,10 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CatastrophicFailParticles, GetActorTransform());
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
-	// OnRitualCompleted.Broadcast(false);
+	OnRitualCompletedDelegate.ExecuteIfBound(false);
 }
 
 
-
-// void ARitualAltar::OnRep_CurrentRitualState()
-// {
-// 	// Call multicast function to notify all clients
-// 	switch (CurrentRitualState)
-// 	{
-// 		case EInteractionState::Inactive:
-// 			{
-// 				
-// 			}
-// 		case EInteractionState::WaitingForPlayers:
-// 			{
-// 				
-// 			}
-// 		case EInteractionState::Preparing:
-// 			{
-// 				
-// 			}
-// 		case EInteractionState::Active:
-// 			{
-// 				
-// 			}
-// 		case EInteractionState::Succeeded:
-// 			{
-// 				
-// 			}
-// 		case EInteractionState::Failed:
-// 			{
-// 				
-// 			}
-// 		case EInteractionState::FailedCatastrophically:
-// 			{
-// 				
-// 			}
-// 	
-// 	}
-// 	
-// 	
-// }
-
-	// AWitchPTPlayerController* LocalPC = Cast<AWitchPTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	// if (LocalPC && LocalPC->IsLocalController())
-	// {
-	// 	
-	// 	ACharacter* LocalCharacter = Cast<ACharacter>(LocalPC->GetPawn());
-	// 	if (LocalCharacter && ParticipatingPlayers.Contains(LocalCharacter))
-	// 	{
-	// 		if (LocalCharacter == CurrentActivePlayer)
-	// 		{
-	// 			OnCurrentActivePlayerChanged.Execute(CurrentActivePlayer);
-	// 			IsMyTurn.Execute(true);
-	// 		} else
-	// 		{
-	// 			IsMyTurn.Execute(false);
-	// 		}
-	// 	}
-	// }
 void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
 {
 	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
@@ -959,15 +906,30 @@ void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
 
 void ARitualAltar::OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer)
 {
+	// if (CurrentActivePlayer == nullptr) return;
+	
+}
+
+void ARitualAltar::OnRep_CurrentSequenceIndex(int32 NewSequenceIndex)
+{
 	if (CurrentActivePlayer == nullptr) return;
+	
+	FUIRitualData UIRitualData;
+	UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
+	UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
 	if (CurrentActivePlayer->IsLocallyControlled())
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(true, InputSequence[CurrentSequenceIndex], GetCurrentSequenceProgress(), GetCorruptionPercentage());
+		UIRitualData.bIsMyTurn = true;
+		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 	} else
 	{
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(false, FGameplayTag::EmptyTag, GetCurrentSequenceProgress(), GetCorruptionPercentage());
+		UIRitualData.bIsMyTurn = false;
+		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 	}
 }
+
 
 float ARitualAltar::GetCorruptionPercentage() const
 {
@@ -978,3 +940,9 @@ float ARitualAltar::GetCorruptionPercentage() const
 	
 	return CorruptionAmount / MaxCorruption;
 }
+
+void ARitualAltar::OnRep_CorruptionAmount(float NewCorruptionAmount)
+{
+	OnCorruptionAmountChangedDelegate.ExecuteIfBound(NewCorruptionAmount);
+}
+

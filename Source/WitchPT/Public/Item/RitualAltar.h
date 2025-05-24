@@ -21,13 +21,27 @@ enum class ERitualInput : uint8
 	None	UMETA(DisplayName = "None") // Optional: For default/invalid state
 };
 
+USTRUCT(BlueprintType)
+struct FUIRitualData
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsMyTurn;
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayTag ExpectedInput;
+	UPROPERTY(BlueprintReadOnly)
+	float RitualPercentageCompleted;
+	UPROPERTY(BlueprintReadOnly)
+	float CorruptionPercentage;
+};
 
 DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
 DECLARE_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState RitualState);
 DECLARE_DELEGATE_OneParam(FOnRitualCountdownTickSignature, int32 CountdownValue);
-DECLARE_DELEGATE_FourParams(FOnIsMyTurnChangedSignature, bool bIsMyTurn, FGameplayTag ExpectedInput, float RitualPercentageCompleted, float CorruptionPercentage);
+DECLARE_DELEGATE_OneParam(FOnTurnChangedSignature, const FUIRitualData& UIRitualData);
 DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChangedSignature, int32 SequenceIndex);
-
+DECLARE_DELEGATE_OneParam(FOnRitualCompletedSignature, bool bWasSuccessful);
+DECLARE_DELEGATE_OneParam(FOnCorruptionAmountChangedSignature, float CorruptionAmount);
 
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
@@ -48,8 +62,8 @@ public:
 	TArray<FGameplayTag> InputSequence;
 
 	// Current index in the sequence
-	UPROPERTY(Replicated, Category = "Ritual", VisibleAnywhere)
-	int32 CurrentSequenceIndex = 0;
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentSequenceIndex, Category = "Ritual", VisibleAnywhere)
+	int32 CurrentSequenceIndex = -1;
 	
 	// Players who have confirmed they're ready to start
 	UPROPERTY(Replicated, Category = "Ritual|State", VisibleAnywhere)
@@ -68,7 +82,7 @@ public:
 	float CurrentInputTimer;
 	
 	// Current corruption level
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual")
+	UPROPERTY(ReplicatedUsing = OnRep_CorruptionAmount, VisibleAnywhere, Category = "Ritual")
 	float CorruptionAmount = 0.0f;
 
 	// Maximum corruption allowed before catastrophic failure
@@ -90,13 +104,20 @@ public:
 	FOnNumberOfReadyPlayersHasChangedSignature OnNumberOfReadyPlayersHasChangedDelegate;
 	FOnRitualStateChangedSignature OnRitualStateChangedDelegate;
 	FOnRitualCountdownTickSignature OnRitualCountdownTickDelegate;
-	FOnIsMyTurnChangedSignature OnIsMyTurnChangedDelegate;
+	FOnTurnChangedSignature OnIsMyTurnChangedDelegate;
 	FOnCurrentSequenceIndexChangedSignature OnCurrentSequenceIndexChangedDelegate;
+	FOnRitualCompletedSignature OnRitualCompletedDelegate;
+	FOnCorruptionAmountChangedSignature OnCorruptionAmountChangedDelegate;
 	// ----------------------------------- REPS FUNCTIONS ---------------------------------------------- //
 	UFUNCTION()
 	void OnRep_CurrentRitualState(EInteractionState NewState);
 	UFUNCTION()
 	void OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer);
+	UFUNCTION()
+	void OnRep_CurrentSequenceIndex(int32 NewSequenceIndex);
+	UFUNCTION()
+	void OnRep_CorruptionAmount(float NewCorruptionAmount);
+
 
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	UFUNCTION(NetMulticast, Reliable)

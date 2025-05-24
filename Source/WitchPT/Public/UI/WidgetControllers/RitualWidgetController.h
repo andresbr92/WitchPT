@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "WitchPTWidgetController.h"
+#include "Item/RitualAltar.h"
 #include "RitualWidgetController.generated.h"
 
 enum class ERitualInput : uint8;
@@ -20,7 +21,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNumberOfReadyPlayersNumberChange
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCountdownTickSignature_WC, int32, CountdownValue);
 
 // Delegate to notify when the active player changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnIsMyTurnChangedSignature_WC, bool, bIsMyTurnChanged, FGameplayTag, ExpectedInput, float, RitualPercentageCompleted, float, CorruptionPercentage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnChangedSignature_WC, FUIRitualData, UIRitualData);
 
 // Delegate to notify ritual state changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature_WC, EInteractionState, NewState);
@@ -50,6 +51,8 @@ public:
 	
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
+
+	
 	
 	// Method to set the associated ritual altar
 	UFUNCTION(Category = "Ritual")
@@ -74,7 +77,7 @@ public:
 	FOnRitualCountdownTickSignature_WC OnRitualCountdownTickDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnIsMyTurnChangedSignature_WC OnIsMyTurnChangedDelegate;
+	FOnTurnChangedSignature_WC OnIsMyTurnChangedDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualStateChangedSignature_WC OnRitualStateChanged;
@@ -102,7 +105,7 @@ protected:
 	void HandleRitualStateChanged(EInteractionState NewState);
 	
 	
-	void HandleActivePlayerChanged(const bool IsMyTurnChanged, const FGameplayTag ExpectedInput, float RitualPercentageCompleted, float CorruptionPercentage) const;
+	void HandleTurnChanged(const FUIRitualData& UIRitualData) const;
 	
 	UFUNCTION()
 	void HandleInputTimerChanged(float NewTime);
