@@ -26,13 +26,15 @@ struct FUIRitualData
 {
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsMyTurn;
+	bool bIsMyTurn = false;
 	UPROPERTY(BlueprintReadOnly)
-	FGameplayTag ExpectedInput;
+	FGameplayTag ExpectedInput = FGameplayTag::EmptyTag;
 	UPROPERTY(BlueprintReadOnly)
-	float RitualPercentageCompleted;
+	float RitualPercentageCompleted = 0.0f;
 	UPROPERTY(BlueprintReadOnly)
-	float CorruptionPercentage;
+	float CorruptionPercentage = 0.0f;
+	UPROPERTY(BlueprintReadOnly)
+	float CurrentInputTimeRemaining = 0.0f;
 };
 
 DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
@@ -74,7 +76,7 @@ public:
 	int32 StartCountdown = 3;
 	
 	// Current player whose turn it is to input
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentActivePlayer, VisibleAnywhere, Category = "Ritual|State")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual|State")
 	TObjectPtr<ACharacter> CurrentActivePlayer;
 	
 	// Timer for the current input
@@ -86,19 +88,19 @@ public:
 	float CorruptionAmount = 0.0f;
 
 	// Maximum corruption allowed before catastrophic failure
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual|Configuration")
 	float MaxCorruption = 100.0f;
 	
 	// Corruption increase per failure
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual|Configuration")
 	float CorruptionIncreasePerFail = 10.0f;
 	
 	// Base time window for inputs
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual|Configuration")
 	float BaseInputTimeWindow = 10.0f;
 	
 	// Scaling multiplier for difficulty
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual|Configuration")
 	float DifficultyScalingMultiplier = 1.0f;
 	// ----------------------------------- DELEGATES ---------------------------------------------- //
 	FOnNumberOfReadyPlayersHasChangedSignature OnNumberOfReadyPlayersHasChangedDelegate;
@@ -111,8 +113,6 @@ public:
 	// ----------------------------------- REPS FUNCTIONS ---------------------------------------------- //
 	UFUNCTION()
 	void OnRep_CurrentRitualState(EInteractionState NewState);
-	UFUNCTION()
-	void OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer);
 	UFUNCTION()
 	void OnRep_CurrentSequenceIndex(int32 NewSequenceIndex);
 	UFUNCTION()

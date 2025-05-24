@@ -1,19 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Item/RitualAltar.h"
-
 #include "Net/UnrealNetwork.h"
-#include "WitchPT/WitchPT.h"
 #include "Item/RitualPosition.h"
 #include "GameFramework/Character.h"
-#include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "GameplayEffect.h"
 #include "FWitchPTGameplayTags.h"
-#include "GameFramework/GameModeBase.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/WitchPTPlayerController.h"
 
 // Sets default values
@@ -31,9 +24,6 @@ ARitualAltar::ARitualAltar()
 	CurrentInputTimer = 0.0f;
 	CorruptionAmount = 0.0f;
 	MaxCorruption = 100.0f;
-	CorruptionIncreasePerFail = 10.0f;
-	BaseInputTimeWindow = 20.f;
-	DifficultyScalingMultiplier = 1.0f;
 	StartCountdown = 3;
 }
 
@@ -246,6 +236,7 @@ void ARitualAltar::ActivateRitual()
 	// Fallback
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	CurrentSequenceIndex = 0;
+	StartInputTimer();
 
 	FUIRitualData UIRitualData;
 	
@@ -256,11 +247,13 @@ void ARitualAltar::ActivateRitual()
 	{
 		UIRitualData.bIsMyTurn = true;
 		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+		UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
 		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 	} else 
 	{
 		UIRitualData.bIsMyTurn = false;
 		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
+		UIRitualData.CurrentInputTimeRemaining = 0.0f;
 		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 	}
 	
@@ -272,7 +265,7 @@ void ARitualAltar::ActivateRitual()
 	
 	
 	// Start the input timer
-	StartInputTimer();
+	
 	
 
 }
@@ -612,11 +605,13 @@ void ARitualAltar::AdvanceToNextPlayer()
 			{
 				UIRitualData.bIsMyTurn = true;
 				UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+				UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
 				OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 			} else 
 			{
 				UIRitualData.bIsMyTurn = false;
 				UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
+				UIRitualData.CurrentInputTimeRemaining = 0.0f;
 				OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 			}
 			break;
@@ -904,12 +899,6 @@ void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
 	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
 }
 
-void ARitualAltar::OnRep_CurrentActivePlayer(const ACharacter* NewActivePlayer)
-{
-	// if (CurrentActivePlayer == nullptr) return;
-	
-}
-
 void ARitualAltar::OnRep_CurrentSequenceIndex(int32 NewSequenceIndex)
 {
 	if (CurrentActivePlayer == nullptr) return;
@@ -921,11 +910,13 @@ void ARitualAltar::OnRep_CurrentSequenceIndex(int32 NewSequenceIndex)
 	{
 		UIRitualData.bIsMyTurn = true;
 		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+		UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
 		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 	} else
 	{
 		UIRitualData.bIsMyTurn = false;
 		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
+		UIRitualData.CurrentInputTimeRemaining = 0.0f;
 		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
 	}
 }
