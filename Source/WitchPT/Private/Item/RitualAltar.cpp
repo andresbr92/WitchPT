@@ -52,12 +52,6 @@ void ARitualAltar::BeginPlay()
 void ARitualAltar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	// Update timer on server only
-	if (HasAuthority() && CurrentRitualState == EInteractionState::Active)
-	{
-		// Timer logic is handled by UE's timer system, but we could add additional per-tick logic here if needed
-	}
 }
 
 void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -89,11 +83,6 @@ void ARitualAltar::Multicast_NumberOfPlayersReadyHasChanged_Implementation(int32
 // 	OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(Character, InputSequence[CurrentSequenceIndex]);
 // 	
 // }
-
-void ARitualAltar::Multicast_CurrentSequenceIndexChanged_Implementation(int32 SequenceIndex)
-{
-	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(SequenceIndex);
-}
 
 void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
 {
@@ -238,40 +227,11 @@ void ARitualAltar::ActivateRitual()
 	CurrentSequenceIndex = 0;
 	StartInputTimer();
 
-	FUIRitualData UIRitualData;
-	
-	UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
-	UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
-
-	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
-	{
-		UIRitualData.bIsMyTurn = true;
-		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
-		UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-	} else 
-	{
-		UIRitualData.bIsMyTurn = false;
-		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
-		UIRitualData.CurrentInputTimeRemaining = 0.0f;
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-	}
-	
+	UpdateLocalPlayerUI();
 	
 	CurrentRitualState = EInteractionState::Active;
 	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
-	
-
-	
-	
-	// Start the input timer
-	
-	
-
 }
-
-
-
 
 
 void ARitualAltar::Multicast_OnCountdownTick_Implementation(int32 CountdownValue)
@@ -309,7 +269,7 @@ void ARitualAltar::GenerateInputSequence()
 	}
 	
 	// Reset sequence index
-	Multicast_CurrentSequenceIndexChanged(CurrentSequenceIndex);
+	
 	
 }
 
@@ -348,25 +308,15 @@ void ARitualAltar::HandlePlayerInput(ACharacter* Character, const FGameplayTag& 
 	// Get the expected input for the current step
 	FGameplayTag ExpectedInput = InputSequence[CurrentSequenceIndex];
 	
-	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Input received from %s: %s (expected: %s)"), 
-		*Character->GetName(), *InputTag.ToString(), *ExpectedInput.ToString());
 	
 	// Check if the input matches
 	if (InputTag == ExpectedInput)
 	{
-		// Input successful
-		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Input CORRECT! Player: %s, Input: %s, Index: %d/%d"), 
-			*Character->GetName(), *InputTag.ToString(), CurrentSequenceIndex, InputSequence.Num()-1);
 		HandleInputSuccess(Character);
-	
 	}
 	else
 	{
-		// Input failed
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG-RITUAL] Input INCORRECT! Player: %s, Received: %s, Expected: %s"), 
-			*Character->GetName(), *InputTag.ToString(), *ExpectedInput.ToString());
 		HandleInputFailure(Character);
-		
 	}
 }
 
@@ -423,8 +373,11 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	
 	// Advance to the next input
 	CurrentSequenceIndex++;
-	Multicast_CurrentSequenceIndexChanged(CurrentSequenceIndex);
+
+	UpdateLocalPlayerUI();
+
 	
+
 	// Send success feedback
 	
 	Multicast_OnInputSuccess(Player);
@@ -452,6 +405,7 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 		// Restart the input timer
 		StartInputTimer();
 	}
+	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(CurrentSequenceIndex);
 }
 
 void ARitualAltar::HandleInputFailure(ACharacter* Player)
@@ -468,7 +422,8 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	CorruptionAmount += CorruptionIncreasePerFail;
 	// Advance to the next input
 	CurrentSequenceIndex++;
-	
+
+	UpdateLocalPlayerUI();
 	// Apply age penalty to the player
 	ApplyAgePenalty(Player);
 	
@@ -505,6 +460,8 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 		// Restart the input timer
 		StartInputTimer();
 	}
+	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(CurrentSequenceIndex);
+	OnCorruptionAmountChangedDelegate.ExecuteIfBound(CorruptionAmount);
 }
 
 void ARitualAltar::StartInputTimer()
@@ -597,23 +554,7 @@ void ARitualAltar::AdvanceToNextPlayer()
 		{
 			CurrentActivePlayer = NextPlayer;
 			bFoundEligiblePlayer = true;
-			FUIRitualData UIRitualData;
-			
-			UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
-			UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
-			if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
-			{
-				UIRitualData.bIsMyTurn = true;
-				UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
-				UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-			} else 
-			{
-				UIRitualData.bIsMyTurn = false;
-				UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
-				UIRitualData.CurrentInputTimeRemaining = 0.0f;
-				OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-			}
+			UpdateLocalPlayerUI();
 			break;
 		}
 		
@@ -654,6 +595,33 @@ bool ARitualAltar::IsPlayerEligibleForTurn(ACharacter* Player) const
 	bool bHasPositionTag = ASC && ASC->HasMatchingGameplayTag(WitchPtGameplayTags.Character_State_Ritual_InPosition);
 	
 	return bIsInPosition && bHasPositionTag;
+}
+
+void ARitualAltar::UpdateLocalPlayerUI()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	FUIRitualData UIRitualData;
+	UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
+	UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
+	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
+	{
+		UIRitualData.bIsMyTurn = true;
+		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+		UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
+	}
+	else 
+	{
+		UIRitualData.bIsMyTurn = false;
+		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
+		UIRitualData.CurrentInputTimeRemaining = 0.0f;
+		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
+	}
+	
 }
 
 void ARitualAltar::ApplyAgePenalty(ACharacter* Player, bool bCatastrophic)
@@ -901,6 +869,7 @@ void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
 
 void ARitualAltar::OnRep_CurrentSequenceIndex(int32 NewSequenceIndex)
 {
+	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(CurrentSequenceIndex);
 	if (CurrentActivePlayer == nullptr) return;
 	
 	FUIRitualData UIRitualData;
@@ -932,7 +901,7 @@ float ARitualAltar::GetCorruptionPercentage() const
 	return CorruptionAmount / MaxCorruption;
 }
 
-void ARitualAltar::OnRep_CorruptionAmount(float NewCorruptionAmount)
+void ARitualAltar::OnRep_CorruptionAmount(const float NewCorruptionAmount)
 {
 	OnCorruptionAmountChangedDelegate.ExecuteIfBound(NewCorruptionAmount);
 }

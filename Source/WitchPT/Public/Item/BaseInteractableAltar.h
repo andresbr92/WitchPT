@@ -130,7 +130,6 @@ protected:
     // Helper functions
     virtual void HandleInputSuccess(ACharacter* Player);
     virtual void HandleInputFailure(ACharacter* Player);
-    virtual void ApplyAgePenalty(ACharacter* Player, bool bCatastrophic = false);
     virtual void CheckState();
     virtual void CleanupInteraction();
     virtual void SpawnReward();

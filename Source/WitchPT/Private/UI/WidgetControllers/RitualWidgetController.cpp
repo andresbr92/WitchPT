@@ -57,7 +57,6 @@ void URitualWidgetController::BindCallbacksToDependencies()
         });
         RitualAltar->OnRitualCountdownTickDelegate.BindLambda([this](int32 CountdownValue)
         {
-            // todo: assign this to the RitualAltar useWidget
             OnRitualCountdownTickDelegate.Broadcast(CountdownValue);
         });
         
@@ -66,6 +65,8 @@ void URitualWidgetController::BindCallbacksToDependencies()
         RitualAltar->OnRitualCompletedDelegate.BindUObject(this, &URitualWidgetController::HandleRitualCompleted);
 
         RitualAltar->OnCorruptionAmountChangedDelegate.BindUObject(this, &URitualWidgetController::HandleCorruptionChanged);
+
+        RitualAltar->OnCurrentSequenceIndexChangedDelegate.BindUObject(this, &URitualWidgetController::HandleSequenceIndexChanged);
        
         
     }
@@ -127,16 +128,8 @@ void URitualWidgetController::HandleCorruptionChanged(float NewCorruption)
 
 void URitualWidgetController::HandleSequenceIndexChanged(int32 NewIndex)
 {
-    // If we have a valid altar, we can calculate and send the progress
-    if (RitualAltar)
-    {
-        float Progress = RitualAltar->GetCurrentSequenceProgress();
-        OnRitualSequenceProgressChanged.Broadcast(Progress);
-        
-        // Also update the expected input
-        FGameplayTag ExpectedInput = RitualAltar->GetCurrentExpectedInput();
-        OnRitualExpectedInputChanged.Broadcast(ExpectedInput);
-    }
+    float Progress = RitualAltar->GetCurrentSequenceProgress();
+    OnRitualSequenceProgressChanged.Broadcast(Progress);
 }
 
 void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
@@ -161,17 +154,3 @@ void URitualWidgetController::HandleNumberOfReadyPlayersChanged(int32 TotalPlaye
 }
 
 
-void URitualWidgetController::HandleTurnAdvanced(FGameplayTag Tag, int32 NewCount)
-{
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Turn Advanced!"));
-    // // Only process if the tag was added
-    // if (NewCount <= 0 || !RitualAltar)
-    // {
-    //     return;
-    // }
-    //
-    // // Update UI with current values
-    // HandleActivePlayerChanged(RitualAltar->GetCurrentActivePlayer());
-    // HandleInputTimerChanged(RitualAltar->GetCurrentInputTimeRemaining());
-    // HandleSequenceIndexChanged(RitualAltar->CurrentSequenceIndex);
-}

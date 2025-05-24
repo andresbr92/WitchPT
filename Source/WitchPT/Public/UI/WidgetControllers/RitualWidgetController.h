@@ -122,6 +122,4 @@ protected:
 	UFUNCTION()
 	void HandleNumberOfReadyPlayersChanged(int32 TotalPlayers, int32 PlayersReady);
 	
-	// Callback for AbilitySystem events
-	void HandleTurnAdvanced(FGameplayTag Tag, int32 NewCount);
 }; 

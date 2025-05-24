@@ -122,14 +122,7 @@ public:
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_NumberOfPlayersReadyHasChanged(int32 TotalPlayers, int32 PlayersReady);
-
 	
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_CurrentSequenceIndexChanged(int32 SequenceIndex);
-
-
-	
-
 	
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	void StartRitual(ACharacter* RequestingCharacter);
@@ -197,7 +190,7 @@ protected:
 	FTimerHandle InputTimerHandle;
 	
 	
-	// Helper functions
+	// ----------------------------------- LOGIC FUNCTIONS ---------------------------------------------- //
 	void GenerateInputSequence();
 	void AdvanceToNextPlayer();
 	virtual void HandleInputSuccess(ACharacter* Player) override;
@@ -212,6 +205,7 @@ protected:
 	void SpawnReward();
 	void SpawnDemon();
 	bool IsPlayerEligibleForTurn(ACharacter* Player) const;
+	void UpdateLocalPlayerUI();
 	
 	// New helper functions for the ready system
 	void ProcessRitualReadyRequest(ACharacter* RequestingCharacter);

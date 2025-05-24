@@ -229,11 +229,6 @@ void ABaseInteractableAltar::HandleInputFailure(ACharacter* Player)
    
 }
 
-void ABaseInteractableAltar::ApplyAgePenalty(ACharacter* Player, bool bCatastrophic)
-{
-   
-}
-
 void ABaseInteractableAltar::CheckState()
 {
     // Base implementation - to be overridden by child classes
