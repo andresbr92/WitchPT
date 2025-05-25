@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/WitchPTPlayerState.h"
 #include "UI/HUD/WitchPTHUD.h"
+#include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/WitchPTWidgetController.h"
 
 URitualWidgetController* URitualFunctionLibrary::SetRitualWidgetController(const UObject* WorldContextObject)
@@ -25,7 +26,7 @@ URitualWidgetController* URitualFunctionLibrary::SetRitualWidgetController(const
 	return nullptr;
 }
 
-UWitchPTWidgetController* URitualFunctionLibrary::SetCauldronWidgetController(const UObject* WorldContextObject)
+UCauldronWidgetController* URitualFunctionLibrary::SetCauldronWidgetController(const UObject* WorldContextObject)
 {
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
 	{

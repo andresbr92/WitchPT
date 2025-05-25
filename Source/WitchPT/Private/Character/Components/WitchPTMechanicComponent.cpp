@@ -158,7 +158,7 @@ void UWitchPTMechanicComponent::RequestPlaceBaseIngredientInCauldron_Implementat
 	
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		
+		TargetAltar->RequestDropBaseIngredient(Character, IngredientInstance);
 	}
 	
 }

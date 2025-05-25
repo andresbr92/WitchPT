@@ -54,6 +54,8 @@ enum class ECauldronPlacementState : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnECauldronPhysicStateChanged, ECauldronPhysicState, PhysicState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterPositioned, bool, bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientDropped, UWitchPTInventoryItemInstance*, IngredientInstance);
+
 /**
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
  */
@@ -65,31 +67,73 @@ class WITCHPT_API ACauldronAltar : public ABaseInteractableAltar, public IIntera
 public:
     // Sets default values for this actor's properties
     ACauldronAltar();
+    
+    // Overrides
     virtual void BeginPlay() override;
     virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
+    virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+    virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
+    
+    // Core Properties
     UPROPERTY(EditAnywhere)
     FInteractionOption Option;
-    
-    virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
     
     UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
-  
+    // Base ingredient
+    UPROPERTY(ReplicatedUsing = OnRep_BaseIngredient, Category= "Cauldron|Ingredients", EditInstanceOnly)
+    UWitchPTInventoryItemInstance* BaseIngredient;
     
-   
-    void StartBrewingPotion(ACharacter* InteractingCharacter);
-    void StartCarryCauldron(ACharacter* InteractingCharacter);
-    void StartPlacementPreview(ACharacter* Character);
-    void UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
-    
-    void FinalizePlacement();
-    void CancelPlacement();
-    virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
-    
+    // Delegates
 
+    FOnBaseIngredientDropped OnBaseIngredientDropped;
+    UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
+    FOnECauldronPhysicStateChanged OnECauldronPhysicStateChanged;
+    
+    UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
+    FOnCharacterPositioned OnCharacterPositioned;
+    
+    // UI Properties
+    UPROPERTY(EditDefaultsOnly, Category= "Cauldron|UI")
+    TSubclassOf<UCauldronUserWidget> CauldronUserWidgetClass;
+    
+    // Placement Properties
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
+    UMaterialInterface* ValidPlacementMaterial;
+    
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
+    UMaterialInterface* InvalidPlacementMaterial;
+    
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
+    float PlacementCollisionCheckRadius = 50.0f;
+    
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
+    float MaxGroundAlignmentHeight = 20.0f;
+    
+    // ----------------------------------- BREWING FUNCTIONS ---------------------------------------------- //
+    
+    void StartBrewingPotion(ACharacter* InteractingCharacter);
+    void RequestDropBaseIngredient(ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
+    
+    // ----------------------------------- ONREP FUNCTIONS ---------------------------------------------- //
+    
+    UFUNCTION()
+    void OnRep_CauldronPhysicState();
+    UFUNCTION()
+    void OnRep_BaseIngredient();
+    
+    UFUNCTION()
+    void PositionCharacterForBrewing(ACharacter* Character);
+    
+    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
+    ABaseInteractionPosition* GetAvailableBrewingPosition(ACharacter* Character);
+    
     UFUNCTION(Client, Reliable)
     void Client_OnCharacterPositioned();
+    
+    // ----------------------------------- CAULDRON MOVEMENT FUNCTIONS ---------------------------------------------- //
+    void StartCarryCauldron(ACharacter* InteractingCharacter);
     
     UFUNCTION()
     void AttachToCharacter(ACharacter* Character);
@@ -97,9 +141,20 @@ public:
     UFUNCTION()
     void DetachFromCharacter(ACharacter* Character);
     
-    UFUNCTION()
-    void PositionCharacterForBrewing(ACharacter* Character);
+    // ----------------------------------- PLACEMENT FUNCTIONS ---------------------------------------------- //
+    void StartPlacementPreview(ACharacter* Character);
+    void UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+    void FinalizePlacement();
+    void CancelPlacement();
+    void ApplyPlacementPreviewMaterial();
     
+    UFUNCTION(Client, Unreliable)
+    void Client_UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+    
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_FinalizePlacement();
+    
+    // ----------------------------------- STATE QUERY FUNCTIONS ---------------------------------------------- //
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     bool CanBePickedUp() const;
     
@@ -109,79 +164,42 @@ public:
     UFUNCTION(BlueprintPure, Category = "Cauldron|State")
     ACharacter* GetCarryingCharacter() const;
     
-    UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
-    ABaseInteractionPosition* GetAvailableBrewingPosition(ACharacter* Character);
-
-    UFUNCTION()
-    void OnRep_CauldronPhysicState();
-    
-    // -- For placement preview functions --
-    //Delegate
-    UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
-    FOnECauldronPhysicStateChanged OnECauldronPhysicStateChanged;
-    UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
-    FOnCharacterPositioned OnCharacterPositioned;
-    
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     ECauldronPlacementState GetPlacementState() const;
-   
+    
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     bool IsInPlacementPreview() const;
+    // ----------------------------------- GETTERS ---------------------------------------------- //
     
- 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
-    UMaterialInterface* ValidPlacementMaterial;
+    UWitchPTInventoryItemInstance* GetBaseIngredient() const;
     
-   
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
-    UMaterialInterface* InvalidPlacementMaterial;
-    
-    
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
-    float PlacementCollisionCheckRadius = 50.0f;
-    
-  
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
-    float MaxGroundAlignmentHeight = 20.0f;
-    void ApplyPlacementPreviewMaterial();
+protected:
+    // ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
+	// These functions handle event broadcasting and are called both from server-side code and OnRep functions
+    void BroadcastBaseIngredientDropped() const;
 
-    UPROPERTY(EditDefaultsOnly, Category= "Cauldron|UI")
-    TSubclassOf<UCauldronUserWidget> CauldronUserWidgetClass;
     
 private:
-    // Character currently carrying the cauldron
     UPROPERTY(Replicated)
     TObjectPtr<ACharacter> CarryingCharacter;
     
-    // Socket name for attaching the cauldron to the character
     UPROPERTY(EditDefaultsOnly, Category = "Cauldron|Movement")
     FName BackAttachSocketName = "BackpackSocket";
     
-    // Offset for placing the cauldron when detached
     UPROPERTY(EditDefaultsOnly, Category = "Cauldron|Movement")
     FVector DetachmentOffset = FVector(100.0f, 0.0f, 0.0f);
     
+    // Placement Properties
     UPROPERTY(Replicated)
     ECauldronPlacementState CurrentPlacementState;
-    
     
     UPROPERTY()
     TArray<UMaterialInterface*> OriginalMaterials;
     
-
-    void RestoreOriginalMaterials();
-    
-
-    bool IsPlacementValid() const;
-
     FVector PreviewLocation;
-
     FRotator PreviewRotation;
     
-  
-    UFUNCTION(NetMulticast, Reliable)
-    void Multicast_FinalizePlacement();
-    
-    UFUNCTION(Client, Unreliable)
-    void Client_UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
+    // Private Utility Functions
+    void RestoreOriginalMaterials();
+    bool IsPlacementValid() const;
 }; 

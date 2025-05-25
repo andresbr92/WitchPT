@@ -264,11 +264,7 @@ bool UWitchPTInventoryManagerComponent::ReplicateSubobjects(class UActorChannel*
 void UWitchPTInventoryManagerComponent::ReadyForReplication()
 {
 	Super::ReadyForReplication();
-
-	// Register existing ULyraInventoryItemInstance
-	UE_LOG(LogTemp, Warning, TEXT("The boolean value is %s"), (IsUsingRegisteredSubObjectList() ? TEXT("true") : TEXT("false") ));
 	
-	UE_LOG(LogTemp, Warning, TEXT("The Actor's name is %s"), *UWitchPTInventoryManagerComponent::GetOwner()->GetName() );
 	if (IsUsingRegisteredSubObjectList())
 	{
 		for (const FWitchPTInventoryEntry& Entry : InventoryList.Entries)

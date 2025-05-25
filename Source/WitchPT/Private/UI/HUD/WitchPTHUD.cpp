@@ -20,7 +20,7 @@ UOverlayWidgetController* AWitchPTHUD::SetOverlayWidgetController(const FWidgetC
 	return OverlayWidgetController;
 }
 
-UWitchPTWidgetController* AWitchPTHUD::SetCauldronWidgetController(const FWidgetControllerParams& WCParams)
+UCauldronWidgetController* AWitchPTHUD::SetCauldronWidgetController(const FWidgetControllerParams& WCParams)
 {
 	if (CauldronWidgetController == nullptr)
 	{
@@ -48,7 +48,6 @@ URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetCon
 	{
 		RitualWidgetController = NewObject<URitualWidgetController>(this, RitualWidgetControllerClass);
 		RitualWidgetController->SetWidgetControllerParams(WCParams);
-		//TODO: Remove callback dependencies when the ritual ends
 	}
 	return RitualWidgetController;
 }

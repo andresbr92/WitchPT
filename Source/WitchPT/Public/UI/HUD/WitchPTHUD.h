@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UCauldronWidgetController;
 class UWitchPTWidgetController;
 class URitualWidgetController;
 class UAbilitySystemComponent;
@@ -25,7 +26,7 @@ public:
 	UOverlayWidgetController* SetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
-	UWitchPTWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
+	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
@@ -54,7 +55,7 @@ private:
 	TSubclassOf<URitualWidgetController> RitualWidgetControllerClass;
 
 	UPROPERTY()
-	TObjectPtr<UWitchPTWidgetController> CauldronWidgetController;
+	TObjectPtr<UCauldronWidgetController> CauldronWidgetController;
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UWitchPTWidgetController> CauldronWidgetControllerClass;
+	TSubclassOf<UCauldronWidgetController> CauldronWidgetControllerClass;
 };

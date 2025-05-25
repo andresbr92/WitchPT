@@ -9,6 +9,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
+#include "Inventory/WitchPTInventoryItemInstance.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientDetails.h"
 #include "Player/WitchPTPlayerController.h"
 
 // Sets default values
@@ -45,6 +47,7 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
     DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
     DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
+    DOREPLIFETIME(ACauldronAltar, BaseIngredient);
 }
 
 
@@ -66,6 +69,11 @@ void ACauldronAltar::OnRep_CauldronPhysicState()
     
 }
 
+void ACauldronAltar::OnRep_BaseIngredient()
+{
+    BroadcastBaseIngredientDropped();
+}
+
 // --- Interaction Functions ---
 
 void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
@@ -85,6 +93,35 @@ void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
     
     // Otherwise, try to position the character for brewing
     PositionCharacterForBrewing(InteractingCharacter);
+}
+
+void ACauldronAltar::RequestDropBaseIngredient(ACharacter* RequestingCharacter,UWitchPTInventoryItemInstance* IngredientInstance)
+{
+    if (!HasAuthority())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Not authority"));
+        return;
+    }
+    if (!IngredientInstance)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Invalid ingredient instance"));
+        return;
+    }
+    // Check if the cauldron is in a valid state to drop an ingredient
+    if (CauldronPhysicState != ECauldronPhysicState::Static)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Cauldron is not in a static state"));
+        return;
+    }
+    const UWitchPTInventoryItemFragment* ItemFragment = IngredientInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_IngredientDetails::StaticClass());
+    BaseIngredient = IngredientInstance;
+    // Marcar la propiedad como dirty para replicación
+    // Cast<UWitchPTInventoryItemFragment_IngredientDetails>(ItemFragment);
+
+    BroadcastBaseIngredientDropped();
+    
+
+   
 }
 
 void ACauldronAltar::BeginPlay()
@@ -241,21 +278,21 @@ void ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
         Character->SetActorLocationAndRotation(BrewingPosition->GetActorLocation(), BrewingPosition->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
         ParticipatingPlayers.Add(Character);
         Client_OnCharacterPositioned();
-        if (Character->GetLocalRole() == ROLE_Authority && Character->IsLocallyControlled()) // Im the listen server
-        {
-            AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner());
-            if (!PC->HasRitualWidgetInitialized(this))
-            {
-                PC->LocalInitializeRitualUserWidget(this);
-            }
-        } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client
-        {
-            AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner());
-            if (!PC->HasRitualWidgetInitialized(this))
-            {
-                PC->Client_InitializeRitualUserWidget(this);
-            }
-        }
+        // if (Character->GetLocalRole() == ROLE_Authority && Character->IsLocallyControlled()) // Im the listen server
+        // {
+        //     AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner());
+        //     if (!PC->HasRitualWidgetInitialized(this))
+        //     {
+        //         PC->LocalInitializeRitualUserWidget(this);
+        //     }
+        // } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client
+        // {
+        //     AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner());
+        //     if (!PC->HasRitualWidgetInitialized(this))
+        //     {
+        //         PC->Client_InitializeRitualUserWidget(this);
+        //     }
+        // }
         return BrewingPosition->SetOccupied(Character);
 
         // Teleport the character to the position facing the cauldron
@@ -607,3 +644,15 @@ bool ACauldronAltar::IsPlacementValid() const
     // La posición es válida
     return true;
 } 
+// ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
+void ACauldronAltar::BroadcastBaseIngredientDropped() const
+{
+    OnBaseIngredientDropped.Broadcast(BaseIngredient);
+}
+
+UWitchPTInventoryItemInstance* ACauldronAltar::GetBaseIngredient() const
+{
+    return BaseIngredient;
+}
+
+

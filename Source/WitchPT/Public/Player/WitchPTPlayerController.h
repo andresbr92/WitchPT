@@ -7,6 +7,7 @@
 #include "UI/Widgets/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
+class UCauldronUserWidget;
 class ABaseInteractableAltar;
 class ACauldronAltar;
 class ARitualAltar;
@@ -33,6 +34,12 @@ public:
 
 	void LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar);
 	bool HasRitualWidgetInitialized(ABaseInteractableAltar* Altar);
+
+	
+
+
+
+
 
 	UFUNCTION(Client, Reliable)
 	void Client_InitializeRitualUserWidget(ABaseInteractableAltar* Altar);
@@ -66,6 +73,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TSubclassOf<UPointerWidget> HUDWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TSubclassOf<UCauldronUserWidget> CauldronAltarWidgetClass;
+
 
 private:
 
@@ -77,13 +87,20 @@ private:
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
 
+	void ConstructCauldronWidget();
+
 	void CreateHUDWidget();
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
+	void ToggleCauldronMenu();
+	void OpenCauldronMenu();
+	void CloseCauldronMenu();
+	bool bCauldronMenuOpen = false;
 	
 	// Array de altares para los que ya se ha creado un widget
 	UPROPERTY()
-	TObjectPtr<ARitualAltar> RitualAltarWidget;
+	TObjectPtr<ARitualAltar> ThisRitualAltarHasWidget;
 	UPROPERTY()
-	TObjectPtr<ACauldronAltar> CauldronAltarWidget;
+	TObjectPtr<UCauldronUserWidget> CauldronAltarMenu;
 	
 };
 

@@ -13,8 +13,10 @@
 #include "Item/CauldronAltar.h"
 #include "Item/RitualAltar.h"
 #include "Item/Ritual/RitualFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/HUD/WitchPTHUD.h"
+#include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
 #include "UI/Widgets/CauldronUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
@@ -67,9 +69,9 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractable
 		// Cast the altar to a ritual altar
 		ARitualAltar* RitualAltar = Cast<ARitualAltar>(Altar);
 
-		if (!RitualAltarWidget || RitualAltarWidget != RitualAltar)
+		if (!ThisRitualAltarHasWidget || ThisRitualAltarHasWidget != RitualAltar)
 		{
-			RitualAltarWidget = RitualAltar;
+			ThisRitualAltarHasWidget = RitualAltar;
 		}
 		
 		URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, Altar->AltarUserWidgetClass);
@@ -95,22 +97,7 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractable
 		}
 			
 	}
-	else if (Altar->IsA<ACauldronAltar>())
-	{
-		// Cast the altar to a cauldron altar
-		ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(Altar);
-		if (!CauldronAltarWidget || CauldronAltarWidget != CauldronAltar)
-		{
-			CauldronAltarWidget = CauldronAltar;
-		}
-		UCauldronUserWidget* CauldronUserWidget = CreateWidget<UCauldronUserWidget>(this, Altar->AltarUserWidgetClass);
-		if (IsValid(CauldronUserWidget))
-		{
-			UWitchPTWidgetController* CauldronWidgetController = URitualFunctionLibrary::SetCauldronWidgetController(this);
-			CauldronUserWidget->SetWidgetController(CauldronWidgetController);
-			CauldronUserWidget->AddToViewport();
-		}
-	}
+	
 	
 }
 
@@ -118,13 +105,36 @@ bool AWitchPTPlayerController::HasRitualWidgetInitialized(ABaseInteractableAltar
 {
 	if (Altar->IsA<ARitualAltar>())
 	{
-		return RitualAltarWidget == Altar;
-	}
-	else if (Altar->IsA<ACauldronAltar>())
-	{
-		return CauldronAltarWidget == Altar;
+		return ThisRitualAltarHasWidget == Altar;
 	}
 	return false;
+}
+
+void AWitchPTPlayerController::OpenCauldronMenu()
+{
+	if (!IsValid(CauldronAltarMenu)) return;
+
+	CauldronAltarMenu->SetVisibility(ESlateVisibility::Visible);
+	bCauldronMenuOpen = true;
+	
+	FInputModeGameAndUI InputMode;
+	
+	SetInputMode(InputMode);
+	SetShowMouseCursor(true);
+}
+
+void AWitchPTPlayerController::CloseCauldronMenu()
+{
+	if (!IsValid(CauldronAltarMenu)) return;
+
+	CauldronAltarMenu->SetVisibility(ESlateVisibility::Collapsed);
+	bCauldronMenuOpen = false;
+
+	
+
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+	SetShowMouseCursor(false);
 }
 
 void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(ABaseInteractableAltar* Altar)
@@ -145,6 +155,7 @@ void AWitchPTPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
 	CreateHUDWidget();
+	ConstructCauldronWidget();
 }
 
 void AWitchPTPlayerController::SetupInputComponent()
@@ -211,6 +222,22 @@ void AWitchPTPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	}
 }
 
+void AWitchPTPlayerController::ConstructCauldronWidget()
+{
+	if (!this->IsLocalController()) return;
+	CauldronAltarMenu = CreateWidget<UCauldronUserWidget>(this, CauldronAltarWidgetClass);
+	UCauldronWidgetController* CauldronWidgetController = URitualFunctionLibrary::SetCauldronWidgetController(this);
+	CauldronAltarMenu->SetWidgetController(CauldronWidgetController);
+	// Find ACauldronAltar in the level
+	ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(UGameplayStatics::GetActorOfClass(this, ACauldronAltar::StaticClass()));
+	if (CauldronAltar)
+	{
+		CauldronWidgetController->SetCauldronAltar(CauldronAltar);
+	}
+	CauldronAltarMenu->AddToViewport();
+	CloseCauldronMenu();
+}
+
 void AWitchPTPlayerController::CreateHUDWidget()
 {
 	if (!IsLocalController()) return;
@@ -218,6 +245,18 @@ void AWitchPTPlayerController::CreateHUDWidget()
 	if (IsValid(HUDWidget))
 	{
 		HUDWidget->AddToViewport();
+	}
+}
+
+void AWitchPTPlayerController::ToggleCauldronMenu()
+{
+	if (bCauldronMenuOpen)
+	{
+		CloseCauldronMenu();
+	}
+	else
+	{
+		OpenCauldronMenu();
 	}
 }
 
