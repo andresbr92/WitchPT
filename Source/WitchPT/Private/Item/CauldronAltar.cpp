@@ -397,39 +397,7 @@ void ACauldronAltar::UpdatePlacementPreview(const FVector& HitLocation, const FV
     CurrentPlacementState = IsPlacementValid() ? ECauldronPlacementState::Valid : ECauldronPlacementState::Invalid;
 }
 
-void ACauldronAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
-{
-    Super::OccupyPosition(Player, Position);
-    // Print the local role por the RitualAltar and the Player
-    UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player LocalRole Role: %s"), *UEnum::GetValueAsString(Player->GetLocalRole()));
-    UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player RemoteRole Role: %s"), *UEnum::GetValueAsString(Player->GetRemoteRole()));
-    if (Player->IsLocallyControlled())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is locally controlled"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is NOT locally controlled"));
-    }
-    
-    
-    // Call the ritual state delegate for Listen Server
-    if (Player->GetLocalRole() == ROLE_Authority && Player->IsLocallyControlled()) // Im the listen server
-    {
-        AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
-        if (!PC->HasRitualWidgetInitialized(this))
-        {
-            PC->LocalInitializeRitualUserWidget(this);
-        }
-    } else if (Player->HasAuthority() && !Player->IsLocallyControlled()) // The call is from the client
-    {
-        AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
-        if (!PC->HasRitualWidgetInitialized(this))
-        {
-            PC->Client_InitializeRitualUserWidget(this);
-        }
-    }
-}
+
 
 void ACauldronAltar::FinalizePlacement()
 {

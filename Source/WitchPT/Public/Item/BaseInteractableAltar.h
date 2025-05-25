@@ -83,7 +83,7 @@ public:
     TArray<FPlayerPositionTagEntry> PlayerPositionTags;
     
     // Basic interaction methods
-    virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
+  
     virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
     
 

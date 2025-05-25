@@ -212,7 +212,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnCountdownTick(int32 CountdownValue);
 	
-	virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
+	void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
 	
 	// ---------------------------- GETTERS FOR WC ---------------------------- //
 	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }

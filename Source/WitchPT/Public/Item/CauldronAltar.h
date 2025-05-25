@@ -77,12 +77,12 @@ public:
 
   
     
-    // Funciones normales que reemplazan a los RPCs
+   
     void StartBrewingPotion(ACharacter* InteractingCharacter);
     void StartCarryCauldron(ACharacter* InteractingCharacter);
     void StartPlacementPreview(ACharacter* Character);
     void UpdatePlacementPreview(const FVector& HitLocation, const FVector& HitNormal);
-    virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
+    
     void FinalizePlacement();
     void CancelPlacement();
     virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;

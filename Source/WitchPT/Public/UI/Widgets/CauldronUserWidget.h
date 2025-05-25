@@ -13,5 +13,7 @@ UCLASS()
 class WITCHPT_API UCauldronUserWidget : public UWitchPTUserWidget
 {
 	GENERATED_BODY()
+private:
+	virtual void NativeConstruct() override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 };

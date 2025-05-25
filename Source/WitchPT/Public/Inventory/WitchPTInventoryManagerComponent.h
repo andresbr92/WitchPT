@@ -39,7 +39,9 @@ class WITCHPT_API UWitchPTInventoryManagerComponent : public UActorComponent
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
+	UFUNCTION(BlueprintCallable)
+	UInventoryUserWidget* GetInventoryMenuWidget() const { return InventoryMenu; }
 	/**
 	 * Constructor for the inventory manager component
 	 * Sets up the component for replication and initializes the inventory list

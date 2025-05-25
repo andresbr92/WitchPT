@@ -7,6 +7,7 @@
 #include "UObject/Interface.h"
 #include "MechanicsInterface.generated.h"
 
+class UWitchPTInventoryItemInstance;
 class ABaseInteractionPosition;
 class ACauldronAltar;
 class ARitualPosition;
@@ -30,7 +31,7 @@ class WITCHPT_API IMechanicsInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 	
 public:
-	//RITUAL IMPLEMENTATION
+	// ------------------------------------ RITUAL IMPLEMENTATION ---------------------------------
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
 	void RequestStartRitual(ARitualAltar* TargetAltar);
 	
@@ -44,8 +45,8 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
 	void RequestUnOccupyPositionInRitual(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position);
-
 	
+	// ----------------------------------- CAULDRON IMPLEMENTATION ---------------------------------
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
 	void RequestStartBrewingPotion(ACauldronAltar* TargetAltar);
 
@@ -64,8 +65,12 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
 	void RequestFinalizePlacement(ACauldronAltar* TargetAltar);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Ritual")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
 	void RequestUnOccupyPositionInCauldron(ACauldronAltar* TargetCauldron);
+
+	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestPlaceBaseIngredientInCauldron(ACauldronAltar* TargetAltar, UWitchPTInventoryItemInstance* IngredientInstance);
 
 	
 	// General Queries that might be implemented by positions or other interactables

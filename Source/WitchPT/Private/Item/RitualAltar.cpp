@@ -949,7 +949,42 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 		UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is NOT locally controlled"));
 	}
 	
-	Super::OccupyPosition(Player, Position);
+	if (!Player || !Position || !HasAuthority())
+	{
+		return;
+	}
+
+
+	if (Position->IsOccupied())
+	{
+		//broadcast
+		return;
+	}
+	Position->SetOccupied(Player);
+    
+	bool bFound = false;
+	for (FPlayerPositionTagEntry& Entry : PlayerPositionTags)
+	{
+		if (Entry.Player == Player)
+		{
+			Entry.PositionTag = Position->GetPositionTag();
+			bFound = true;
+			break;
+		}
+	}
+	if (!bFound)
+	{
+		FPlayerPositionTagEntry NewEntry;
+		NewEntry.Player = Player;
+		NewEntry.PositionTag = Position->GetPositionTag();
+		PlayerPositionTags.Add(NewEntry);
+	}
+
+	// Add to participating players if not already there
+	if (!ParticipatingPlayers.Contains(Player))
+	{
+		ParticipatingPlayers.Add(Player);
+	}
 	CurrentRitualState = EInteractionState::WaitingForPlayers;
 	
 	// Broadcast state change on server for local UI updates (OnRep will handle clients)

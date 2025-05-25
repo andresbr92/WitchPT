@@ -52,50 +52,7 @@ void ABaseInteractableAltar::Tick(float DeltaTime)
     // Child classes will implement specific tick behavior
 }
 
-void ABaseInteractableAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
-{
-    if (!Player || !Position || !HasAuthority())
-    {
-        return;
-    }
 
-
-    if (Position->IsOccupied())
-    {
-        //broadcast
-        return;
-    }
-    Position->SetOccupied(Player);
-    
-    bool bFound = false;
-    for (FPlayerPositionTagEntry& Entry : PlayerPositionTags)
-    {
-        if (Entry.Player == Player)
-        {
-            Entry.PositionTag = Position->GetPositionTag();
-            bFound = true;
-            break;
-        }
-    }
-    if (!bFound)
-    {
-        FPlayerPositionTagEntry NewEntry;
-        NewEntry.Player = Player;
-        NewEntry.PositionTag = Position->GetPositionTag();
-        PlayerPositionTags.Add(NewEntry);
-    }
-
-    // Add to participating players if not already there
-    if (!ParticipatingPlayers.Contains(Player))
-    {
-        ParticipatingPlayers.Add(Player);
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("[BaseInteractableAltar] Player %s occupied position %s"),
-        *Player->GetName(), *Position->GetName());
-
-    // Child classes can override to add additional logic
-}
 
 void ABaseInteractableAltar::UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
 {

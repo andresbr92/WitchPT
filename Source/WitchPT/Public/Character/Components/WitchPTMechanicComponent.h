@@ -19,7 +19,7 @@ public:
 	UWitchPTMechanicComponent();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
-	// --- CAULDRON IMPLEMENTATION ---
+	// ----------------------------------- CAULDRON IMPLEMENTATION ---------------------------------
 	virtual void RequestStartBrewingPotion_Implementation(ACauldronAltar* TargetAltar) override;
 	virtual void RequestStartCarryCauldron_Implementation(ACauldronAltar* TargetAltar) override;
 	virtual void RequestStartPlacementPreview_Implementation(ACauldronAltar* TargetAltar) override;
@@ -27,9 +27,13 @@ public:
 	virtual void RequestCancelPlacementPreview_Implementation(ACauldronAltar* TargetAltar) override;
 	virtual void RequestFinalizePlacement_Implementation(ACauldronAltar* TargetAltar) override;
 	virtual void RequestUnOccupyPositionInCauldron_Implementation(ACauldronAltar* TargetCauldron) override;
+	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
+	virtual void RequestPlaceBaseIngredientInCauldron_Implementation(ACauldronAltar* TargetAltar, UWitchPTInventoryItemInstance* IngredientInstance) override;
+	
+	
 
 	
-	// --- RITUAL IMPLEMENTATION ---
+	// ------------------------------------ RITUAL IMPLEMENTATION ---------------------------------
 	virtual void RequestStartRitual_Implementation(ARitualAltar* TargetAltar) override;
 	virtual void RequestRitualInput_Implementation(ARitualAltar* TargetAltar, const FGameplayTag& InputTag) override;
 	virtual void RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position) override;
