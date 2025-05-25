@@ -7,6 +7,7 @@
 #include "UI/Widgets/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
+class ACauldronAltar;
 class ARitualAltar;
 class UWitchPTInventoryManagerComponent;
 struct FGameplayTag;
@@ -79,7 +80,9 @@ private:
 	
 	// Array de altares para los que ya se ha creado un widget
 	UPROPERTY()
-	TArray<ARitualAltar*> InitializedRitualWidgets;
+	TObjectPtr<ARitualAltar> RitualAltarWidget;
+	UPROPERTY()
+	TObjectPtr<ACauldronAltar> CauldronAltarWidget;
 	
 };
 

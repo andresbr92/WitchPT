@@ -9,6 +9,7 @@
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
+class UCauldronUserWidget;
 class ACauldronPosition;
 class ACharacter;
 
@@ -126,22 +127,25 @@ public:
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     bool IsInPlacementPreview() const;
     
-    // Material a aplicar durante la previsualización
+ 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
     UMaterialInterface* ValidPlacementMaterial;
     
-    // Material a aplicar cuando la posición no es válida
+   
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
     UMaterialInterface* InvalidPlacementMaterial;
     
-    // Radio de detección de colisiones para validar la posición
+    
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
     float PlacementCollisionCheckRadius = 50.0f;
     
-    // Altura máxima permitida para alineación con el suelo
+  
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Cauldron|Placement")
     float MaxGroundAlignmentHeight = 20.0f;
     void ApplyPlacementPreviewMaterial();
+
+    UPROPERTY(EditDefaultsOnly, Category= "Cauldron|UI")
+    TSubclassOf<UCauldronUserWidget> CauldronUserWidgetClass;
     
 private:
     // Character currently carrying the cauldron
@@ -156,28 +160,24 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "Cauldron|Movement")
     FVector DetachmentOffset = FVector(100.0f, 0.0f, 0.0f);
     
-    // Estado de colocación actual
     UPROPERTY(Replicated)
     ECauldronPlacementState CurrentPlacementState;
     
-    // Materiales originales para restaurar después de la previsualización
+    
     UPROPERTY()
     TArray<UMaterialInterface*> OriginalMaterials;
     
-    
-    // Restaura los materiales originales después de salir del modo previsualización
+
     void RestoreOriginalMaterials();
     
-    // Verifica si la posición actual es válida
+
     bool IsPlacementValid() const;
-    
-    // Posición guardada para la previsualización
+
     FVector PreviewLocation;
-    
-    // Rotación guardada para la previsualización
+
     FRotator PreviewRotation;
     
-    // RPCs ahora son funciones internas para responder a llamadas del MechanicComponent
+  
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_FinalizePlacement();
     

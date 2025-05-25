@@ -61,9 +61,9 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ARitualAltar* Rit
 	}
 	
 	// Registrar este altar como inicializado
-	if (!InitializedRitualWidgets.Contains(RitualAltar))
+	if (!RitualAltarWidget || RitualAltarWidget != RitualAltar)
 	{
-		InitializedRitualWidgets.Add(RitualAltar);
+		RitualAltarWidget = RitualAltar;
 	}
 	
 	URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, RitualAltar->RitualUserWidgetClass);
@@ -95,7 +95,7 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ARitualAltar* Rit
 
 bool AWitchPTPlayerController::HasRitualWidgetInitialized(ARitualAltar* RitualAltar)
 {
-	return InitializedRitualWidgets.Contains(RitualAltar);
+	return RitualAltarWidget == RitualAltar;
 }
 
 void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(ARitualAltar* RitualAltar)
