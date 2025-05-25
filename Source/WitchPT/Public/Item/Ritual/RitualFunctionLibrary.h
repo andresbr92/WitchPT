@@ -15,6 +15,8 @@ class WITCHPT_API URitualFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(Category="Inventory")
+	UFUNCTION(Category="Ritual")
 	static URitualWidgetController* SetRitualWidgetController(const UObject* WorldContextObject);
+	UFUNCTION(Category="Cauldron")
+	static UWitchPTWidgetController* SetCauldronWidgetController(const UObject* WorldContextObject);
 };

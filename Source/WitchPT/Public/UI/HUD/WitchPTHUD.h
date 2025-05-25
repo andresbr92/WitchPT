@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UWitchPTWidgetController;
 class URitualWidgetController;
 class UAbilitySystemComponent;
 class UAttributeSet;
@@ -23,7 +24,8 @@ class WITCHPT_API AWitchPTHUD : public AHUD
 public:
 	UOverlayWidgetController* SetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
-	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams WCParams);
+	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
+	UWitchPTWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
@@ -50,4 +52,9 @@ private:
 	TObjectPtr<URitualWidgetController> RitualWidgetController;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<URitualWidgetController> RitualWidgetControllerClass;
+
+	UPROPERTY()
+	TObjectPtr<UWitchPTWidgetController> CauldronWidgetController;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTWidgetController> CauldronWidgetControllerClass;
 };

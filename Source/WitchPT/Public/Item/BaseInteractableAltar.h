@@ -7,6 +7,7 @@
 #include "GameplayTagContainer.h" // Include for FGameplayTag
 #include "BaseInteractableAltar.generated.h"
 
+class UWitchPTUserWidget;
 class ABaseInteractionPosition;
 class ACharacter;
 
@@ -109,13 +110,9 @@ public:
     // Getters for Blueprint/HUD access
     UFUNCTION(BlueprintPure, Category = "Interaction")
     EInteractionState GetCurrentState() const { return CurrentState; }
-    
-    // Delegates
-    UPROPERTY(BlueprintAssignable, Category = "Interaction")
-    FOnInteractionCompleted OnInteractionCompleted;
-    
-    UPROPERTY(BlueprintAssignable, Category = "Interaction")
-    FOnInputReceived OnInputReceived;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<UWitchPTUserWidget> AltarUserWidgetClass;
 
 protected:
     virtual void BeginPlay() override;

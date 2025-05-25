@@ -7,6 +7,7 @@
 #include "UI/Widgets/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
+class ABaseInteractableAltar;
 class ACauldronAltar;
 class ARitualAltar;
 class UWitchPTInventoryManagerComponent;
@@ -30,11 +31,11 @@ public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void LocalInitializeRitualUserWidget(ARitualAltar* RitualAltar);
-	bool HasRitualWidgetInitialized(ARitualAltar* RitualAltar);
+	void LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar);
+	bool HasRitualWidgetInitialized(ABaseInteractableAltar* Altar);
 
 	UFUNCTION(Client, Reliable)
-	void Client_InitializeRitualUserWidget(ARitualAltar* RitualAltar);
+	void Client_InitializeRitualUserWidget(ABaseInteractableAltar* Altar);
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;

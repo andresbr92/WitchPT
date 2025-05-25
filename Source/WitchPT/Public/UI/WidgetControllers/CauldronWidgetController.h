@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class WITCHPT_API UCauldronWidgetController : public UWitchPTWidgetController
 {
 	GENERATED_BODY()

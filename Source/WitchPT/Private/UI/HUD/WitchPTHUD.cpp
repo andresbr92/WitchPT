@@ -3,6 +3,7 @@
 
 #include "UI/HUD/WitchPTHUD.h"
 
+#include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
@@ -19,6 +20,17 @@ UOverlayWidgetController* AWitchPTHUD::SetOverlayWidgetController(const FWidgetC
 	return OverlayWidgetController;
 }
 
+UWitchPTWidgetController* AWitchPTHUD::SetCauldronWidgetController(const FWidgetControllerParams& WCParams)
+{
+	if (CauldronWidgetController == nullptr)
+	{
+		CauldronWidgetController = NewObject<UCauldronWidgetController>(this, CauldronWidgetControllerClass);
+		CauldronWidgetController->SetWidgetControllerParams(WCParams);
+		CauldronWidgetController->BindCallbacksToDependencies();
+	}
+	return CauldronWidgetController;
+}
+
 UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWidgetControllerParams& WCParams)
 {
 	if (InventoryWidgetController == nullptr)
@@ -30,7 +42,7 @@ UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWid
 	return InventoryWidgetController;
 }
 
-URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetControllerParams WCParams)
+URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetControllerParams& WCParams)
 {
 	if (RitualWidgetController == nullptr)
 	{

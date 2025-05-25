@@ -10,11 +10,13 @@
 #include "Blueprint/UserWidget.h"
 #include "Input/WitchPTInputComponent.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Item/CauldronAltar.h"
 #include "Item/RitualAltar.h"
 #include "Item/Ritual/RitualFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/HUD/WitchPTHUD.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
+#include "UI/Widgets/CauldronUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
 #include "WitchPT/WitchPT.h"
 
@@ -52,57 +54,84 @@ void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetime
 	DOREPLIFETIME(AWitchPTPlayerController, InventoryManager);
 }
 
-void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ARitualAltar* RitualAltar)
+void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar)
 {
-	if (!RitualAltar || !RitualAltar->RitualUserWidgetClass || !IsLocalController())
+	if (!Altar || !Altar->AltarUserWidgetClass || !IsLocalController())
 	{
 		UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Invalid altar or widget class!"));
 		return;
 	}
 	
-	// Registrar este altar como inicializado
-	if (!RitualAltarWidget || RitualAltarWidget != RitualAltar)
+	if (Altar->IsA<ARitualAltar>())
 	{
-		RitualAltarWidget = RitualAltar;
-	}
-	
-	URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, RitualAltar->RitualUserWidgetClass);
-	
-	if (IsValid(RitualUserWidget))
-	{
-		// Get or create the ritual widget controller
-		URitualWidgetController* RitualWidgetController = URitualFunctionLibrary::SetRitualWidgetController(this);
-		
-		if (!RitualWidgetController)
+		// Cast the altar to a ritual altar
+		ARitualAltar* RitualAltar = Cast<ARitualAltar>(Altar);
+
+		if (!RitualAltarWidget || RitualAltarWidget != RitualAltar)
 		{
-			UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Failed to get or create RitualWidgetController!"));
-			return;
+			RitualAltarWidget = RitualAltar;
 		}
 		
-		RitualWidgetController->SetRitualAltar(RitualAltar);
-		// Set widget controller reference for the user widget
-		RitualUserWidget->SetWidgetController(RitualWidgetController);
-
-		// RitualWidgetController->BindCallbacksToDependencies();
-		// RitualWidgetController->BroadcastInitialValues();
+		URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, Altar->AltarUserWidgetClass);
 		
-		// Set ritual altar in the controller
-		
-		// Add the widget to viewport
-		RitualUserWidget->AddToViewport();
+		if (IsValid(RitualUserWidget))
+		{
+			// Get or create the ritual widget controller
+			URitualWidgetController* RitualWidgetController = URitualFunctionLibrary::SetRitualWidgetController(this);
+			
+			if (!RitualWidgetController)
+			{
+				UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Failed to get or create RitualWidgetController!"));
+				return;
+			}
+			
+			RitualWidgetController->SetRitualAltar(RitualAltar);
+			// Set widget controller reference for the user widget
+			RitualUserWidget->SetWidgetController(RitualWidgetController);
+			
+			
+			// Add the widget to viewport
+			RitualUserWidget->AddToViewport();
+		}
+			
 	}
-}
-
-bool AWitchPTPlayerController::HasRitualWidgetInitialized(ARitualAltar* RitualAltar)
-{
-	return RitualAltarWidget == RitualAltar;
-}
-
-void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(ARitualAltar* RitualAltar)
-{
-	if (!HasRitualWidgetInitialized(RitualAltar))
+	else if (Altar->IsA<ACauldronAltar>())
 	{
-		LocalInitializeRitualUserWidget(RitualAltar);
+		// Cast the altar to a cauldron altar
+		ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(Altar);
+		if (!CauldronAltarWidget || CauldronAltarWidget != CauldronAltar)
+		{
+			CauldronAltarWidget = CauldronAltar;
+		}
+		UCauldronUserWidget* CauldronUserWidget = CreateWidget<UCauldronUserWidget>(this, Altar->AltarUserWidgetClass);
+		if (IsValid(CauldronUserWidget))
+		{
+			UWitchPTWidgetController* CauldronWidgetController = URitualFunctionLibrary::SetCauldronWidgetController(this);
+			CauldronUserWidget->SetWidgetController(CauldronWidgetController);
+			CauldronUserWidget->AddToViewport();
+		}
+	}
+	
+}
+
+bool AWitchPTPlayerController::HasRitualWidgetInitialized(ABaseInteractableAltar* Altar)
+{
+	if (Altar->IsA<ARitualAltar>())
+	{
+		return RitualAltarWidget == Altar;
+	}
+	else if (Altar->IsA<ACauldronAltar>())
+	{
+		return CauldronAltarWidget == Altar;
+	}
+	return false;
+}
+
+void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(ABaseInteractableAltar* Altar)
+{
+	if (!HasRitualWidgetInitialized(Altar))
+	{
+		LocalInitializeRitualUserWidget(Altar);
 	}
 }
 

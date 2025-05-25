@@ -225,8 +225,6 @@ public:
 	int32 GetNumberOfTotalPlayers() const { return ParticipatingPlayers.Num(); }
 	FUIRitualData GetCurrentTurnData() const { return CurrentTurnData; }
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<URitualUserWidget> RitualUserWidgetClass;
 
 protected:
 	virtual void BeginPlay() override;
