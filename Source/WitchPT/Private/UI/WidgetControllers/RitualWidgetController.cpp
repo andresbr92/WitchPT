@@ -19,56 +19,40 @@ void URitualWidgetController::BroadcastInitialValues()
     if (RitualAltar)
     {
         // Broadcast current state
-        EInteractionState CurrentState = RitualAltar->GetCurrentRitualState();
-        
         OnRitualStateChanged.Broadcast(RitualAltar->GetCurrentRitualState());
-
-        OnReadyPlayersNumberChangedSignature.Broadcast(RitualAltar->GetNumberOfTotalPlayers(), RitualAltar->GetNumberOfReadyPlayers());
         
+        // Broadcast ready players data
+        FRitualReadyPlayersData ReadyPlayersData;
+        ReadyPlayersData.TotalPlayers = RitualAltar->GetNumberOfTotalPlayers();
+        ReadyPlayersData.ReadyPlayers = RitualAltar->GetNumberOfReadyPlayers();
+        OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
         
-        // // Broadcast active player
-        // OnRitualActivePlayerChanged.Broadcast(RitualAltar->GetCurrentActivePlayer());
-        //
-        // // Broadcast expected input
-        // OnRitualExpectedInputChanged.Broadcast(RitualAltar->GetCurrentExpectedInput());
-        //
-        // // Broadcast remaining time
-        // OnRitualInputTimerChanged.Broadcast(RitualAltar->GetCurrentInputTimeRemaining());
-        //
-        // // Broadcast corruption
-        // OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
-        //
-        // // Broadcast sequence progress
-        // OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
+        // Broadcast current turn data (processed for local player)
+        FUIRitualData CurrentTurnData = RitualAltar->GetCurrentTurnData();
+        FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(CurrentTurnData);
+        OnTurnDataChanged.Broadcast(ProcessedTurnData);
+        
+        // Broadcast corruption
+        OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
+        
+        // Broadcast sequence progress
+        OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
     }
 }
 
 void URitualWidgetController::BindCallbacksToDependencies()
 {
-    // Bind to altar delegations if it exists
+    // Bind to altar delegates if it exists
     if (RitualAltar)
     {
-        RitualAltar->OnRitualStateChangedDelegate.BindUObject(this, &URitualWidgetController::HandleRitualStateChanged);
-        
-        
-        RitualAltar->OnNumberOfReadyPlayersHasChangedDelegate.BindLambda([this](int32 TotalPlayers, int32 PlayersReady)
-        {
-            OnReadyPlayersNumberChangedSignature.Broadcast(TotalPlayers, PlayersReady);
-        });
-        RitualAltar->OnRitualCountdownTickDelegate.BindLambda([this](int32 CountdownValue)
-        {
-            OnRitualCountdownTickDelegate.Broadcast(CountdownValue);
-        });
-        
-        RitualAltar->OnIsMyTurnChangedDelegate.BindUObject(this, &URitualWidgetController::HandleTurnChanged);
-
-        RitualAltar->OnRitualCompletedDelegate.BindUObject(this, &URitualWidgetController::HandleRitualCompleted);
-
-        RitualAltar->OnCorruptionAmountChangedDelegate.BindUObject(this, &URitualWidgetController::HandleCorruptionChanged);
-
-        RitualAltar->OnCurrentSequenceIndexChangedDelegate.BindUObject(this, &URitualWidgetController::HandleSequenceIndexChanged);
-       
-        
+        // Bind to all the new dynamic multicast delegates
+        RitualAltar->OnRitualStateChangedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualStateChanged);
+        RitualAltar->OnReadyPlayersChangedEvent.AddDynamic(this, &URitualWidgetController::HandleReadyPlayersChanged);
+        RitualAltar->OnCountdownTickEvent.AddDynamic(this, &URitualWidgetController::HandleCountdownTick);
+        RitualAltar->OnTurnDataChangedEvent.AddDynamic(this, &URitualWidgetController::HandleTurnDataChanged);
+        RitualAltar->OnCorruptionChangedEvent.AddDynamic(this, &URitualWidgetController::HandleCorruptionChanged);
+        RitualAltar->OnSequenceProgressChangedEvent.AddDynamic(this, &URitualWidgetController::HandleSequenceProgressChanged);
+        RitualAltar->OnRitualCompletedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
     }
 }
 
@@ -77,15 +61,24 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
     // Unbind any existing callbacks first
     if (RitualAltar != nullptr)
     {
-        // RitualAltar->OnRitualCompleted.RemoveAll(this);
+        RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
+        RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
+        RitualAltar->OnCountdownTickEvent.RemoveAll(this);
+        RitualAltar->OnTurnDataChangedEvent.RemoveAll(this);
+        RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
+        RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
+        RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
     }
     
     // Assign the new altar
     RitualAltar = InRitualAltar;
     
-    // Rebind and broadcast
-    // BroadcastInitialValues();
-    // BindCallbacksToDependencies();
+    // Rebind and broadcast if we have a valid altar
+    if (RitualAltar)
+    {
+        BindCallbacksToDependencies();
+        BroadcastInitialValues();
+    }
 }
 
 bool URitualWidgetController::IsLocalPlayerActive() const
@@ -106,51 +99,82 @@ bool URitualWidgetController::IsLocalPlayerActive() const
     return RitualAltar->GetCurrentActivePlayer() == LocalCharacter;
 }
 
+FUIRitualData URitualWidgetController::ProcessTurnDataForLocalPlayer(const FUIRitualData& InTurnData) const
+{
+    FUIRitualData ProcessedData = InTurnData;
+    
+    // Determine if it's the local player's turn
+    ProcessedData.bIsMyTurn = IsLocalPlayerActive();
+    
+    // If it's not the local player's turn, clear sensitive data
+    if (!ProcessedData.bIsMyTurn)
+    {
+        ProcessedData.ExpectedInput = FGameplayTag::EmptyTag;
+        ProcessedData.CurrentInputTimeRemaining = 0.0f;
+    }
+    
+    return ProcessedData;
+}
+
+// ----------------------------------- CALLBACK HANDLERS ---------------------------------------------- //
+
 void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewState)
 {
     OnRitualStateChanged.Broadcast(NewState);
 }
 
-void URitualWidgetController::HandleTurnChanged(const FUIRitualData& UIRitualData) const
+void URitualWidgetController::HandleReadyPlayersChanged(FRitualReadyPlayersData ReadyPlayersData)
 {
-    OnIsMyTurnChangedDelegate.Broadcast(UIRitualData);
+    OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
 }
 
-void URitualWidgetController::HandleInputTimerChanged(float NewTime)
+void URitualWidgetController::HandleCountdownTick(int32 CountdownValue)
 {
-    OnRitualInputTimerChanged.Broadcast(NewTime);
+    OnRitualCountdownTick.Broadcast(CountdownValue);
 }
 
-void URitualWidgetController::HandleCorruptionChanged(float NewCorruption)
+void URitualWidgetController::HandleTurnDataChanged(FUIRitualData TurnData)
 {
-    OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
+    // Process the turn data for the local player before broadcasting
+    FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(TurnData);
+    OnTurnDataChanged.Broadcast(ProcessedTurnData);
+    
+    // Also broadcast the expected input separately for backward compatibility
+    if (ProcessedTurnData.bIsMyTurn)
+    {
+        OnRitualExpectedInputChanged.Broadcast(ProcessedTurnData.ExpectedInput);
+    }
+    else
+    {
+        OnRitualExpectedInputChanged.Broadcast(FGameplayTag::EmptyTag);
+    }
 }
 
-void URitualWidgetController::HandleSequenceIndexChanged(int32 NewIndex)
+void URitualWidgetController::HandleCorruptionChanged(float CorruptionPercentage)
 {
-    float Progress = RitualAltar->GetCurrentSequenceProgress();
-    OnRitualSequenceProgressChanged.Broadcast(Progress);
+    OnRitualCorruptionChanged.Broadcast(CorruptionPercentage);
+}
+
+void URitualWidgetController::HandleSequenceProgressChanged(float ProgressPercentage)
+{
+    OnRitualSequenceProgressChanged.Broadcast(ProgressPercentage);
 }
 
 void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
 {
     OnRitualCompleted.Broadcast(bWasSuccessful);
-    // unbind all the delegates
-    RitualAltar->OnRitualCompletedDelegate.Unbind();
-    RitualAltar->OnNumberOfReadyPlayersHasChangedDelegate.Unbind();
-    RitualAltar->OnRitualCountdownTickDelegate.Unbind();
-    RitualAltar->OnIsMyTurnChangedDelegate.Unbind();
-    RitualAltar->OnRitualCompletedDelegate.Unbind();
-
-    // Broadcast the completion
-    OnRitualCompleted.Broadcast(bWasSuccessful);
-    // Destroy the widget
     
-}
-
-void URitualWidgetController::HandleNumberOfReadyPlayersChanged(int32 TotalPlayers, int32 PlayersReady)
-{
-    OnReadyPlayersNumberChangedSignature.Broadcast(TotalPlayers, PlayersReady);
+    // Unbind all delegates when ritual is completed to prevent memory leaks
+    if (RitualAltar)
+    {
+        RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
+        RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
+        RitualAltar->OnCountdownTickEvent.RemoveAll(this);
+        RitualAltar->OnTurnDataChangedEvent.RemoveAll(this);
+        RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
+        RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
+        RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
+    }
 }
 
 

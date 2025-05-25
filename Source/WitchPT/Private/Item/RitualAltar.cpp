@@ -17,7 +17,6 @@ ARitualAltar::ARitualAltar()
 
 	bReplicates = true;
 	
-	
 	// Default values
 	CurrentRitualState = EInteractionState::Inactive;
 	CurrentSequenceIndex = -1;
@@ -25,6 +24,8 @@ ARitualAltar::ARitualAltar()
 	CorruptionAmount = 0.0f;
 	MaxCorruption = 100.0f;
 	StartCountdown = 3;
+	bRitualCompleted = false;
+	bRitualWasSuccessful = false;
 }
 
 void ARitualAltar::BeginPlay()
@@ -64,25 +65,180 @@ void ARitualAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 	DOREPLIFETIME(ARitualAltar, ParticipatingPlayers);
 	DOREPLIFETIME(ARitualAltar, CurrentActivePlayer);
 	DOREPLIFETIME(ARitualAltar, CurrentInputTimer);
+	DOREPLIFETIME(ARitualAltar, CurrentTurnData);
 	DOREPLIFETIME(ARitualAltar, CorruptionAmount);
 	DOREPLIFETIME(ARitualAltar, MaxCorruption);
 	DOREPLIFETIME(ARitualAltar, CorruptionIncreasePerFail);
 	DOREPLIFETIME(ARitualAltar, BaseInputTimeWindow);
 	DOREPLIFETIME(ARitualAltar, DifficultyScalingMultiplier);
 	DOREPLIFETIME(ARitualAltar, ReadyPlayers);
+	DOREPLIFETIME(ARitualAltar, ReadyPlayersData);
 	DOREPLIFETIME(ARitualAltar, StartCountdown);
+	DOREPLIFETIME(ARitualAltar, bRitualCompleted);
+	DOREPLIFETIME(ARitualAltar, bRitualWasSuccessful);
 }
+
+// ----------------------------------- ONREP FUNCTIONS ---------------------------------------------- //
+
+void ARitualAltar::OnRep_CurrentRitualState()
+{
+	BroadcastRitualStateChanged();
+}
+
+void ARitualAltar::OnRep_CurrentSequenceIndex()
+{
+	// Just broadcast sequence progress change - turn data updates are handled by OnRep_TurnData
+	BroadcastSequenceProgressChanged();
+}
+
+void ARitualAltar::OnRep_ReadyPlayersData()
+{
+	BroadcastReadyPlayersChanged();
+}
+
+void ARitualAltar::OnRep_StartCountdown()
+{
+	BroadcastCountdownTick();
+}
+
+void ARitualAltar::OnRep_CurrentActivePlayer()
+{
+	// Turn data updates are handled by OnRep_TurnData
+	// This OnRep function is kept for potential future use
+}
+
+void ARitualAltar::OnRep_TurnData()
+{
+	BroadcastTurnDataChanged();
+}
+
+void ARitualAltar::OnRep_CorruptionAmount()
+{
+	BroadcastCorruptionChanged();
+}
+
+void ARitualAltar::OnRep_RitualCompleted()
+{
+	if (bRitualCompleted)
+	{
+		BroadcastRitualCompleted();
+	}
+}
+
+// ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
+
+void ARitualAltar::BroadcastRitualStateChanged()
+{
+	OnRitualStateChangedEvent.Broadcast(CurrentRitualState);
+}
+
+void ARitualAltar::BroadcastReadyPlayersChanged()
+{
+	OnReadyPlayersChangedEvent.Broadcast(ReadyPlayersData);
+}
+
+void ARitualAltar::BroadcastCountdownTick()
+{
+	OnCountdownTickEvent.Broadcast(StartCountdown);
+}
+
+void ARitualAltar::BroadcastTurnDataChanged()
+{
+	OnTurnDataChangedEvent.Broadcast(CurrentTurnData);
+}
+
+void ARitualAltar::BroadcastCorruptionChanged()
+{
+	float CorruptionPercentage = GetCorruptionPercentage();
+	OnCorruptionChangedEvent.Broadcast(CorruptionPercentage);
+}
+
+void ARitualAltar::BroadcastSequenceProgressChanged()
+{
+	float Progress = GetCurrentSequenceProgress();
+	OnSequenceProgressChangedEvent.Broadcast(Progress);
+}
+
+void ARitualAltar::BroadcastRitualCompleted()
+{
+	OnRitualCompletedEvent.Broadcast(bRitualWasSuccessful);
+}
+
+// ----------------------------------- HELPER FUNCTIONS ---------------------------------------------- //
+
+void ARitualAltar::UpdateTurnData()
+{
+	// This function can be called on both server and clients
+	// On server: updates the replicated CurrentTurnData
+	// On clients: called from OnRep functions to update local UI data
+	
+	FUIRitualData NewTurnData;
+	NewTurnData.RitualPercentageCompleted = GetCurrentSequenceProgress();
+	NewTurnData.CorruptionPercentage = GetCorruptionPercentage();
+	NewTurnData.CurrentInputTimeRemaining = CurrentInputTimer;
+	
+	// Set expected input if we have valid data
+	if (CurrentActivePlayer && InputSequence.IsValidIndex(CurrentSequenceIndex))
+	{
+		NewTurnData.ExpectedInput = InputSequence[CurrentSequenceIndex];
+	}
+	else
+	{
+		NewTurnData.ExpectedInput = FGameplayTag::EmptyTag;
+	}
+	
+	// Always set bIsMyTurn to false here - the widget controller will determine the correct value
+	NewTurnData.bIsMyTurn = false;
+	
+	// On server, update the replicated data if it has changed
+	if (HasAuthority())
+	{
+		// Only update if data has changed to avoid unnecessary replication
+		if (!(CurrentTurnData.bIsMyTurn == NewTurnData.bIsMyTurn &&
+			  CurrentTurnData.ExpectedInput == NewTurnData.ExpectedInput &&
+			  FMath::IsNearlyEqual(CurrentTurnData.RitualPercentageCompleted, NewTurnData.RitualPercentageCompleted, 0.01f) &&
+			  FMath::IsNearlyEqual(CurrentTurnData.CorruptionPercentage, NewTurnData.CorruptionPercentage, 0.01f) &&
+			  FMath::IsNearlyEqual(CurrentTurnData.CurrentInputTimeRemaining, NewTurnData.CurrentInputTimeRemaining, 0.1f)))
+		{
+			CurrentTurnData = NewTurnData;
+			// Broadcast on server for local UI updates (OnRep will handle clients)
+			BroadcastTurnDataChanged();
+		}
+	}
+	else
+	{
+		// On clients, just update the local data and broadcast
+		CurrentTurnData = NewTurnData;
+		BroadcastTurnDataChanged();
+	}
+}
+
+void ARitualAltar::UpdateReadyPlayersData()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	FRitualReadyPlayersData NewData;
+	NewData.TotalPlayers = ParticipatingPlayers.Num();
+	NewData.ReadyPlayers = ReadyPlayers.Num();
+	
+	if (ReadyPlayersData != NewData)
+	{
+		ReadyPlayersData = NewData;
+		// Broadcast on server for local UI updates (OnRep will handle clients)
+		BroadcastReadyPlayersChanged();
+	}
+}
+
+// ----------------------------------- EXISTING FUNCTIONS (UPDATED) ---------------------------------------------- //
 
 void ARitualAltar::Multicast_NumberOfPlayersReadyHasChanged_Implementation(int32 TotalPlayers, int32 PlayersReady)
 {
-	OnNumberOfReadyPlayersHasChangedDelegate.ExecuteIfBound(TotalPlayers, PlayersReady);
+	// This is now handled by OnRep_ReadyPlayersData, but keeping for backward compatibility
+	UpdateReadyPlayersData();
 }
-
-// void ARitualAltar::Multicast_CurrentActivePlayerChanged_Implementation(const ACharacter* Character)
-// {
-// 	OnCurrentActivePlayerChangedDelegate.ExecuteIfBound(Character, InputSequence[CurrentSequenceIndex]);
-// 	
-// }
 
 void ARitualAltar::StartRitual(ACharacter* RequestingCharacter)
 {
@@ -116,14 +272,14 @@ void ARitualAltar::ProcessRitualReadyRequest(ACharacter* RequestingCharacter)
 	{
 		// Player is already ready, could allow them to un-ready if desired
 		ReadyPlayers.Remove(RequestingCharacter);
-		Multicast_NumberOfPlayersReadyHasChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
+		UpdateReadyPlayersData();
 		UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Player %s canceled ready status"), *RequestingCharacter->GetName());
 		return;
 	}
 	
 	// Add player to ready list
 	ReadyPlayers.Add(RequestingCharacter);
-	Multicast_NumberOfPlayersReadyHasChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
+	UpdateReadyPlayersData();
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Player %s is ready"), *RequestingCharacter->GetName());
 	
 	// Check if all players are ready
@@ -138,8 +294,6 @@ bool ARitualAltar::IsPlayerReady(ACharacter* Player) const
 {
 	return ReadyPlayers.Contains(Player);
 }
-
-
 
 bool ARitualAltar::AreAllPlayersReady() const
 {
@@ -169,17 +323,16 @@ void ARitualAltar::StartRitualCountdown()
 	
 	// Set the state to preparing
 	CurrentRitualState = EInteractionState::Preparing;
-	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
-
+	// Broadcast on server for local UI updates (OnRep will handle clients)
+	BroadcastRitualStateChanged();
 
 	// Generate the ritual input sequence
 	GenerateInputSequence();
 	
 	// Reset countdown value
 	StartCountdown = 3;
-	
-	// Broadcast first countdown value
-	Multicast_OnCountdownTick(StartCountdown);
+	// Broadcast on server for local UI updates (OnRep will handle clients)
+	BroadcastCountdownTick();
 	
 	// Start countdown timer
 	GetWorldTimerManager().SetTimer(
@@ -200,10 +353,10 @@ void ARitualAltar::ProcessCountdownTick()
 	
 	// Decrease countdown
 	StartCountdown--;
-	
+	// Broadcast on server for local UI updates (OnRep will handle clients)
+	BroadcastCountdownTick();
 	
 	UE_LOG(LogTemp, Log, TEXT("[DEBUG-RITUAL] Countdown: %d"), StartCountdown);
-	
 	
 	if (StartCountdown <= 0)
 	{
@@ -225,19 +378,22 @@ void ARitualAltar::ActivateRitual()
 	// Fallback
 	CurrentActivePlayer = ParticipatingPlayers[RandomStartingPlayer];
 	CurrentSequenceIndex = 0;
+	CurrentRitualState = EInteractionState::Active;
+	
+	// Start the input timer (this updates CurrentInputTimer)
 	StartInputTimer();
 
-	UpdateLocalPlayerUI();
+	// Now update turn data with all the new values
+	UpdateTurnData();
 	
-	CurrentRitualState = EInteractionState::Active;
-	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
+	// Broadcast state change on server for local UI updates (OnRep will handle clients)
+	BroadcastRitualStateChanged();
 }
-
 
 void ARitualAltar::Multicast_OnCountdownTick_Implementation(int32 CountdownValue)
 {
-	// Fire delegate for UI updates
-	OnRitualCountdownTickDelegate.ExecuteIfBound(CountdownValue);
+	// This is now handled by OnRep_StartCountdown, but keeping for backward compatibility
+	StartCountdown = CountdownValue;
 }
 
 void ARitualAltar::GenerateInputSequence()
@@ -374,21 +530,23 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	// Advance to the next input
 	CurrentSequenceIndex++;
 
-	UpdateLocalPlayerUI();
-
-	
-
 	// Send success feedback
-	
 	Multicast_OnInputSuccess(Player);
-	// Notify the player
 	
 	// Check if the sequence is complete
 	if (CurrentSequenceIndex >= InputSequence.Num())
 	{
 		// Ritual succeeded
 		CurrentRitualState = EInteractionState::Succeeded;
+		bRitualCompleted = true;
+		bRitualWasSuccessful = true;
 		
+		// Update turn data with final state
+		UpdateTurnData();
+		
+		// Broadcast state and completion on server for local UI updates
+		BroadcastRitualStateChanged();
+		BroadcastRitualCompleted();
 		
 		// Spawn reward and notify
 		SpawnReward();
@@ -399,13 +557,15 @@ void ARitualAltar::HandleInputSuccess(ACharacter* Player)
 	}
 	else
 	{
-		// Move to the next player's turn
+		// Move to the next player's turn (this updates CurrentActivePlayer)
 		AdvanceToNextPlayer();
 		
-		// Restart the input timer
+		// Start the input timer (this updates CurrentInputTimer)
 		StartInputTimer();
+		
+		// Now update turn data with all the new values
+		UpdateTurnData();
 	}
-	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(CurrentSequenceIndex);
 }
 
 void ARitualAltar::HandleInputFailure(ACharacter* Player)
@@ -420,10 +580,12 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	
 	// Increase corruption
 	CorruptionAmount += CorruptionIncreasePerFail;
-	// Advance to the next input
-	CurrentSequenceIndex++;
+	// Broadcast corruption change on server for local UI updates
+	BroadcastCorruptionChanged();
+	
+	// DO NOT advance to the next input on failure - only on success
+	// CurrentSequenceIndex++; // REMOVED: Failed inputs should not advance the sequence
 
-	UpdateLocalPlayerUI();
 	// Apply age penalty to the player
 	ApplyAgePenalty(Player);
 	
@@ -435,6 +597,15 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	{
 		// Ritual failed catastrophically
 		CurrentRitualState = EInteractionState::FailedCatastrophically;
+		bRitualCompleted = true;
+		bRitualWasSuccessful = false;
+		
+		// Update turn data with final state
+		UpdateTurnData();
+		
+		// Broadcast state and completion on server for local UI updates
+		BroadcastRitualStateChanged();
+		BroadcastRitualCompleted();
 		
 		// Apply catastrophic penalties to all players
 		for (ACharacter* ParticipatingPlayer : ParticipatingPlayers)
@@ -454,14 +625,15 @@ void ARitualAltar::HandleInputFailure(ACharacter* Player)
 	}
 	else
 	{
-		// Move to the next player's turn
+		// Move to the next player's turn (this updates CurrentActivePlayer)
 		AdvanceToNextPlayer();
 		
-		// Restart the input timer
+		// Start the input timer (this updates CurrentInputTimer)
 		StartInputTimer();
+		
+		// Now update turn data with all the new values
+		UpdateTurnData();
 	}
-	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(CurrentSequenceIndex);
-	OnCorruptionAmountChangedDelegate.ExecuteIfBound(CorruptionAmount);
 }
 
 void ARitualAltar::StartInputTimer()
@@ -554,7 +726,6 @@ void ARitualAltar::AdvanceToNextPlayer()
 		{
 			CurrentActivePlayer = NextPlayer;
 			bFoundEligiblePlayer = true;
-			UpdateLocalPlayerUI();
 			break;
 		}
 		
@@ -568,7 +739,6 @@ void ARitualAltar::AdvanceToNextPlayer()
 	{
 		CurrentActivePlayer = ParticipatingPlayers[0];
 	}
-	
 }
 
 bool ARitualAltar::IsPlayerEligibleForTurn(ACharacter* Player) const
@@ -597,32 +767,6 @@ bool ARitualAltar::IsPlayerEligibleForTurn(ACharacter* Player) const
 	return bIsInPosition && bHasPositionTag;
 }
 
-void ARitualAltar::UpdateLocalPlayerUI()
-{
-	if (!HasAuthority())
-	{
-		return;
-	}
-	
-	FUIRitualData UIRitualData;
-	UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
-	UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
-	if (CurrentActivePlayer->IsLocallyControlled() && CurrentActivePlayer->HasAuthority())
-	{
-		UIRitualData.bIsMyTurn = true;
-		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
-		UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-	}
-	else 
-	{
-		UIRitualData.bIsMyTurn = false;
-		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
-		UIRitualData.CurrentInputTimeRemaining = 0.0f;
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-	}
-	
-}
 
 void ARitualAltar::ApplyAgePenalty(ACharacter* Player, bool bCatastrophic)
 {
@@ -805,11 +949,17 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 		UE_LOG(LogTemp, Warning, TEXT("[RitualAltar] Player is NOT locally controlled"));
 	}
 	
-	
 	Super::OccupyPosition(Player, Position);
 	CurrentRitualState = EInteractionState::WaitingForPlayers;
 	
+	// Broadcast state change on server for local UI updates (OnRep will handle clients)
+	if (HasAuthority())
+	{
+		BroadcastRitualStateChanged();
+	}
 	
+	// Update ready players data
+	UpdateReadyPlayersData();
 
 	// Call the ritual state delegate for Listen Server
 	if (Player->GetLocalRole() == ROLE_Authority && Player->IsLocallyControlled()) // Im the listen server
@@ -818,7 +968,6 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 		if (!PC->HasRitualWidgetInitialized(this))
 		{
 			PC->LocalInitializeRitualUserWidget(this);
-			OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
 		}
 	} else if (Player->HasAuthority() && !Player->IsLocallyControlled()) // The call is from the client
 	{
@@ -827,11 +976,7 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 		{
 			PC->Client_InitializeRitualUserWidget(this);
 		}
-		
 	}
-	
-	
-	Multicast_NumberOfPlayersReadyHasChanged(ParticipatingPlayers.Num(), ReadyPlayers.Num());
 }
 
 void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
@@ -842,7 +987,11 @@ void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 	// Example: Play celebratory effects at altar location
 	// UGameplayStatics::PlaySoundAtLocation(this, SuccessSound, GetActorLocation());
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SuccessParticles, GetActorTransform());
-	OnRitualCompletedDelegate.ExecuteIfBound(true);
+	
+	// Set completion status for replication
+	bRitualCompleted = true;
+	bRitualWasSuccessful = true;
+	
 	DestroyAltarPositions();
 	
 	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback"));
@@ -857,39 +1006,12 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	// UGameplayStatics::PlaySoundAtLocation(this, CatastrophicFailSound, GetActorLocation());
 	// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CatastrophicFailParticles, GetActorTransform());
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
-	OnRitualCompletedDelegate.ExecuteIfBound(false);
-}
-
-
-void ARitualAltar::OnRep_CurrentRitualState(EInteractionState NewState)
-{
-	OnRitualStateChangedDelegate.ExecuteIfBound(CurrentRitualState);
-}
-
-void ARitualAltar::OnRep_CurrentSequenceIndex(int32 NewSequenceIndex)
-{
-	OnCurrentSequenceIndexChangedDelegate.ExecuteIfBound(CurrentSequenceIndex);
-	if (CurrentActivePlayer == nullptr) return;
+	// Set completion status for replication
+	bRitualCompleted = true;
+	bRitualWasSuccessful = false;
 	
-	FUIRitualData UIRitualData;
-	UIRitualData.RitualPercentageCompleted = GetCurrentSequenceProgress();
-	UIRitualData.CorruptionPercentage = GetCorruptionPercentage();
-	if (CurrentActivePlayer->IsLocallyControlled())
-	{
-		UIRitualData.bIsMyTurn = true;
-		UIRitualData.ExpectedInput = InputSequence[CurrentSequenceIndex];
-		UIRitualData.CurrentInputTimeRemaining = CurrentInputTimer;
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-	} else
-	{
-		UIRitualData.bIsMyTurn = false;
-		UIRitualData.ExpectedInput = FGameplayTag::EmptyTag;
-		UIRitualData.CurrentInputTimeRemaining = 0.0f;
-		OnIsMyTurnChangedDelegate.ExecuteIfBound(UIRitualData);
-	}
+	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
 }
-
 
 float ARitualAltar::GetCorruptionPercentage() const
 {
@@ -899,10 +1021,5 @@ float ARitualAltar::GetCorruptionPercentage() const
 	}
 	
 	return CorruptionAmount / MaxCorruption;
-}
-
-void ARitualAltar::OnRep_CorruptionAmount(const float NewCorruptionAmount)
-{
-	OnCorruptionAmountChangedDelegate.ExecuteIfBound(NewCorruptionAmount);
 }
 

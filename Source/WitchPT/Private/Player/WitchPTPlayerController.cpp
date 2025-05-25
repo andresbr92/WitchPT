@@ -83,8 +83,8 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ARitualAltar* Rit
 		// Set widget controller reference for the user widget
 		RitualUserWidget->SetWidgetController(RitualWidgetController);
 
-		RitualWidgetController->BindCallbacksToDependencies();
-		RitualWidgetController->BroadcastInitialValues();
+		// RitualWidgetController->BindCallbacksToDependencies();
+		// RitualWidgetController->BroadcastInitialValues();
 		
 		// Set ritual altar in the controller
 		

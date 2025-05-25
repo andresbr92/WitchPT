@@ -15,26 +15,18 @@ enum class EInteractionState : uint8;
 
 // Delegate to notify when the expected input in the ritual changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignature_WC, FGameplayTag, ExpectedInput);
-// Delegate to notify when the expected input in the ritual changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNumberOfReadyPlayersNumberChangedSignature_WC, int32, TotalPlayers, int32, PlayersReady);
-// Delegate to notify when the countDown start and with the value
+// Delegate to notify when the ready players count changes
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReadyPlayersChangedSignature_WC, FRitualReadyPlayersData, ReadyPlayersData);
+// Delegate to notify when the countdown ticks
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCountdownTickSignature_WC, int32, CountdownValue);
-
-// Delegate to notify when the active player changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnChangedSignature_WC, FUIRitualData, UIRitualData);
-
+// Delegate to notify when turn data changes
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnDataChangedSignature_WC, FUIRitualData, TurnData);
 // Delegate to notify ritual state changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature_WC, EInteractionState, NewState);
-
-// Delegate to notify input timer changes
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualInputTimerChangedSignature_WC, float, RemainingTime);
-
 // Delegate to notify corruption changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCorruptionChangedSignature_WC, float, CorruptionPercentage);
-
 // Delegate to notify sequence progress changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualSequenceProgressChangedSignature_WC, float, ProgressPercentage);
-
 // Delegate to notify when the ritual is completed
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompletedSignature_WC, bool, bWasSuccessful);
 
@@ -51,8 +43,6 @@ public:
 	
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
-
-	
 	
 	// Method to set the associated ritual altar
 	UFUNCTION(Category = "Ritual")
@@ -71,19 +61,16 @@ public:
 	FOnRitualExpectedInputChangedSignature_WC OnRitualExpectedInputChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnNumberOfReadyPlayersNumberChangedSignature_WC OnReadyPlayersNumberChangedSignature;
+	FOnReadyPlayersChangedSignature_WC OnReadyPlayersChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualCountdownTickSignature_WC OnRitualCountdownTickDelegate;
+	FOnRitualCountdownTickSignature_WC OnRitualCountdownTick;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnTurnChangedSignature_WC OnIsMyTurnChangedDelegate;
+	FOnTurnDataChangedSignature_WC OnTurnDataChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualStateChangedSignature_WC OnRitualStateChanged;
-	
-	UPROPERTY(BlueprintAssignable, Category = "Ritual")
-	FOnRitualInputTimerChangedSignature_WC OnRitualInputTimerChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualCorruptionChangedSignature_WC OnRitualCorruptionChanged;
@@ -94,7 +81,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
 	FOnRitualCompletedSignature_WC OnRitualCompleted;
 
-	
 protected:
 	// Reference to the ritual altar that this widget controls
 	UPROPERTY(BlueprintReadOnly, Category = "Ritual")
@@ -104,22 +90,25 @@ protected:
 	UFUNCTION()
 	void HandleRitualStateChanged(EInteractionState NewState);
 	
-	
-	void HandleTurnChanged(const FUIRitualData& UIRitualData) const;
+	UFUNCTION()
+	void HandleReadyPlayersChanged(FRitualReadyPlayersData ReadyPlayersData);
 	
 	UFUNCTION()
-	void HandleInputTimerChanged(float NewTime);
+	void HandleCountdownTick(int32 CountdownValue);
 	
 	UFUNCTION()
-	void HandleCorruptionChanged(float NewCorruption);
+	void HandleTurnDataChanged(FUIRitualData TurnData);
 	
 	UFUNCTION()
-	void HandleSequenceIndexChanged(int32 NewIndex);
+	void HandleCorruptionChanged(float CorruptionPercentage);
+	
+	UFUNCTION()
+	void HandleSequenceProgressChanged(float ProgressPercentage);
 	
 	UFUNCTION()
 	void HandleRitualCompleted(bool bWasSuccessful);
-
-	UFUNCTION()
-	void HandleNumberOfReadyPlayersChanged(int32 TotalPlayers, int32 PlayersReady);
 	
+private:
+	// Helper function to determine if local player's turn and update turn data accordingly
+	FUIRitualData ProcessTurnDataForLocalPlayer(const FUIRitualData& InTurnData) const;
 }; 

@@ -37,13 +37,37 @@ struct FUIRitualData
 	float CurrentInputTimeRemaining = 0.0f;
 };
 
-DECLARE_DELEGATE_TwoParams(FOnNumberOfReadyPlayersHasChangedSignature, int32 TotalPlayers, int32 PlayersReady);
-DECLARE_DELEGATE_OneParam(FOnRitualStateChangedSignature, EInteractionState RitualState);
-DECLARE_DELEGATE_OneParam(FOnRitualCountdownTickSignature, int32 CountdownValue);
-DECLARE_DELEGATE_OneParam(FOnTurnChangedSignature, const FUIRitualData& UIRitualData);
-DECLARE_DELEGATE_OneParam(FOnCurrentSequenceIndexChangedSignature, int32 SequenceIndex);
-DECLARE_DELEGATE_OneParam(FOnRitualCompletedSignature, bool bWasSuccessful);
-DECLARE_DELEGATE_OneParam(FOnCorruptionAmountChangedSignature, float CorruptionAmount);
+// Replicated struct for ready players data
+USTRUCT(BlueprintType)
+struct FRitualReadyPlayersData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadOnly)
+	int32 TotalPlayers = 0;
+	
+	UPROPERTY(BlueprintReadOnly)
+	int32 ReadyPlayers = 0;
+	
+	bool operator==(const FRitualReadyPlayersData& Other) const
+	{
+		return TotalPlayers == Other.TotalPlayers && ReadyPlayers == Other.ReadyPlayers;
+	}
+	
+	bool operator!=(const FRitualReadyPlayersData& Other) const
+	{
+		return !(*this == Other);
+	}
+};
+
+// Delegates for UI updates - these will be called from OnRep functions
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChanged, EInteractionState, NewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReadyPlayersChanged, FRitualReadyPlayersData, ReadyPlayersData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCountdownTick, int32, CountdownValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnDataChanged, FUIRitualData, TurnData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCorruptionChanged, float, CorruptionPercentage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceProgressChanged, float, ProgressPercentage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompleted, bool, bWasSuccessful);
 
 UCLASS()
 class WITCHPT_API ARitualAltar : public ABaseInteractableAltar
@@ -54,7 +78,8 @@ public:
 	// Sets default values for this actor's properties
 	ARitualAltar();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-	// ----------------------------------- PROPERTIES ---------------------------------------------- //
+	
+	// ----------------------------------- REPLICATED PROPERTIES ---------------------------------------------- //
 	// Current ritual state
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentRitualState, Category = "Ritual|State", VisibleAnywhere)
 	EInteractionState CurrentRitualState = EInteractionState::Inactive;
@@ -71,17 +96,25 @@ public:
 	UPROPERTY(Replicated, Category = "Ritual|State", VisibleAnywhere)
 	TArray<TObjectPtr<ACharacter>> ReadyPlayers;
 	
+	// Ready players data for UI
+	UPROPERTY(ReplicatedUsing = OnRep_ReadyPlayersData, Category = "Ritual|State", VisibleAnywhere)
+	FRitualReadyPlayersData ReadyPlayersData;
+	
 	// Current countdown value (when starting ritual)
-	UPROPERTY(Replicated, Category = "Ritual|State", VisibleAnywhere)
+	UPROPERTY(ReplicatedUsing = OnRep_StartCountdown, Category = "Ritual|State", VisibleAnywhere)
 	int32 StartCountdown = 3;
 	
 	// Current player whose turn it is to input
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual|State")
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentActivePlayer, VisibleAnywhere, Category = "Ritual|State")
 	TObjectPtr<ACharacter> CurrentActivePlayer;
 	
 	// Timer for the current input
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual")
 	float CurrentInputTimer;
+	
+	// Current turn data for UI
+	UPROPERTY(ReplicatedUsing = OnRep_TurnData, VisibleAnywhere, Category = "Ritual|UI")
+	FUIRitualData CurrentTurnData;
 	
 	// Current corruption level
 	UPROPERTY(ReplicatedUsing = OnRep_CorruptionAmount, VisibleAnywhere, Category = "Ritual")
@@ -102,32 +135,60 @@ public:
 	// Scaling multiplier for difficulty
 	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Ritual|Configuration")
 	float DifficultyScalingMultiplier = 1.0f;
+	
+	// Ritual completion status
+	UPROPERTY(ReplicatedUsing = OnRep_RitualCompleted, VisibleAnywhere, Category = "Ritual|State")
+	bool bRitualCompleted = false;
+	
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Ritual|State")
+	bool bRitualWasSuccessful = false;
+	
 	// ----------------------------------- DELEGATES ---------------------------------------------- //
-	FOnNumberOfReadyPlayersHasChangedSignature OnNumberOfReadyPlayersHasChangedDelegate;
-	FOnRitualStateChangedSignature OnRitualStateChangedDelegate;
-	FOnRitualCountdownTickSignature OnRitualCountdownTickDelegate;
-	FOnTurnChangedSignature OnIsMyTurnChangedDelegate;
-	FOnCurrentSequenceIndexChangedSignature OnCurrentSequenceIndexChangedDelegate;
-	FOnRitualCompletedSignature OnRitualCompletedDelegate;
-	FOnCorruptionAmountChangedSignature OnCorruptionAmountChangedDelegate;
-	// ----------------------------------- REPS FUNCTIONS ---------------------------------------------- //
-	UFUNCTION()
-	void OnRep_CurrentRitualState(EInteractionState NewState);
-	UFUNCTION()
-	void OnRep_CurrentSequenceIndex(int32 NewSequenceIndex);
-	UFUNCTION()
-	void OnRep_CorruptionAmount(float NewCorruptionAmount);
+	FOnRitualStateChanged OnRitualStateChangedEvent;
+	
+	FOnReadyPlayersChanged OnReadyPlayersChangedEvent;
+	
+	FOnCountdownTick OnCountdownTickEvent;
+	
+	FOnTurnDataChanged OnTurnDataChangedEvent;
+	
+	FOnCorruptionChanged OnCorruptionChangedEvent;
+	
+	FOnSequenceProgressChanged OnSequenceProgressChangedEvent;
+	UPROPERTY(BlueprintAssignable)
+	FOnRitualCompleted OnRitualCompletedEvent;
 
+	// ----------------------------------- ONREP FUNCTIONS ---------------------------------------------- //
+	UFUNCTION()
+	void OnRep_CurrentRitualState();
+	
+	UFUNCTION()
+	void OnRep_CurrentSequenceIndex();
+	
+	UFUNCTION()
+	void OnRep_ReadyPlayersData();
+	
+	UFUNCTION()
+	void OnRep_StartCountdown();
+	
+	UFUNCTION()
+	void OnRep_CurrentActivePlayer();
+	
+	UFUNCTION()
+	void OnRep_TurnData();
+	
+	UFUNCTION()
+	void OnRep_CorruptionAmount();
+	
+	UFUNCTION()
+	void OnRep_RitualCompleted();
 
 	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_NumberOfPlayersReadyHasChanged(int32 TotalPlayers, int32 PlayersReady);
 	
-	
-	// ----------------------------------- MAIN FUNCTIONS ---------------------------------------------- //
 	void StartRitual(ACharacter* RequestingCharacter);
 	void HandlePlayerInput(ACharacter* Character, const FGameplayTag& InputTag);
-	// -----------------------------------END MAIN FUNCTIONS ------------------------------------------- //
 	
 	// New function to check player ready status
 	UFUNCTION(BlueprintPure, Category = "Ritual")
@@ -141,40 +202,28 @@ public:
 	virtual void Multicast_OnInputFailed_Implementation(ACharacter* Character) override;
 	
 	// Multicast RPCs for notifications
-
-	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualSucceeded();
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnRitualCatastrophicFail();
 	
-	
 	// New multicast RPC for countdown
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnCountdownTick(int32 CountdownValue);
 	
-	
 	virtual void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
 	
-	// ---------------------------- -- GETTERS FOR WC ---------------------------- //
-	
+	// ---------------------------- GETTERS FOR WC ---------------------------- //
 	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }
-	
 	ACharacter* GetCurrentActivePlayer() const { return CurrentActivePlayer; }
-	
 	float GetCorruptionPercentage() const;
-	
 	float GetCurrentInputTimeRemaining() const { return CurrentInputTimer; }
-	
 	float GetCurrentSequenceProgress() const;
-	
 	FGameplayTag GetCurrentExpectedInput() const;
-	
 	int32 GetNumberOfReadyPlayers() const { return ReadyPlayers.Num(); }
-
 	int32 GetNumberOfTotalPlayers() const { return ParticipatingPlayers.Num(); }
-
+	FUIRitualData GetCurrentTurnData() const { return CurrentTurnData; }
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<URitualUserWidget> RitualUserWidgetClass;
@@ -188,7 +237,6 @@ protected:
 	
 	// Timer handles
 	FTimerHandle InputTimerHandle;
-	
 	
 	// ----------------------------------- LOGIC FUNCTIONS ---------------------------------------------- //
 	void GenerateInputSequence();
@@ -205,13 +253,24 @@ protected:
 	void SpawnReward();
 	void SpawnDemon();
 	bool IsPlayerEligibleForTurn(ACharacter* Player) const;
-	void UpdateLocalPlayerUI();
+	void UpdateTurnData();
+	void UpdateReadyPlayersData();
 	
 	// New helper functions for the ready system
 	void ProcessRitualReadyRequest(ACharacter* RequestingCharacter);
 	void StartRitualCountdown();
 	void ProcessCountdownTick();
 	void ActivateRitual();
+	
+	// ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
+	// These functions handle event broadcasting and are called both from server-side code and OnRep functions
+	void BroadcastRitualStateChanged();
+	void BroadcastReadyPlayersChanged();
+	void BroadcastCountdownTick();
+	void BroadcastTurnDataChanged();
+	void BroadcastCorruptionChanged();
+	void BroadcastSequenceProgressChanged();
+	void BroadcastRitualCompleted();
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> PrimaryAnimMontage;
