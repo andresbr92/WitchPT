@@ -2,3 +2,9 @@
 
 
 #include "UI/Widgets/Inventory/InventoryUserWidget.h"
+
+FReply UInventoryUserWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	
+	return FReply::Handled();
+}

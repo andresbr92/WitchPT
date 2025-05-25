@@ -315,6 +315,13 @@ void UWitchPTInventoryManagerComponent::OpenInventoryMenu()
 	if (!OwningController.IsValid()) return;
 
 	FInputModeGameAndUI InputMode;
+	// InputMode.SetWidgetToFocus(InventoryMenu->TakeWidget());
+	// InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	
+	
+	
+	
+
 	OwningController->SetInputMode(InputMode);
 	OwningController->SetShowMouseCursor(true);
 }

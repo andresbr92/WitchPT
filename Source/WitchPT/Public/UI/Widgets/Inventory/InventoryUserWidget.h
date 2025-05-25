@@ -13,4 +13,6 @@ UCLASS()
 class WITCHPT_API UInventoryUserWidget : public UWitchPTUserWidget
 {
 	GENERATED_BODY()
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	
 };
