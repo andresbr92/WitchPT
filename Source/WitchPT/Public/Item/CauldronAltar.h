@@ -72,7 +72,7 @@ public:
     virtual void BeginPlay() override;
     virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-    virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
+    virtual void UnoccupyPosition(ACharacter* Character, ABaseInteractionPosition* Position) override;
     
     // Core Properties
     UPROPERTY(EditAnywhere)
@@ -129,8 +129,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Cauldron|Brewing")
     ABaseInteractionPosition* GetAvailableBrewingPosition(ACharacter* Character);
     
-    UFUNCTION(Client, Reliable)
-    void Client_OnCharacterPositioned();
     
     // ----------------------------------- CAULDRON MOVEMENT FUNCTIONS ---------------------------------------------- //
     void StartCarryCauldron(ACharacter* InteractingCharacter);

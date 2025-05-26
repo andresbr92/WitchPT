@@ -34,15 +34,17 @@ public:
 
 	void LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar);
 	bool HasRitualWidgetInitialized(ABaseInteractableAltar* Altar);
-
+	void LocalToggleCauldronMenu();
 	
-
-
 
 
 
 	UFUNCTION(Client, Reliable)
 	void Client_InitializeRitualUserWidget(ABaseInteractableAltar* Altar);
+
+	UFUNCTION(Client, Reliable)
+	void Client_ToggleCauldronMenu();
+
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
@@ -76,6 +78,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TSubclassOf<UCauldronUserWidget> CauldronAltarWidgetClass;
 
+	
 
 private:
 
@@ -90,8 +93,6 @@ private:
 	void ConstructCauldronWidget();
 
 	void CreateHUDWidget();
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void ToggleCauldronMenu();
 	void OpenCauldronMenu();
 	void CloseCauldronMenu();
 	bool bCauldronMenuOpen = false;

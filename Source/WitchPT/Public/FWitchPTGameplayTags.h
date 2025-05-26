@@ -118,6 +118,7 @@ public:
 	FGameplayTag Cauldron_State_Empty;
 	FGameplayTag Cauldron_State_Full;
 	FGameplayTag Cauldron_State_PotionReady;
+	FGameplayTag Event_Cauldron_CharacterPositioned;
 
 
 	// Communication tags

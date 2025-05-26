@@ -1,4 +1,6 @@
 #include "Item/CauldronAltar.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Item/CauldronPosition.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
@@ -9,6 +11,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
+#include "FWitchPTGameplayTags.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientDetails.h"
 #include "Player/WitchPTPlayerController.h"
@@ -262,7 +265,7 @@ void ACauldronAltar::DetachFromCharacter(ACharacter* Character)
 
 void ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
 {
-    if (!Character)
+    if (!Character || !HasAuthority())
     {
         UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::PositionCharacterForBrewing: Invalid character"));
         return;
@@ -273,26 +276,28 @@ void ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
     
     if (BrewingPosition)
     {
-        // Posicionar al personaje en esta posición
-        // OnCharacterPositioned.Broadcast(true);
         Character->SetActorLocationAndRotation(BrewingPosition->GetActorLocation(), BrewingPosition->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
         ParticipatingPlayers.Add(Character);
-        Client_OnCharacterPositioned();
-        // if (Character->GetLocalRole() == ROLE_Authority && Character->IsLocallyControlled()) // Im the listen server
-        // {
-        //     AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner());
-        //     if (!PC->HasRitualWidgetInitialized(this))
-        //     {
-        //         PC->LocalInitializeRitualUserWidget(this);
-        //     }
-        // } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client
-        // {
-        //     AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner());
-        //     if (!PC->HasRitualWidgetInitialized(this))
-        //     {
-        //         PC->Client_InitializeRitualUserWidget(this);
-        //     }
-        // }
+        
+        if (Character->GetLocalRole() == ROLE_Authority && Character->IsLocallyControlled()) // Im the listen server
+        {
+            
+            if (AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
+            {
+                PC->LocalToggleCauldronMenu();
+            }
+        } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client
+        {
+           
+            if ( AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
+            {
+                PC->Client_ToggleCauldronMenu();
+            }
+        }
+        FGameplayEventData Payload;
+        Payload.OptionalObject = Character;
+        FGameplayTag GameplayTag = FWitchPTGameplayTags::Get().Event_Cauldron_CharacterPositioned;
+        UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Character, GameplayTag, Payload);
         return BrewingPosition->SetOccupied(Character);
 
         // Teleport the character to the position facing the cauldron
@@ -497,13 +502,31 @@ void ACauldronAltar::CancelPlacement()
     UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::CancelPlacement: Placement canceled"));
 }
 
-void ACauldronAltar::UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
+void ACauldronAltar::UnoccupyPosition(ACharacter* Character, ABaseInteractionPosition* Position)
 {
     // Find the position occupied by the player
     for(ABaseInteractionPosition* PositionOccupied : InteractionPositions)
     {
-        if(PositionOccupied->GetOccupyingCharacter() == Player)
+        if(PositionOccupied->GetOccupyingCharacter() == Character)
         {
+            // Close the cauldron menu
+             if (Character->GetLocalRole() == ROLE_Authority && Character->IsLocallyControlled()) // Im the listen server
+        {
+            
+            if (AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
+            {
+                PC->LocalToggleCauldronMenu();
+                
+            }
+        } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client
+        {
+           
+            if ( AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
+            {
+                PC->Client_ToggleCauldronMenu();
+                
+            }
+        }
             PositionOccupied->SetOccupied(nullptr);
             break;
         }
@@ -512,10 +535,7 @@ void ACauldronAltar::UnoccupyPosition(ACharacter* Player, ABaseInteractionPositi
 }
 
 
-void ACauldronAltar::Client_OnCharacterPositioned_Implementation()
-{
-    OnCharacterPositioned.Broadcast(true);
-}
+
 
 void ACauldronAltar::Multicast_FinalizePlacement_Implementation()
 {

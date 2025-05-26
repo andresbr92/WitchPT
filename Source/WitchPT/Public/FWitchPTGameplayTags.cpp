@@ -41,6 +41,7 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Ability_Cauldron_LookingForPlaceCauldron = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.LookingForPlaceCauldron"));
 	GameplayTags.Ability_Cauldron_SetInPlace = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.SetInPlace"));
 	GameplayTags.Ability_Cauldron_CancelSetInPlace = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Cauldron.CancelSetInPlace"));
+	GameplayTags.Event_Cauldron_CharacterPositioned = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Cauldron.CharacterPositioned"));
 
 	/**
 	 * Input Tags

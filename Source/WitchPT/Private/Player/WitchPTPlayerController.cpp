@@ -55,6 +55,18 @@ void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AWitchPTPlayerController, InventoryManager);
 }
+void AWitchPTPlayerController::LocalToggleCauldronMenu()
+{
+	
+	if (bCauldronMenuOpen)
+	{
+		CloseCauldronMenu();
+	}
+	else
+	{
+		OpenCauldronMenu();
+	}
+}
 
 void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar)
 {
@@ -145,6 +157,10 @@ void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(
 	}
 }
 
+void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
+{
+	LocalToggleCauldronMenu();
+}
 void AWitchPTPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -248,17 +264,6 @@ void AWitchPTPlayerController::CreateHUDWidget()
 	}
 }
 
-void AWitchPTPlayerController::ToggleCauldronMenu()
-{
-	if (bCauldronMenuOpen)
-	{
-		CloseCauldronMenu();
-	}
-	else
-	{
-		OpenCauldronMenu();
-	}
-}
 
 UWitchPTAbilitySystemComponent* AWitchPTPlayerController::GetASC()
 {
