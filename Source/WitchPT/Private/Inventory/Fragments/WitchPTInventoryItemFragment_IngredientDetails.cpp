@@ -5,7 +5,7 @@
 
 #include "Inventory/WitchPTInventoryItemInstance.h"
 
-void UWitchPTInventoryItemFragment_IngredientDetails::OnInstanceCreated(UInventoryItemDefinition* Instance) const
+void UWitchPTInventoryItemFragment_IngredientDetails::OnInstanceCreated(UWitchPTInventoryItemInstance* Instance) const
 {
 	
 }

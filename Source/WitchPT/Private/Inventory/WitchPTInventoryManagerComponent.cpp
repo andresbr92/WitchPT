@@ -44,7 +44,7 @@ void UWitchPTInventoryManagerComponent::Server_AddStacksToItem_Implementation(TS
 {
 	if(IsValid(ItemDef))
 	{
-		UInventoryItemDefinition* FoundItem = FindFirstItemStackByDefinition(ItemDef);
+		UWitchPTInventoryItemInstance* FoundItem = FindFirstItemStackByDefinition(ItemDef);
 		const UWitchPTInventoryItemFragment* BaseFragment = FoundItem->FindFragmentByClass(UWitchPTInventoryFragment_Stackable::StaticClass());
 		const UWitchPTInventoryFragment_Stackable* StackableFragment = Cast<UWitchPTInventoryFragment_Stackable>(BaseFragment);
 		
@@ -53,7 +53,7 @@ void UWitchPTInventoryManagerComponent::Server_AddStacksToItem_Implementation(TS
 	}
 }
 
-void UWitchPTInventoryManagerComponent::Server_UpdateItemStackCount_Implementation(UInventoryItemDefinition* ItemInstance, int32 NewCount)
+void UWitchPTInventoryManagerComponent::Server_UpdateItemStackCount_Implementation(UWitchPTInventoryItemInstance* ItemInstance, int32 NewCount)
 {
 	if (IsValid(ItemInstance))
 	{
@@ -76,7 +76,7 @@ void UWitchPTInventoryManagerComponent::Server_UpdateItemStackCount_Implementati
 	}
 }
 
-void UWitchPTInventoryManagerComponent::Server_RemoveItemInstance_Implementation(UInventoryItemDefinition* ItemInstance)
+void UWitchPTInventoryManagerComponent::Server_RemoveItemInstance_Implementation(UWitchPTInventoryItemInstance* ItemInstance)
 {
 	if (IsValid(ItemInstance))
 	{
@@ -97,7 +97,7 @@ void UWitchPTInventoryManagerComponent::Server_RemoveItemInstance_Implementation
 	}
 }
 
-void UWitchPTInventoryManagerComponent::Server_RemoveItemStacks_Implementation(UInventoryItemDefinition* ItemInstance, int32 AmountToRemove)
+void UWitchPTInventoryManagerComponent::Server_RemoveItemStacks_Implementation(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)
 {
 	if (IsValid(ItemInstance))
 	{
@@ -117,7 +117,7 @@ void UWitchPTInventoryManagerComponent::Server_RemoveItemStacks_Implementation(U
 	}
 }
 
-TArray<UInventoryItemDefinition*> UWitchPTInventoryManagerComponent::GetAllItems() const
+TArray<UWitchPTInventoryItemInstance*> UWitchPTInventoryManagerComponent::GetAllItems() const
 {
 	return InventoryList.GetAllItems();
 }
@@ -129,7 +129,7 @@ bool UWitchPTInventoryManagerComponent::TryAddItemDefinition(TSubclassOf<UWitchP
 		return false;
 	}
 	
-	UInventoryItemDefinition* FoundItem = FindFirstItemStackByDefinition(ItemDef);
+	UWitchPTInventoryItemInstance* FoundItem = FindFirstItemStackByDefinition(ItemDef);
 	if (FoundItem)
 	{
 		Server_AddStacksToItem(ItemDef);
@@ -146,7 +146,7 @@ bool UWitchPTInventoryManagerComponent::TryAddItemDefinition(TSubclassOf<UWitchP
 
 void UWitchPTInventoryManagerComponent::Server_AddItem_Implementation(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef)
 {
-	UInventoryItemDefinition* NewItem = nullptr;
+	UWitchPTInventoryItemInstance* NewItem = nullptr;
 	if (ItemDef != nullptr)
 	{
 		NewItem = InventoryList.AddEntry(ItemDef);
@@ -176,12 +176,12 @@ void UWitchPTInventoryManagerComponent::Server_AddItem_Implementation(TSubclassO
 // }
 
 
-UInventoryItemDefinition* UWitchPTInventoryManagerComponent::FindFirstItemStackByDefinition(
+UWitchPTInventoryItemInstance* UWitchPTInventoryManagerComponent::FindFirstItemStackByDefinition(
 	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef) const
 {
 	for (const FWitchPTInventoryEntry& Entry : InventoryList.Entries)
 	{
-		UInventoryItemDefinition* Instance = Entry.Instance;
+		UWitchPTInventoryItemInstance* Instance = Entry.Instance;
 
 		if (IsValid(Instance))
 		{
@@ -201,7 +201,7 @@ int32 UWitchPTInventoryManagerComponent::GetTotalItemCountByDefinition(
 	int32 TotalCount = 0;
 	for (const FWitchPTInventoryEntry& Entry : InventoryList.Entries)
 	{
-		UInventoryItemDefinition* Instance = Entry.Instance;
+		UWitchPTInventoryItemInstance* Instance = Entry.Instance;
 
 		if (IsValid(Instance))
 		{
@@ -228,7 +228,7 @@ bool UWitchPTInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<UWi
 	int32 TotalConsumed = 0;
 	while (TotalConsumed < NumToConsume)
 	{
-		if (UInventoryItemDefinition* Instance = UWitchPTInventoryManagerComponent::FindFirstItemStackByDefinition(ItemDef))
+		if (UWitchPTInventoryItemInstance* Instance = UWitchPTInventoryManagerComponent::FindFirstItemStackByDefinition(ItemDef))
 		{
 			InventoryList.RemoveEntry(Instance);
 			++TotalConsumed;
@@ -250,7 +250,7 @@ bool UWitchPTInventoryManagerComponent::ReplicateSubobjects(class UActorChannel*
 
 	for (FWitchPTInventoryEntry& Entry : InventoryList.Entries)
 	{
-		UInventoryItemDefinition* Instance = Entry.Instance;
+		UWitchPTInventoryItemInstance* Instance = Entry.Instance;
 
 		if (Instance && IsValid(Instance))
 		{
@@ -269,7 +269,7 @@ void UWitchPTInventoryManagerComponent::ReadyForReplication()
 	{
 		for (const FWitchPTInventoryEntry& Entry : InventoryList.Entries)
 		{
-			UInventoryItemDefinition* Instance = Entry.Instance;
+			UWitchPTInventoryItemInstance* Instance = Entry.Instance;
 
 			if (IsValid(Instance))
 			{

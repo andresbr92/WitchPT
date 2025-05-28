@@ -9,8 +9,8 @@
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemAddedSignature, UInventoryItemDefinition*, ItemAdded);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRemovedSignature, UInventoryItemDefinition*, ItemRemoved);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemAddedSignature, UWitchPTInventoryItemInstance*, ItemAdded);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRemovedSignature, UWitchPTInventoryItemInstance*, ItemRemoved);
 
 UCLASS(BlueprintType, Blueprintable)
 class WITCHPT_API UInventoryWidgetController : public UWitchPTWidgetController
@@ -28,7 +28,7 @@ public:
 	 * @param AmountToRemove - The amount to remove, defaults to 1
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void RemoveItemStack(UInventoryItemDefinition* ItemInstance, int32 AmountToRemove = 1);
+	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
 
 	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnItemAddedSignature OnItemAddedDelegate;

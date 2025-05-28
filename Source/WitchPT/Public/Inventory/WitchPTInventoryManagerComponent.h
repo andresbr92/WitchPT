@@ -10,7 +10,7 @@
 
 class UInventoryUserWidget;
 class UWitchPTInventoryItemDefinition;
-class UInventoryItemDefinition;
+class UWitchPTInventoryItemInstance;
 class UWitchPTInventoryManagerComponent;
 class UObject;
 struct FFrame;
@@ -23,7 +23,7 @@ struct FReplicationFlags;
  * Used to broadcast when items are added, removed, or their stack counts change.
  * @param UWitchPTInventoryItemInstance* - The item instance that was affected
  */
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemChanged, UInventoryItemDefinition*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemChanged, UWitchPTInventoryItemInstance*);
 
 /**
  * WitchPTInventoryManagerComponent
@@ -59,23 +59,23 @@ public:
 
 	
 	UFUNCTION(Server, Reliable)
-	void Server_UpdateItemStackCount(UInventoryItemDefinition* ItemInstance, int32 NewCount);
+	void Server_UpdateItemStackCount(UWitchPTInventoryItemInstance* ItemInstance, int32 NewCount);
 
 	
 	UFUNCTION(Server, Reliable)
-	void Server_RemoveItemInstance(UInventoryItemDefinition* ItemInstance);
+	void Server_RemoveItemInstance(UWitchPTInventoryItemInstance* ItemInstance);
 
 
 	UFUNCTION(Server, Reliable)
-	void Server_RemoveItemStacks(UInventoryItemDefinition* ItemInstance, int32 AmountToRemove);
+	void Server_RemoveItemStacks(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove);
 
 	
 	UFUNCTION(BlueprintCallable, Category=Inventory, BlueprintPure=false)
-	TArray<UInventoryItemDefinition*> GetAllItems() const;
+	TArray<UWitchPTInventoryItemInstance*> GetAllItems() const;
 
 	
 	UFUNCTION(BlueprintCallable, Category=Inventory, BlueprintPure)
-	UInventoryItemDefinition* FindFirstItemStackByDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef) const;
+	UWitchPTInventoryItemInstance* FindFirstItemStackByDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef) const;
 
 	
 	int32 GetTotalItemCountByDefinition(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef) const;

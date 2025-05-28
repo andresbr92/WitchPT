@@ -13,7 +13,7 @@ template <typename InterfaceType> class TScriptInterface;
 
 class AActor;
 class UWitchPTInventoryItemDefinition;
-class UInventoryItemDefinition;
+class UWitchPTInventoryItemInstance;
 class UWitchPTInventoryManagerComponent;
 class UObject;
 struct FFrame;

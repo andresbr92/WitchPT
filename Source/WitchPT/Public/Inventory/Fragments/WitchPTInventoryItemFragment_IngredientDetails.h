@@ -20,5 +20,5 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag IngredientCategory;
 
-	virtual void OnInstanceCreated(UInventoryItemDefinition* Instance) const override;
+	virtual void OnInstanceCreated(UWitchPTInventoryItemInstance* Instance) const override;
 };

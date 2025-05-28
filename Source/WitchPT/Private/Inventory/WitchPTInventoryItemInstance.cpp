@@ -9,12 +9,12 @@
 #include "Net/UnrealNetwork.h"
 #include UE_INLINE_GENERATED_CPP_BY_NAME(WitchPTInventoryItemInstance)
 class FLifetimeProperty;
-UInventoryItemDefinition::UInventoryItemDefinition(const FObjectInitializer& ObjectInitializer)
+UWitchPTInventoryItemInstance::UWitchPTInventoryItemInstance(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
 }
 
-void UInventoryItemDefinition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UWitchPTInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
@@ -24,13 +24,13 @@ void UInventoryItemDefinition::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 
 
-void UInventoryItemDefinition::SetItemDef(TSubclassOf<UWitchPTInventoryItemDefinition> InDef)
+void UWitchPTInventoryItemInstance::SetItemDef(TSubclassOf<UWitchPTInventoryItemDefinition> InDef)
 {
 	ItemDef = InDef;
 }
 
 
-const UWitchPTInventoryItemFragment* UInventoryItemDefinition::FindFragmentByClass(
+const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragmentByClass(
 	TSubclassOf<UWitchPTInventoryItemFragment> FragmentClass) const
 {
 	if ((ItemDef != nullptr) && (FragmentClass != nullptr))

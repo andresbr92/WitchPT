@@ -60,9 +60,9 @@ void FWitchPTInventoryList::PostReplicatedChange(const TArrayView<int32> Changed
 	}
 }
 
-UInventoryItemDefinition* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef)
+UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef)
 {
-	UInventoryItemDefinition* Result = nullptr;
+	UWitchPTInventoryItemInstance* Result = nullptr;
 
 	check(ItemDef != nullptr);
 	check(OwnerComponent);
@@ -72,7 +72,7 @@ UInventoryItemDefinition* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTIn
 
 
 	FWitchPTInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
-	NewEntry.Instance = NewObject<UInventoryItemDefinition>(OwnerComponent->GetOwner());
+	NewEntry.Instance = NewObject<UWitchPTInventoryItemInstance>(OwnerComponent->GetOwner());
 	NewEntry.Instance->SetItemDef(ItemDef);
 	// ------ Stack stuff
 	const UWitchPTInventoryItemFragment* BaseFragment = NewEntry.Instance->FindFragmentByClass(UWitchPTInventoryFragment_Stackable::StaticClass());
@@ -97,12 +97,12 @@ UInventoryItemDefinition* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTIn
 	return Result;
 }
 
-void FWitchPTInventoryList::AddEntry(UInventoryItemDefinition* Instance)
+void FWitchPTInventoryList::AddEntry(UWitchPTInventoryItemInstance* Instance)
 {
 	unimplemented();
 }
 
-void FWitchPTInventoryList::RemoveEntry(UInventoryItemDefinition* Instance)
+void FWitchPTInventoryList::RemoveEntry(UWitchPTInventoryItemInstance* Instance)
 {
 	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
 	{
@@ -114,9 +114,9 @@ void FWitchPTInventoryList::RemoveEntry(UInventoryItemDefinition* Instance)
 		}
 	}
 }
-TArray<UInventoryItemDefinition*> FWitchPTInventoryList::GetAllItems() const
+TArray<UWitchPTInventoryItemInstance*> FWitchPTInventoryList::GetAllItems() const
 {
-	TArray<UInventoryItemDefinition*> Results;
+	TArray<UWitchPTInventoryItemInstance*> Results;
 	Results.Reserve(Entries.Num());
 	for (const FWitchPTInventoryEntry& Entry : Entries)
 	{

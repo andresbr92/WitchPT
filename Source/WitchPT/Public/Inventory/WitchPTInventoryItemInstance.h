@@ -15,11 +15,11 @@ struct FGameplayTag;
  * 
  */
 UCLASS(BlueprintType)
-class WITCHPT_API UInventoryItemDefinition : public UObject
+class WITCHPT_API UWitchPTInventoryItemInstance : public UObject
 {
 	GENERATED_BODY()
 public:
-	UInventoryItemDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UWitchPTInventoryItemInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	friend struct FWitchPTInventoryList;
 	
 	//~UObject interface
@@ -31,7 +31,7 @@ public:
 	int32 GetTotalStackCount() const { return TotalStackCount; }
 	
 	void SetTotalStackCount(int32 Count) { TotalStackCount = Count; }
-	UFUNCTION(BlueprintCallable)
+
 	TSubclassOf<UWitchPTInventoryItemDefinition> GetItemDef() const
 	{
 		return ItemDef;

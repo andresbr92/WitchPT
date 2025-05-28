@@ -13,7 +13,7 @@ void UCauldronWidgetController::BroadcastInitialValues()
 {
 	if(CauldronAltar)
 	{
-		// OnBaseIngredientDropped.Broadcast(CauldronAltar->GetBaseIngredient());
+		OnBaseIngredientDropped.Broadcast(CauldronAltar->GetBaseIngredient());
 	}
 	
 }
@@ -36,7 +36,7 @@ void UCauldronWidgetController::SetCauldronAltar(ACauldronAltar* InCauldronAltar
 	
 }
 
-void UCauldronWidgetController::HandleBaseIngredientDropped(UInventoryItemDefinition* IngredientInstance)
+void UCauldronWidgetController::HandleBaseIngredientDropped(UWitchPTInventoryItemInstance* IngredientInstance)
 {
 	OnBaseIngredientDropped.Broadcast(IngredientInstance);
 }

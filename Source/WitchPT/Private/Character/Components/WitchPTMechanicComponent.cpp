@@ -150,19 +150,18 @@ void UWitchPTMechanicComponent::RequestUnOccupyPositionInCauldron_Implementation
 	}
 }
 
-void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
-	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
+void UWitchPTMechanicComponent::RequestPlaceBaseIngredientInCauldron_Implementation(ACauldronAltar* TargetAltar,
+	UWitchPTInventoryItemInstance* IngredientInstance)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		TargetAltar->SetBaseIngredient(Character, IngredientItemDef);
+		TargetAltar->RequestDropBaseIngredient(Character, IngredientInstance);
 	}
 	
 }
-
 
 void UWitchPTMechanicComponent::RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position)
 {
