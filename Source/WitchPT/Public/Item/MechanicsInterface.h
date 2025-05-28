@@ -7,7 +7,8 @@
 #include "UObject/Interface.h"
 #include "MechanicsInterface.generated.h"
 
-class UWitchPTInventoryItemInstance;
+class UWitchPTInventoryItemDefinition;
+class UInventoryItemDefinition;
 class ABaseInteractionPosition;
 class ACauldronAltar;
 class ARitualPosition;
@@ -70,7 +71,7 @@ public:
 
 	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
-	void RequestPlaceBaseIngredientInCauldron(ACauldronAltar* TargetAltar, UWitchPTInventoryItemInstance* IngredientInstance);
+	void RequestSetBaseIngredient(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
 
 	
 	// General Queries that might be implemented by positions or other interactables

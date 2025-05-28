@@ -7,9 +7,9 @@
 #include "CauldronWidgetController.generated.h"
 
 class ACauldronAltar;
-class UWitchPTInventoryItemInstance;
+class UInventoryItemDefinition;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientDropped_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientDropped_WC, UInventoryItemDefinition*, IngredientInstance);
 /**
  * 
  */
@@ -40,5 +40,5 @@ protected:
 	TObjectPtr<ACauldronAltar> CauldronAltar;
 
 	UFUNCTION(Category = "Cauldron")
-	void HandleBaseIngredientDropped(UWitchPTInventoryItemInstance* IngredientInstance);
+	void HandleBaseIngredientDropped(UInventoryItemDefinition* IngredientInstance);
 };

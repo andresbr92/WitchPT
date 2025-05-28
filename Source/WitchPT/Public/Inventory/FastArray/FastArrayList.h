@@ -6,7 +6,7 @@
 #include "FastArrayList.generated.h"
 
 class UWitchPTInventoryItemDefinition;
-class UWitchPTInventoryItemInstance;
+class UInventoryItemDefinition;
 class UWitchPTInventoryManagerComponent;
 struct FWitchPTInventoryList;
 
@@ -36,7 +36,7 @@ private:
 
 	/** The actual item instance this entry represents */
 	UPROPERTY()
-	TObjectPtr<UWitchPTInventoryItemInstance> Instance = nullptr;
+	TObjectPtr<UInventoryItemDefinition> Instance = nullptr;
 	
 };
 
@@ -71,7 +71,7 @@ struct FWitchPTInventoryList : public FFastArraySerializer
 	 * Get all item instances in the inventory
 	 * @return TArray<UWitchPTInventoryItemInstance*> - Array of all item instances
 	 */
-	TArray<UWitchPTInventoryItemInstance*> GetAllItems() const;
+	TArray<UInventoryItemDefinition*> GetAllItems() const;
 
 public:
 	//~FFastArraySerializer contract
@@ -110,21 +110,21 @@ public:
 	 * @param ItemClass The class of the inventory item to add
 	 * @return A pointer to the newly created inventory item instance
 	 */
-	UWitchPTInventoryItemInstance* AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemClass);
+	UInventoryItemDefinition* AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemClass);
 	
 	/**
 	 * Adds an existing item instance to the inventory list
 	 *
 	 * @param Instance The inventory item instance to add
 	 */
-	void AddEntry(UWitchPTInventoryItemInstance* Instance);
+	void AddEntry(UInventoryItemDefinition* Instance);
 
 	/**
 	 * Removes an item instance from the inventory list
 	 * 
 	 * @param Instance The inventory item instance to remove
 	 */
-	void RemoveEntry(UWitchPTInventoryItemInstance* Instance);
+	void RemoveEntry(UInventoryItemDefinition* Instance);
 
 private:
 	friend UWitchPTInventoryManagerComponent;

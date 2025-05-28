@@ -60,9 +60,9 @@ void FWitchPTInventoryList::PostReplicatedChange(const TArrayView<int32> Changed
 	}
 }
 
-UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef)
+UInventoryItemDefinition* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef)
 {
-	UWitchPTInventoryItemInstance* Result = nullptr;
+	UInventoryItemDefinition* Result = nullptr;
 
 	check(ItemDef != nullptr);
 	check(OwnerComponent);
@@ -72,7 +72,7 @@ UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitc
 
 
 	FWitchPTInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
-	NewEntry.Instance = NewObject<UWitchPTInventoryItemInstance>(OwnerComponent->GetOwner());
+	NewEntry.Instance = NewObject<UInventoryItemDefinition>(OwnerComponent->GetOwner());
 	NewEntry.Instance->SetItemDef(ItemDef);
 	// ------ Stack stuff
 	const UWitchPTInventoryItemFragment* BaseFragment = NewEntry.Instance->FindFragmentByClass(UWitchPTInventoryFragment_Stackable::StaticClass());
@@ -97,12 +97,12 @@ UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitc
 	return Result;
 }
 
-void FWitchPTInventoryList::AddEntry(UWitchPTInventoryItemInstance* Instance)
+void FWitchPTInventoryList::AddEntry(UInventoryItemDefinition* Instance)
 {
 	unimplemented();
 }
 
-void FWitchPTInventoryList::RemoveEntry(UWitchPTInventoryItemInstance* Instance)
+void FWitchPTInventoryList::RemoveEntry(UInventoryItemDefinition* Instance)
 {
 	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
 	{
@@ -114,9 +114,9 @@ void FWitchPTInventoryList::RemoveEntry(UWitchPTInventoryItemInstance* Instance)
 		}
 	}
 }
-TArray<UWitchPTInventoryItemInstance*> FWitchPTInventoryList::GetAllItems() const
+TArray<UInventoryItemDefinition*> FWitchPTInventoryList::GetAllItems() const
 {
-	TArray<UWitchPTInventoryItemInstance*> Results;
+	TArray<UInventoryItemDefinition*> Results;
 	Results.Reserve(Entries.Num());
 	for (const FWitchPTInventoryEntry& Entry : Entries)
 	{

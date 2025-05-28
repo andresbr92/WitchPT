@@ -8,7 +8,7 @@
 
 template <typename T> class TSubclassOf;
 
-class UWitchPTInventoryItemInstance;
+class UInventoryItemDefinition;
 /**
  * 
  */
@@ -18,6 +18,6 @@ class WITCHPT_API UWitchPTInventoryItemFragment : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual void OnInstanceCreated(UWitchPTInventoryItemInstance* Instance) const {}
+	virtual void OnInstanceCreated(UInventoryItemDefinition* Instance) const {}
 	
 };

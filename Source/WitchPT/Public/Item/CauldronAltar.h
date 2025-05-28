@@ -54,7 +54,7 @@ enum class ECauldronPlacementState : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnECauldronPhysicStateChanged, ECauldronPhysicState, PhysicState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterPositioned, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientDropped, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientDropped, UInventoryItemDefinition*, IngredientInstance);
 
 /**
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
@@ -82,8 +82,8 @@ public:
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
     // Base ingredient
-    UPROPERTY(ReplicatedUsing = OnRep_BaseIngredient, Category= "Cauldron|Ingredients", EditInstanceOnly)
-    UWitchPTInventoryItemInstance* BaseIngredient;
+    UPROPERTY(ReplicatedUsing = OnRep_BaseIngredient, Category= "Cauldron|Ingredients", VisibleAnywhere)
+    const UInventoryItemDefinition* BaseIngredient;
     
     // Delegates
 
@@ -114,7 +114,7 @@ public:
     // ----------------------------------- BREWING FUNCTIONS ---------------------------------------------- //
     
     void StartBrewingPotion(ACharacter* InteractingCharacter);
-    void RequestDropBaseIngredient(ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
+    void SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
     
     // ----------------------------------- ONREP FUNCTIONS ---------------------------------------------- //
     
@@ -169,7 +169,7 @@ public:
     bool IsInPlacementPreview() const;
     // ----------------------------------- GETTERS ---------------------------------------------- //
     
-    UWitchPTInventoryItemInstance* GetBaseIngredient() const;
+    UInventoryItemDefinition* GetBaseIngredient() const;
     
 protected:
     // ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //

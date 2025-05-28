@@ -15,15 +15,15 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 		UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager();
 		if (InventoryManager)
 		{
-			InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+			InventoryManager->OnItemAdded.AddLambda([this](UInventoryItemDefinition* ItemAdded)
 			{
 				OnItemAddedDelegate.Broadcast(ItemAdded);
 			});
-			InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+			InventoryManager->OnItemStackChanged.AddLambda([this](UInventoryItemDefinition* ItemAdded)
 			{
 				OnItemStackChangedDelegate.Broadcast(ItemAdded);
 			});
-			InventoryManager->OnItemRemoved.AddLambda([this](UWitchPTInventoryItemInstance* ItemRemoved)
+			InventoryManager->OnItemRemoved.AddLambda([this](UInventoryItemDefinition* ItemRemoved)
 			{
 				OnItemRemovedDelegate.Broadcast(ItemRemoved);
 			});
@@ -31,7 +31,7 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 	}
 }
 
-void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)
+void UInventoryWidgetController::RemoveItemStack(UInventoryItemDefinition* ItemInstance, int32 AmountToRemove)
 {
 	if (!ItemInstance)
 	{

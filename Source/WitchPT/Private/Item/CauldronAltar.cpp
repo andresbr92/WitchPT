@@ -13,6 +13,7 @@
 #include "DrawDebugHelpers.h"
 #include "FWitchPTGameplayTags.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
+#include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientDetails.h"
 #include "Player/WitchPTPlayerController.h"
 
@@ -98,30 +99,29 @@ void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
     PositionCharacterForBrewing(InteractingCharacter);
 }
 
-void ACauldronAltar::RequestDropBaseIngredient(ACharacter* RequestingCharacter,UWitchPTInventoryItemInstance* IngredientInstance)
+void ACauldronAltar::SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef)
 {
     if (!HasAuthority())
     {
         UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Not authority"));
         return;
     }
-    if (!IngredientInstance)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Invalid ingredient instance"));
-        return;
-    }
+   
     // Check if the cauldron is in a valid state to drop an ingredient
     if (CauldronPhysicState != ECauldronPhysicState::Static)
     {
         UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Cauldron is not in a static state"));
         return;
     }
-    const UWitchPTInventoryItemFragment* ItemFragment = IngredientInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_IngredientDetails::StaticClass());
-    BaseIngredient = IngredientInstance;
+    AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(RequestingCharacter->GetController());
+    UWitchPTInventoryManagerComponent* InventoryManager = PC->GetInventoryManager();
+    BaseIngredient = InventoryManager->FindFirstItemStackByDefinition(IngredientItemDef);
+    
+    // BaseIngredient = &IngredientDef;
     // Marcar la propiedad como dirty para replicación
     // Cast<UWitchPTInventoryItemFragment_IngredientDetails>(ItemFragment);
 
-    BroadcastBaseIngredientDropped();
+    // BroadcastBaseIngredientDropped();
     
 
    
@@ -667,12 +667,13 @@ bool ACauldronAltar::IsPlacementValid() const
 // ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
 void ACauldronAltar::BroadcastBaseIngredientDropped() const
 {
-    OnBaseIngredientDropped.Broadcast(BaseIngredient);
+    // OnBaseIngredientDropped.Broadcast(BaseIngredient);
 }
 
-UWitchPTInventoryItemInstance* ACauldronAltar::GetBaseIngredient() const
+UInventoryItemDefinition* ACauldronAltar::GetBaseIngredient() const
 {
-    return BaseIngredient;
+    // return BaseIngredient;
+    return nullptr;
 }
 
 
