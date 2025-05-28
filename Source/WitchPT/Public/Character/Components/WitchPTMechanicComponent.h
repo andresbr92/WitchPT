@@ -28,7 +28,7 @@ public:
 	virtual void RequestFinalizePlacement_Implementation(ACauldronAltar* TargetAltar) override;
 	virtual void RequestUnOccupyPositionInCauldron_Implementation(ACauldronAltar* TargetCauldron) override;
 	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
-	virtual void RequestPlaceBaseIngredientInCauldron_Implementation(ACauldronAltar* TargetAltar, UWitchPTInventoryItemInstance* IngredientInstance) override;
+	virtual void RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef) override;
 	
 	
 

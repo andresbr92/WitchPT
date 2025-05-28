@@ -31,7 +31,7 @@ public:
 	int32 GetTotalStackCount() const { return TotalStackCount; }
 	
 	void SetTotalStackCount(int32 Count) { TotalStackCount = Count; }
-
+	UFUNCTION(BlueprintCallable)
 	TSubclassOf<UWitchPTInventoryItemDefinition> GetItemDef() const
 	{
 		return ItemDef;

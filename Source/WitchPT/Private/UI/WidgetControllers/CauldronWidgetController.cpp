@@ -23,7 +23,7 @@ void UCauldronWidgetController::BindCallbacksToDependencies()
 	Super::BindCallbacksToDependencies();
 	if(CauldronAltar)
 	{
-		CauldronAltar->OnBaseIngredientDropped.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientDropped);
+		CauldronAltar->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientDropped);
 	}
 }
 

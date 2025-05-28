@@ -54,7 +54,7 @@ enum class ECauldronPlacementState : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnECauldronPhysicStateChanged, ECauldronPhysicState, PhysicState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterPositioned, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientDropped, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
 
 /**
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
@@ -87,7 +87,7 @@ public:
     
     // Delegates
 
-    FOnBaseIngredientDropped OnBaseIngredientDropped;
+    FOnBaseIngredientSetSignature OnBaseIngredientSetDelegate;
     UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
     FOnECauldronPhysicStateChanged OnECauldronPhysicStateChanged;
     
@@ -114,9 +114,9 @@ public:
     // ----------------------------------- BREWING FUNCTIONS ---------------------------------------------- //
     
     void StartBrewingPotion(ACharacter* InteractingCharacter);
-    void RequestDropBaseIngredient(ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
+    void SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
     
-    // ----------------------------------- ONREP FUNCTIONS ---------------------------------------------- //
+    // ----------------------------------- ON REP FUNCTIONS ---------------------------------------------- //
     
     UFUNCTION()
     void OnRep_CauldronPhysicState();
