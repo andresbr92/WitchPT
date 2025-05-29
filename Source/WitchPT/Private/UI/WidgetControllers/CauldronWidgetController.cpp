@@ -13,7 +13,8 @@ void UCauldronWidgetController::BroadcastInitialValues()
 {
 	if(CauldronAltar)
 	{
-		OnBaseIngredientDropped.Broadcast(CauldronAltar->GetBaseIngredient());
+		OnBaseIngredientSet.Broadcast(CauldronAltar->GetBaseIngredient());
+		
 	}
 	
 }
@@ -23,7 +24,8 @@ void UCauldronWidgetController::BindCallbacksToDependencies()
 	Super::BindCallbacksToDependencies();
 	if(CauldronAltar)
 	{
-		CauldronAltar->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientDropped);
+		CauldronAltar->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
+		CauldronAltar->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
 	}
 }
 
@@ -36,7 +38,12 @@ void UCauldronWidgetController::SetCauldronAltar(ACauldronAltar* InCauldronAltar
 	
 }
 
-void UCauldronWidgetController::HandleBaseIngredientDropped(UWitchPTInventoryItemInstance* IngredientInstance)
+void UCauldronWidgetController::HandleBaseIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance)
 {
-	OnBaseIngredientDropped.Broadcast(IngredientInstance);
+	OnBaseIngredientSet.Broadcast(IngredientInstance);
+}
+
+void UCauldronWidgetController::HandleBaseIngredientIconSet(TSubclassOf<UUserWidget> BaseIngredientIcon)
+{
+	OnBaseIngredientIconSet.Broadcast(BaseIngredientIcon);
 }

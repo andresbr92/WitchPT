@@ -127,6 +127,8 @@ private:
 	void ToggleInventoryMenu();
 	void ConstructInventory();
 	bool bInventoryMenuOpen;
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
 	void OpenInventoryMenu();
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
 	void CloseInventoryMenu();
 };

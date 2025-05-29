@@ -156,10 +156,27 @@ void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldro
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	
-	if (GetOwnerRole() == ROLE_Authority)
+	
+	if(GetOwnerRole() == ROLE_Authority)
 	{
 		TargetAltar->SetBaseIngredient(Character, IngredientItemDef);
 	}
+	else
+	{
+		Server_RequestSetBaseIngredient(TargetAltar, IngredientItemDef);
+	}
+
+	
+	
+}
+
+void UWitchPTMechanicComponent::Server_RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
+	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	
+	TargetAltar->SetBaseIngredient(Character, IngredientItemDef);
 	
 }
 

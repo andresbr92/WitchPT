@@ -9,6 +9,8 @@
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
+class UWitchPTInventoryItemFragment_IngredientDetails;
+class UWitchPTInventoryItemFragment;
 class UCauldronUserWidget;
 class ACauldronPosition;
 class ACharacter;
@@ -55,6 +57,7 @@ enum class ECauldronPlacementState : uint8
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnECauldronPhysicStateChanged, ECauldronPhysicState, PhysicState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterPositioned, bool, bWasSuccessful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientIconSetSignature, TSubclassOf<UUserWidget>, BaseIngredientIcon);
 
 /**
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
@@ -70,6 +73,7 @@ public:
     
     // Overrides
     virtual void BeginPlay() override;
+    virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
     virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
     virtual void UnoccupyPosition(ACharacter* Character, ABaseInteractionPosition* Position) override;
@@ -82,12 +86,26 @@ public:
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
     // Base ingredient
-    UPROPERTY(ReplicatedUsing = OnRep_BaseIngredient, Category= "Cauldron|Ingredients", EditInstanceOnly)
+    UPROPERTY(VisibleAnywhere)
     UWitchPTInventoryItemInstance* BaseIngredient;
+    UPROPERTY(VisibleAnywhere)
+    UWitchPTInventoryItemInstance* PrincipalIngredient;
+    UPROPERTY(VisibleAnywhere)
+    UWitchPTInventoryItemInstance* PotentiatorIngredient;
     
-    // Delegates
+    UPROPERTY(ReplicatedUsing = OnRep_BaseIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
+    TSubclassOf<UUserWidget> BaseIngredientIcon;
+
+    UPROPERTY(ReplicatedUsing = OnRep_PrincipalIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
+    TSubclassOf<UUserWidget> PrincipalIngredientIcon;
+
+    UPROPERTY(ReplicatedUsing = OnRep_PotentiatorIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
+    TSubclassOf<UUserWidget> PotentiatorIngredientIcon;
+    
+    // ----------------------------------- DELEGATES  ---------------------------------------------- //
 
     FOnBaseIngredientSetSignature OnBaseIngredientSetDelegate;
+    FOnBaseIngredientIconSetSignature OnBaseIngredientIconSetDelegate;
     UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
     FOnECauldronPhysicStateChanged OnECauldronPhysicStateChanged;
     
@@ -114,6 +132,7 @@ public:
     // ----------------------------------- BREWING FUNCTIONS ---------------------------------------------- //
     
     void StartBrewingPotion(ACharacter* InteractingCharacter);
+   
     void SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
     
     // ----------------------------------- ON REP FUNCTIONS ---------------------------------------------- //
@@ -121,7 +140,11 @@ public:
     UFUNCTION()
     void OnRep_CauldronPhysicState();
     UFUNCTION()
-    void OnRep_BaseIngredient();
+    void OnRep_BaseIngredientIcon();
+    UFUNCTION()
+    void OnRep_PrincipalIngredientIcon();
+    UFUNCTION()
+    void OnRep_PotentiatorIngredientIcon();
     
     UFUNCTION()
     void PositionCharacterForBrewing(ACharacter* Character);
@@ -175,6 +198,7 @@ protected:
     // ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
 	// These functions handle event broadcasting and are called both from server-side code and OnRep functions
     void BroadcastBaseIngredientDropped() const;
+    void BroadcastBaseIngredientIconSet() const;
 
     
 private:

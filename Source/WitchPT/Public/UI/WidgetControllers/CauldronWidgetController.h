@@ -9,7 +9,8 @@
 class ACauldronAltar;
 class UWitchPTInventoryItemInstance;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientDropped_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientSetSignature_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientIconSetSignature_WC, TSubclassOf<UUserWidget>, BaseIngredientIcon);
 /**
  * 
  */
@@ -24,7 +25,9 @@ public:
 
 	// Delegates for widgets to subscribe to
 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
-	FOnBaseIngredientDropped_WC OnBaseIngredientDropped;
+	FOnBaseIngredientSetSignature_WC OnBaseIngredientSet;
+	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+	FOnBaseIngredientIconSetSignature_WC OnBaseIngredientIconSet;
 
 	UFUNCTION(Category = "Cauldron")
 	void SetCauldronAltar(ACauldronAltar* InCauldronAltar);
@@ -40,5 +43,7 @@ protected:
 	TObjectPtr<ACauldronAltar> CauldronAltar;
 
 	UFUNCTION(Category = "Cauldron")
-	void HandleBaseIngredientDropped(UWitchPTInventoryItemInstance* IngredientInstance);
+	void HandleBaseIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance);
+	UFUNCTION(Category = "Cauldron")
+	void HandleBaseIngredientIconSet(TSubclassOf<UUserWidget> BaseIngredientIcon);
 };

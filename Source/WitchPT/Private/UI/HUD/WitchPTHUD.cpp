@@ -26,7 +26,7 @@ UCauldronWidgetController* AWitchPTHUD::SetCauldronWidgetController(const FWidge
 	{
 		CauldronWidgetController = NewObject<UCauldronWidgetController>(this, CauldronWidgetControllerClass);
 		CauldronWidgetController->SetWidgetControllerParams(WCParams);
-		CauldronWidgetController->BindCallbacksToDependencies();
+		// CauldronWidgetController->BindCallbacksToDependencies();
 	}
 	return CauldronWidgetController;
 }

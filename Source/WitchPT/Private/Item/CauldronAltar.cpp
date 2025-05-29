@@ -12,8 +12,11 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "FWitchPTGameplayTags.h"
+#include "Engine/ActorChannel.h"
+#include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Inventory/Fragments/WitchPTInventoryFragment_UIDetails.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientDetails.h"
 #include "Player/WitchPTPlayerController.h"
 
@@ -29,6 +32,7 @@ ACauldronAltar::ACauldronAltar()
     CauldronPhysicState = ECauldronPhysicState::Static;
     CarryingCharacter = nullptr;
     CurrentPlacementState = ECauldronPlacementState::None;
+    bReplicateUsingRegisteredSubObjectList = true;
     
 }
 
@@ -51,7 +55,10 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
     DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
     DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
-    DOREPLIFETIME(ACauldronAltar, BaseIngredient);
+    DOREPLIFETIME(ACauldronAltar, BaseIngredientIcon);
+    DOREPLIFETIME(ACauldronAltar, PrincipalIngredientIcon);
+    DOREPLIFETIME(ACauldronAltar, PotentiatorIngredientIcon);
+    
 }
 
 
@@ -73,9 +80,19 @@ void ACauldronAltar::OnRep_CauldronPhysicState()
     
 }
 
-void ACauldronAltar::OnRep_BaseIngredient()
+
+
+void ACauldronAltar::OnRep_BaseIngredientIcon()
 {
-    BroadcastBaseIngredientDropped();
+    BroadcastBaseIngredientIconSet();
+}
+
+void ACauldronAltar::OnRep_PrincipalIngredientIcon()
+{
+}
+
+void ACauldronAltar::OnRep_PotentiatorIngredientIcon()
+{
 }
 
 // --- Interaction Functions ---
@@ -103,36 +120,81 @@ void ACauldronAltar::SetBaseIngredient(const ACharacter* RequestingCharacter, co
 {
     if (!HasAuthority())
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Not authority"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: Not authority"));
         return;
     }
-   
-    // Check if the cauldron is in a valid state to drop an ingredient
+
     if (CauldronPhysicState != ECauldronPhysicState::Static)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::RequestDropBaseIngredient: Cauldron is not in a static state"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: Cauldron is not in a static state"));
         return;
     }
+
     AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(RequestingCharacter->GetController());
+    if (!PC)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::SetBaseIngredient: RequestingCharacter does not have a valid PlayerController."));
+        return;
+    }
+
     UWitchPTInventoryManagerComponent* InventoryManager = PC->GetInventoryManager();
-    UWitchPTInventoryItemInstance* ItemInstance = InventoryManager->FindFirstItemStackByDefinition(IngredientItemDef);
-    BaseIngredient = ItemInstance;
+    if (!InventoryManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::SetBaseIngredient: Could not get InventoryManager from PlayerController."));
+        return;
+    }
     
-    // BaseIngredient = &IngredientDef;
-    // Marcar la propiedad como dirty para replicación
-    // Cast<UWitchPTInventoryItemFragment_IngredientDetails>(ItemFragment);
+    UWitchPTInventoryItemInstance* InstanceFromInventory = InventoryManager->FindFirstItemStackByDefinition(IngredientItemDef);
 
-    // BroadcastBaseIngredientDropped();
-    
-
-   
+    if (!InstanceFromInventory)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: ItemDefinition %s not found in inventory for %s."), *IngredientItemDef->GetName(), *RequestingCharacter->GetName());
+        return;
+    }
+    bool bConsumedSuccessfully = false;
+    int32 CurrentStackCount = InstanceFromInventory->GetTotalStackCount();
+        if (CurrentStackCount > 0)
+        {
+           
+            if (CurrentStackCount == 1)
+            {
+                BaseIngredient = InstanceFromInventory;
+                
+                InventoryManager->Server_RemoveItemInstance(InstanceFromInventory);
+                bConsumedSuccessfully = true;
+                
+            }
+            else
+            {
+                InventoryManager->Server_UpdateItemStackCount(InstanceFromInventory, CurrentStackCount - 1);
+                BaseIngredient = InstanceFromInventory;
+                bConsumedSuccessfully = true;
+            }
+            const UWitchPTInventoryFragment_UIDetails* UIFragment = Cast<UWitchPTInventoryFragment_UIDetails>(InstanceFromInventory->FindFragmentByClass(UWitchPTInventoryFragment_UIDetails::StaticClass()));
+            if (IsValid(UIFragment))
+            {
+                BaseIngredientIcon = UIFragment->IconWidget;
+            }
+            if (HasAuthority())
+            {
+                BroadcastBaseIngredientIconSet();
+            }
+        }
 }
+
 
 void ACauldronAltar::BeginPlay()
 {
     Super::BeginPlay();
     SetReplicateMovement(true);
 }
+
+bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
+    FReplicationFlags* RepFlags)
+{
+    return Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+}
+
 
 void ACauldronAltar::StartCarryCauldron(ACharacter* InteractingCharacter)
 {
@@ -223,8 +285,7 @@ void ACauldronAltar::AttachToCharacter(ACharacter* Character)
         UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::AttachToCharacter: Cauldron attached to %s"), *Character->GetName());
     }
     
-    // Play pickup sound or effects
-    // PlayPickupEffects();
+
 }
 
 void ACauldronAltar::DetachFromCharacter(ACharacter* Character)
@@ -669,6 +730,11 @@ bool ACauldronAltar::IsPlacementValid() const
 void ACauldronAltar::BroadcastBaseIngredientDropped() const
 {
     OnBaseIngredientSetDelegate.Broadcast(BaseIngredient);
+}
+
+void ACauldronAltar::BroadcastBaseIngredientIconSet() const
+{
+    OnBaseIngredientIconSetDelegate.Broadcast(BaseIngredientIcon);
 }
 
 UWitchPTInventoryItemInstance* ACauldronAltar::GetBaseIngredient() const

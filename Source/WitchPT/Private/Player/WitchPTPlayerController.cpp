@@ -250,6 +250,7 @@ void AWitchPTPlayerController::ConstructCauldronWidget()
 	{
 		CauldronWidgetController->SetCauldronAltar(CauldronAltar);
 	}
+	CauldronWidgetController->BindCallbacksToDependencies();
 	CauldronAltarMenu->AddToViewport();
 	CloseCauldronMenu();
 }
