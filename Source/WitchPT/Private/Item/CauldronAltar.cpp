@@ -116,7 +116,7 @@ void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
     PositionCharacterForBrewing(InteractingCharacter);
 }
 
-void ACauldronAltar::SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef)
+void ACauldronAltar::SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef, FGameplayTag IngredientType)
 {
     if (!HasAuthority())
     {

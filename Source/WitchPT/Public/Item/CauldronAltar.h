@@ -133,7 +133,7 @@ public:
     
     void StartBrewingPotion(ACharacter* InteractingCharacter);
    
-    void SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
+    void SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef, FGameplayTag IngredientType);
     
     // ----------------------------------- ON REP FUNCTIONS ---------------------------------------------- //
     
