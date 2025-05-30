@@ -89,10 +89,12 @@ void ACauldronAltar::OnRep_BaseIngredientIcon()
 
 void ACauldronAltar::OnRep_PrincipalIngredientIcon()
 {
+    BroadcastPrincipalIngredientIconSet();
 }
 
 void ACauldronAltar::OnRep_PotentiatorIngredientIcon()
 {
+    BroadcastModifierIngredientIconSet();
 }
 
 // --- Interaction Functions ---
@@ -120,27 +122,27 @@ void ACauldronAltar::TrySetIngredientInSlot(const ACharacter* RequestingCharacte
 {
     if (!HasAuthority())
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: Not authority"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Not authority"));
         return;
     }
 
     if (CauldronPhysicState != ECauldronPhysicState::Static)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: Cauldron is not in a static state"));
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Cauldron is not in a static state"));
         return;
     }
 
     AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(RequestingCharacter->GetController());
     if (!PC)
     {
-        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::SetBaseIngredient: RequestingCharacter does not have a valid PlayerController."));
+        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::TrySetIngredientInSlot: RequestingCharacter does not have a valid PlayerController."));
         return;
     }
 
     UWitchPTInventoryManagerComponent* InventoryManager = PC->GetInventoryManager();
     if (!InventoryManager)
     {
-        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::SetBaseIngredient: Could not get InventoryManager from PlayerController."));
+        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::TrySetIngredientInSlot: Could not get InventoryManager from PlayerController."));
         return;
     }
     
@@ -148,46 +150,112 @@ void ACauldronAltar::TrySetIngredientInSlot(const ACharacter* RequestingCharacte
 
     if (!InstanceFromInventory)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: ItemDefinition %s not found in inventory for %s."), *IngredientItemDef->GetName(), *RequestingCharacter->GetName());
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: ItemDefinition %s not found in inventory for %s."), *IngredientItemDef->GetName(), *RequestingCharacter->GetName());
         return;
     }
+    
     const UWitchPTInventoryItemFragment_IngredientCraftingProperties* IngredientCraftingDetails = Cast<UWitchPTInventoryItemFragment_IngredientCraftingProperties>(InstanceFromInventory->FindFragmentByClass(UWitchPTInventoryItemFragment_IngredientCraftingProperties::StaticClass()));
     if (!IngredientCraftingDetails)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: IngredientCraftingDetails is not valid for %s."), *RequestingCharacter->GetName());
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: IngredientCraftingDetails is not valid for %s."), *RequestingCharacter->GetName());
         return;
     }
 
+    // Determine ingredient type based on SlotUsageTag
+    const FWitchPTGameplayTags& GameplayTags = FWitchPTGameplayTags::Get();
+    bool bIsBaseIngredient = IngredientCraftingDetails->SlotUsageTag.MatchesTag(GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_BaseSlot);
+    bool bIsPrincipalIngredient = IngredientCraftingDetails->SlotUsageTag.MatchesTag(GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_PrincipalSlot);
+    bool bIsModifierIngredient = IngredientCraftingDetails->SlotUsageTag.MatchesTag(GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_ModifierSlot);
+
+    // Check if the appropriate slot is already occupied
+    if (bIsBaseIngredient && BaseIngredient != nullptr)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Base ingredient slot is already occupied"));
+        return;
+    }
+    
+    if (bIsPrincipalIngredient && PrincipalIngredient != nullptr)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Principal ingredient slot is already occupied"));
+        return;
+    }
+    
+    if (bIsModifierIngredient && ModifierIngredient != nullptr)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Modifier ingredient slot is already occupied"));
+        return;
+    }
+
+    // If none of the slot usage tags match, this ingredient can't be used
+    if (!bIsBaseIngredient && !bIsPrincipalIngredient && !bIsModifierIngredient)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Ingredient %s doesn't have a valid slot usage tag"), *IngredientItemDef->GetName());
+        return;
+    }
     
     bool bConsumedSuccessfully = false;
     int32 CurrentStackCount = InstanceFromInventory->GetTotalStackCount();
-        if (CurrentStackCount > 0)
+    
+    if (CurrentStackCount > 0)
+    {
+        UWitchPTInventoryItemInstance* IngredientToSet = nullptr;
+        
+        if (CurrentStackCount == 1)
         {
-           
-            if (CurrentStackCount == 1)
-            {
-                BaseIngredient = InstanceFromInventory;
-                
-                InventoryManager->Server_RemoveItemInstance(InstanceFromInventory);
-                bConsumedSuccessfully = true;
-                
-            }
-            else
-            {
-                InventoryManager->Server_UpdateItemStackCount(InstanceFromInventory, CurrentStackCount - 1);
-                BaseIngredient = InstanceFromInventory;
-                bConsumedSuccessfully = true;
-            }
-            const UWitchPTInventoryFragment_UIDetails* UIFragment = Cast<UWitchPTInventoryFragment_UIDetails>(InstanceFromInventory->FindFragmentByClass(UWitchPTInventoryFragment_UIDetails::StaticClass()));
-            if (IsValid(UIFragment))
-            {
-                BaseIngredientIcon = UIFragment->IconWidget;
-            }
+            IngredientToSet = InstanceFromInventory;
+            InventoryManager->Server_RemoveItemInstance(InstanceFromInventory);
+            bConsumedSuccessfully = true;
+        }
+        else
+        {
+            InventoryManager->Server_UpdateItemStackCount(InstanceFromInventory, CurrentStackCount - 1);
+            IngredientToSet = InstanceFromInventory;
+            bConsumedSuccessfully = true;
+        }
+        
+        // Get UI fragment for icon
+        const UWitchPTInventoryFragment_UIDetails* UIFragment = Cast<UWitchPTInventoryFragment_UIDetails>(InstanceFromInventory->FindFragmentByClass(UWitchPTInventoryFragment_UIDetails::StaticClass()));
+        TSubclassOf<UUserWidget> IngredientIcon = nullptr;
+        if (IsValid(UIFragment))
+        {
+            IngredientIcon = UIFragment->IconWidget;
+        }
+        
+        // Set the ingredient in the appropriate slot
+        if (bIsBaseIngredient)
+        {
+            BaseIngredient = IngredientToSet;
+            BaseIngredientIcon = IngredientIcon;
+            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::TrySetIngredientInSlot: Base ingredient set successfully"));
+            
             if (HasAuthority())
             {
                 BroadcastBaseIngredientIconSet();
             }
         }
+        else if (bIsPrincipalIngredient)
+        {
+            PrincipalIngredient = IngredientToSet;
+            PrincipalIngredientIcon = IngredientIcon;
+            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::TrySetIngredientInSlot: Principal ingredient set successfully"));
+            
+            if (HasAuthority())
+            {
+                BroadcastPrincipalIngredientIconSet();
+            }
+        }
+        else if (bIsModifierIngredient)
+        {
+            ModifierIngredient = IngredientToSet;
+            ModifierIngredientIcon = IngredientIcon;
+            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::TrySetIngredientInSlot: Modifier ingredient set successfully"));
+            
+            if (HasAuthority())
+            {
+                BroadcastModifierIngredientIconSet();
+            }
+        }
+    }
 }
 
 
@@ -745,9 +813,39 @@ void ACauldronAltar::BroadcastBaseIngredientIconSet() const
     OnBaseIngredientIconSetDelegate.Broadcast(BaseIngredientIcon);
 }
 
+void ACauldronAltar::BroadcastPrincipalIngredientDropped() const
+{
+    OnPrincipalIngredientSetDelegate.Broadcast(PrincipalIngredient);
+}
+
+void ACauldronAltar::BroadcastPrincipalIngredientIconSet() const
+{
+    OnPrincipalIngredientIconSetDelegate.Broadcast(PrincipalIngredientIcon);
+}
+
+void ACauldronAltar::BroadcastModifierIngredientDropped() const
+{
+    OnModifierIngredientSetDelegate.Broadcast(ModifierIngredient);
+}
+
+void ACauldronAltar::BroadcastModifierIngredientIconSet() const
+{
+    OnModifierIngredientIconSetDelegate.Broadcast(ModifierIngredientIcon);
+}
+
 UWitchPTInventoryItemInstance* ACauldronAltar::GetBaseIngredient() const
 {
     return BaseIngredient;
+}
+
+UWitchPTInventoryItemInstance* ACauldronAltar::GetPrincipalIngredient() const
+{
+    return PrincipalIngredient;
+}
+
+UWitchPTInventoryItemInstance* ACauldronAltar::GetModifierIngredient() const
+{
+    return ModifierIngredient;
 }
 
 

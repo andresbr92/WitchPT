@@ -11,6 +11,10 @@ class UWitchPTInventoryItemInstance;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientSetSignature_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientIconSetSignature_WC, TSubclassOf<UUserWidget>, BaseIngredientIcon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPrincipalIngredientSetSignature_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPrincipalIngredientIconSetSignature_WC, TSubclassOf<UUserWidget>, PrincipalIngredientIcon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModifierIngredientSetSignature_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModifierIngredientIconSetSignature_WC, TSubclassOf<UUserWidget>, ModifierIngredientIcon);
 /**
  * 
  */
@@ -28,6 +32,14 @@ public:
 	FOnBaseIngredientSetSignature_WC OnBaseIngredientSet;
 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
 	FOnBaseIngredientIconSetSignature_WC OnBaseIngredientIconSet;
+	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+	FOnPrincipalIngredientSetSignature_WC OnPrincipalIngredientSet;
+	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+	FOnPrincipalIngredientIconSetSignature_WC OnPrincipalIngredientIconSet;
+	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+	FOnModifierIngredientSetSignature_WC OnModifierIngredientSet;
+	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+	FOnModifierIngredientIconSetSignature_WC OnModifierIngredientIconSet;
 
 	UFUNCTION(Category = "Cauldron")
 	void SetCauldronAltar(ACauldronAltar* InCauldronAltar);
@@ -46,4 +58,12 @@ protected:
 	void HandleBaseIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance);
 	UFUNCTION(Category = "Cauldron")
 	void HandleBaseIngredientIconSet(TSubclassOf<UUserWidget> BaseIngredientIcon);
+	UFUNCTION(Category = "Cauldron")
+	void HandlePrincipalIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance);
+	UFUNCTION(Category = "Cauldron")
+	void HandlePrincipalIngredientIconSet(TSubclassOf<UUserWidget> PrincipalIngredientIcon);
+	UFUNCTION(Category = "Cauldron")
+	void HandleModifierIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance);
+	UFUNCTION(Category = "Cauldron")
+	void HandleModifierIngredientIconSet(TSubclassOf<UUserWidget> ModifierIngredientIcon);
 };

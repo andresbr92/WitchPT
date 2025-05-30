@@ -26,6 +26,10 @@ void UCauldronWidgetController::BindCallbacksToDependencies()
 	{
 		CauldronAltar->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
 		CauldronAltar->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
+		CauldronAltar->OnPrincipalIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientSet);
+		CauldronAltar->OnPrincipalIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientIconSet);
+		CauldronAltar->OnModifierIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientSet);
+		CauldronAltar->OnModifierIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientIconSet);
 	}
 }
 
@@ -46,4 +50,24 @@ void UCauldronWidgetController::HandleBaseIngredientSet(UWitchPTInventoryItemIns
 void UCauldronWidgetController::HandleBaseIngredientIconSet(TSubclassOf<UUserWidget> BaseIngredientIcon)
 {
 	OnBaseIngredientIconSet.Broadcast(BaseIngredientIcon);
+}
+
+void UCauldronWidgetController::HandlePrincipalIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance)
+{
+	OnPrincipalIngredientSet.Broadcast(IngredientInstance);
+}
+
+void UCauldronWidgetController::HandlePrincipalIngredientIconSet(TSubclassOf<UUserWidget> PrincipalIngredientIcon)
+{
+	OnPrincipalIngredientIconSet.Broadcast(PrincipalIngredientIcon);
+}
+
+void UCauldronWidgetController::HandleModifierIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance)
+{
+	OnModifierIngredientSet.Broadcast(IngredientInstance);
+}
+
+void UCauldronWidgetController::HandleModifierIngredientIconSet(TSubclassOf<UUserWidget> ModifierIngredientIcon)
+{
+	OnModifierIngredientIconSet.Broadcast(ModifierIngredientIcon);
 }
