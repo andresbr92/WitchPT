@@ -140,6 +140,43 @@ public:
 	FGameplayTag Item_Consumable_Ingredient_Tier_3;
 
 
+	FGameplayTag Item_Consumable_Ingredient_CanBeUsedIn_BaseSlot;
+	FGameplayTag Item_Consumable_Ingredient_CanBeUsedIn_PrincipalSlot;
+	FGameplayTag Item_Consumable_Ingredient_CanBeUsedIn_ModifierSlot;
+
+	FGameplayTag Item_Consumable_Ingredient_Category_Base;
+	FGameplayTag Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Water;
+	FGameplayTag Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Oil;
+	FGameplayTag Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Blood;
+	
+	
+	FGameplayTag Item_Consumable_Ingredient_Category_Principal;
+	FGameplayTag Item_Consumable_Ingredient_Category_Principal_Herbal;
+	FGameplayTag Item_Consumable_Ingredient_Category_Principal_Mineral;
+	FGameplayTag Item_Consumable_Ingredient_Category_Principal_Animal;
+
+	
+
+
+
+
+	// --------------------------- Modifier Tags ---------------------------
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier;
+	// --------------------------- Modifier Potency Tags ---------------------------
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Potency_Increase_Float;
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Potency_Increase_Percentage;
+	// --------------------------- Modifier Duration Tags ---------------------------
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Duration_Increase_Float;
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Duration_Increase_Percentage;
+	// --------------------------- Modifier Charges Tags ---------------------------
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Charges_Increase_Float;
+	// --------------------------- Modifier Application Tags ---------------------------
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Target_Self;
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Target_Other;
+	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Target_Area;
+	
+
+
 
 
 private:

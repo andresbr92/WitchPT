@@ -9,7 +9,7 @@
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
-class UWitchPTInventoryItemFragment_IngredientDetails;
+class UWitchPTInventoryItemFragment_IngredientCraftingProperties;
 class UWitchPTInventoryItemFragment;
 class UCauldronUserWidget;
 class ACauldronPosition;
@@ -91,7 +91,7 @@ public:
     UPROPERTY(VisibleAnywhere)
     UWitchPTInventoryItemInstance* PrincipalIngredient;
     UPROPERTY(VisibleAnywhere)
-    UWitchPTInventoryItemInstance* PotentiatorIngredient;
+    UWitchPTInventoryItemInstance* ModifierIngredient;
     
     UPROPERTY(ReplicatedUsing = OnRep_BaseIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
     TSubclassOf<UUserWidget> BaseIngredientIcon;
@@ -100,7 +100,7 @@ public:
     TSubclassOf<UUserWidget> PrincipalIngredientIcon;
 
     UPROPERTY(ReplicatedUsing = OnRep_PotentiatorIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
-    TSubclassOf<UUserWidget> PotentiatorIngredientIcon;
+    TSubclassOf<UUserWidget> ModifierIngredientIcon;
     
     // ----------------------------------- DELEGATES  ---------------------------------------------- //
 
@@ -133,7 +133,7 @@ public:
     
     void StartBrewingPotion(ACharacter* InteractingCharacter);
    
-    void SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef, FGameplayTag IngredientType);
+    void TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
     
     // ----------------------------------- ON REP FUNCTIONS ---------------------------------------------- //
     

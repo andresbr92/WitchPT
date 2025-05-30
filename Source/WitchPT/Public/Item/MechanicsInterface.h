@@ -71,7 +71,7 @@ public:
 
 	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
-	void RequestSetBaseIngredient(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef, FGameplayTag IngredientType);
+	void RequestSetBaseIngredient(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
 	
 	
 	// General Queries that might be implemented by positions or other interactables

@@ -17,7 +17,7 @@
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Inventory/Fragments/WitchPTInventoryFragment_UIDetails.h"
-#include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientDetails.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
 #include "Player/WitchPTPlayerController.h"
 
 // Sets default values
@@ -57,7 +57,7 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
     DOREPLIFETIME(ACauldronAltar, BaseIngredientIcon);
     DOREPLIFETIME(ACauldronAltar, PrincipalIngredientIcon);
-    DOREPLIFETIME(ACauldronAltar, PotentiatorIngredientIcon);
+    DOREPLIFETIME(ACauldronAltar, ModifierIngredientIcon);
     
 }
 
@@ -116,7 +116,7 @@ void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
     PositionCharacterForBrewing(InteractingCharacter);
 }
 
-void ACauldronAltar::SetBaseIngredient(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef, FGameplayTag IngredientType)
+void ACauldronAltar::TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef)
 {
     if (!HasAuthority())
     {
@@ -151,6 +151,14 @@ void ACauldronAltar::SetBaseIngredient(const ACharacter* RequestingCharacter, co
         UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: ItemDefinition %s not found in inventory for %s."), *IngredientItemDef->GetName(), *RequestingCharacter->GetName());
         return;
     }
+    const UWitchPTInventoryItemFragment_IngredientCraftingProperties* IngredientCraftingDetails = Cast<UWitchPTInventoryItemFragment_IngredientCraftingProperties>(InstanceFromInventory->FindFragmentByClass(UWitchPTInventoryItemFragment_IngredientCraftingProperties::StaticClass()));
+    if (!IngredientCraftingDetails)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::SetBaseIngredient: IngredientCraftingDetails is not valid for %s."), *RequestingCharacter->GetName());
+        return;
+    }
+
+    
     bool bConsumedSuccessfully = false;
     int32 CurrentStackCount = InstanceFromInventory->GetTotalStackCount();
         if (CurrentStackCount > 0)

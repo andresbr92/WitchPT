@@ -151,7 +151,7 @@ void UWitchPTMechanicComponent::RequestUnOccupyPositionInCauldron_Implementation
 }
 
 void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
-	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef, FGameplayTag IngredientType)
+	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
@@ -159,11 +159,11 @@ void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldro
 	
 	if(GetOwnerRole() == ROLE_Authority)
 	{
-		TargetAltar->SetBaseIngredient(Character, IngredientItemDef, IngredientType);
+		TargetAltar->TrySetIngredientInSlot(Character, IngredientItemDef);
 	}
 	else
 	{
-		Server_RequestSetBaseIngredient(TargetAltar, IngredientItemDef, IngredientType);
+		Server_RequestSetBaseIngredient(TargetAltar, IngredientItemDef);
 	}
 
 	
@@ -171,12 +171,12 @@ void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldro
 }
 
 void UWitchPTMechanicComponent::Server_RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
-	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef, FGameplayTag IngredientType)
+	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	
-	TargetAltar->SetBaseIngredient(Character, IngredientItemDef, IngredientType);
+	TargetAltar->TrySetIngredientInSlot(Character, IngredientItemDef);
 	
 }
 
