@@ -1,0 +1,54 @@
+[2m
+📦 Repomix v0.3.8
+[22m
+[2mNo custom config found at repomix.config.json5, repomix.config.jsonc, repomix.config.json or global config at C:\Users\andre\AppData\Local\Repomix\repomix.config.json5, C:\Users\andre\AppData\Local\Repomix\repomix.config.jsonc, C:\Users\andre\AppData\Local\Repomix\repomix.config.json.
+You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.[22m
+[36m⠙[39m Searching for files...
+[2K[1A[2K[G[36m⠹[39m Searching for files...
+[2K[1A[2K[G[36m⠸[39m Collecting files...
+[2K[1A[2K[G[36m⠼[39m Collecting files...
+[2K[1A[2K[G[36m⠴[39m Collect file... (280/746) [2mContent/Characters/Mannequins/Textures/Manny/T_Manny[22m
+[2m_01_ASAOPMASK_MSK.uasset[22m
+[2K[1A[2K[1A[2K[G[36m⠦[39m Collect file... (511/746) [2mContent/StarterContent/Textures/T_Brick_Clay_New_D.u[22m
+[2masset[22m
+[2K[1A[2K[1A[2K[G[36m⠧[39m Collect file... (574/746) [2mContent/StarterContent/Textures/T_Metal_Rust_N.uasse[22m
+[2mt[22m
+[2K[1A[2K[1A[2K[G[36m⠇[39m Running security check...
+[2K[1A[2K[G[36m⠏[39m Running security check... (106/132) [2mSource/WitchPT/Public/Item/MechanicsInterf[22m
+[2mace.h[22m
+[2K[1A[2K[1A[2K[G[36m⠋[39m Processing files...
+[2K[1A[2K[G[36m⠙[39m Generating output...
+[2K[1A[2K[G[36m⠹[39m Generating output...
+[2K[1A[2K[G[36m⠸[39m Generating output...
+[2K[1A[2K[G[36m⠼[39m Generating output...
+[2K[1A[2K[G[36m⠴[39m Generating output...
+[2K[1A[2K[G[36m⠦[39m Calculating metrics...
+[2K[1A[2K[G[36m⠧[39m Calculating metrics...
+[2K[1A[2K[G[36m⠇[39m Calculating metrics...
+[2K[1A[2K[G[36m⠏[39m Calculating metrics... (132/132) [2mWitchPT.uproject.DotSettings.user[22m
+[2K[1A[2K[G[32m✔[39m Packing completed successfully!
+
+[37m📈 Top 5 Files by Character Count and Token Count:[39m
+[2m──────────────────────────────────────────────────[22m
+[37m1. [39m [37mConfig/DefaultEditor.ini[39m [2m(33.719 chars, 9610 tokens, 9.1%)[22m
+[37m2. [39m [37mSource/WitchPT/Private/Item/RitualAltar.cpp[39m [2m(29.992 chars, 7632 tokens, 7.3%)[22m
+[37m3. [39m [37mSource/WitchPT/Private/Item/CauldronAltar.cpp[39m [2m(27.794 chars, 6461 tokens, 6.1%)[22m
+[37m4. [39m [37mConfig/DefaultEngine.ini[39m [2m(24.717 chars, 6093 tokens, 5.8%)[22m
+[37m5. [39m [37mSource/WitchPT/Private/AbilitySystem/Interaction/GameplayAbility_Interact.cpp[39m [2m(18.267 chars, 4236 tokens, 4%)[22m
+
+[37m🔎 Security Check:[39m
+[2m──────────────────[22m
+[32m✔[39m [37mNo suspicious files detected.[39m
+
+[37m📊 Pack Summary:[39m
+[2m────────────────[22m
+[37m  Total Files:[39m [37m132[39m files
+[37m  Total Chars:[39m [37m456.842[39m chars
+[37m Total Tokens:[39m [37m110.206[39m tokens
+[37m       Output:[39m [37mrepomix-output.xml[39m
+[37m     Security:[39m [37m[37m✔ No suspicious files detected[37m[39m
+
+[32m🎉 All Done![39m
+[37mYour repository has been successfully packed.[39m
+
+💡 Repomix is now available in your browser! Try it at [4mhttps://repomix.com[24m
