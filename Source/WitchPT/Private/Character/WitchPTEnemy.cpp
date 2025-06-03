@@ -28,6 +28,6 @@ void AWitchPTEnemy::Tick(float DeltaTime)
 void AWitchPTEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	// Test commit
+	// Test commi
 }
 
