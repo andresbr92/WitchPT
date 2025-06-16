@@ -9,6 +9,7 @@
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
+class UCauldronCraftComponent;
 class UWitchPTInventoryItemFragment_IngredientCraftingProperties;
 class UWitchPTInventoryItemFragment;
 class UCauldronUserWidget;
@@ -105,6 +106,9 @@ public:
 
     UPROPERTY(ReplicatedUsing = OnRep_PotentiatorIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
     TSubclassOf<UUserWidget> ModifierIngredientIcon;
+
+    UPROPERTY(VisibleAnywhere)
+    TObjectPtr<UCauldronCraftComponent> CauldronCraftComponent;
     
     // ----------------------------------- DELEGATES  ---------------------------------------------- //
 

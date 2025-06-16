@@ -44,6 +44,17 @@
 		{
 			"Name": "ActorPalette",
 			"Enabled": true
+		},
+		{
+			"Name": "ABR_InteractionSystem",
+			"Enabled": false
+		},
+		{
+			"Name": "ABR_CameraSystem",
+			"Enabled": false
 		}
+	],
+	"AdditionalPluginDirectories": [
+		"../ABR_Plugins"
 	]
 }

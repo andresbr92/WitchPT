@@ -18,6 +18,7 @@
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Inventory/Fragments/WitchPTInventoryFragment_UIDetails.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
+#include "Item/Components/CauldronCraftComponent.h"
 #include "Player/WitchPTPlayerController.h"
 
 // Sets default values
@@ -263,6 +264,15 @@ void ACauldronAltar::BeginPlay()
 {
     Super::BeginPlay();
     SetReplicateMovement(true);
+    // Initialize the cauldron craft component
+    CauldronCraftComponent = NewObject<UCauldronCraftComponent>(this, TEXT("CauldronCraftComponent"));
+    if (CauldronCraftComponent)
+    {
+        CauldronCraftComponent->RegisterComponent();
+        CauldronCraftComponent->SetIsReplicated(true);
+    }
+    
+    
 }
 
 bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,

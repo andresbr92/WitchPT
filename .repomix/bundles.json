@@ -1,0 +1,14 @@
+{
+  "bundles": {
+    "Interaction-432": {
+      "name": "Interaction",
+      "created": "2025-06-10T15:49:17.721Z",
+      "lastUsed": "2025-06-10T15:49:17.721Z",
+      "tags": [],
+      "files": [
+        "Source/WitchPT/Public/AbilitySystem/Interaction",
+        "Source/WitchPT/Private/AbilitySystem/Interaction"
+      ]
+    }
+  }
+}
