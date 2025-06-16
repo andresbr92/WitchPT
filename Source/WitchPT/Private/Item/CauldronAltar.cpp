@@ -56,12 +56,7 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
     DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
     DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
-    DOREPLIFETIME(ACauldronAltar, BaseIngredientIcon);
-    DOREPLIFETIME(ACauldronAltar, PrincipalIngredientIcon);
-    DOREPLIFETIME(ACauldronAltar, ModifierIngredientIcon);
-    
 }
-
 
 void ACauldronAltar::OnRep_CauldronPhysicState()
 {
@@ -75,27 +70,7 @@ void ACauldronAltar::OnRep_CauldronPhysicState()
     {
         // Cauldron is in preview mode - update visuals
         SetActorEnableCollision(false);
-        
-        
     }
-    
-}
-
-
-
-void ACauldronAltar::OnRep_BaseIngredientIcon()
-{
-    BroadcastBaseIngredientIconSet();
-}
-
-void ACauldronAltar::OnRep_PrincipalIngredientIcon()
-{
-    BroadcastPrincipalIngredientIconSet();
-}
-
-void ACauldronAltar::OnRep_PotentiatorIngredientIcon()
-{
-    BroadcastModifierIngredientIconSet();
 }
 
 // --- Interaction Functions ---
@@ -121,9 +96,9 @@ void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
 
 void ACauldronAltar::TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef)
 {
-    if (!HasAuthority())
+    if (!CauldronCraftComponent)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Not authority"));
+        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::TrySetIngredientInSlot: CauldronCraftComponent is null"));
         return;
     }
 
@@ -133,132 +108,9 @@ void ACauldronAltar::TrySetIngredientInSlot(const ACharacter* RequestingCharacte
         return;
     }
 
-    AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(RequestingCharacter->GetController());
-    if (!PC)
-    {
-        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::TrySetIngredientInSlot: RequestingCharacter does not have a valid PlayerController."));
-        return;
-    }
-
-    UWitchPTInventoryManagerComponent* InventoryManager = PC->GetInventoryManager();
-    if (!InventoryManager)
-    {
-        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::TrySetIngredientInSlot: Could not get InventoryManager from PlayerController."));
-        return;
-    }
-    
-    UWitchPTInventoryItemInstance* InstanceFromInventory = InventoryManager->FindFirstItemStackByDefinition(IngredientItemDef);
-
-    if (!InstanceFromInventory)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: ItemDefinition %s not found in inventory for %s."), *IngredientItemDef->GetName(), *RequestingCharacter->GetName());
-        return;
-    }
-    
-    const UWitchPTInventoryItemFragment_IngredientCraftingProperties* IngredientCraftingDetails = Cast<UWitchPTInventoryItemFragment_IngredientCraftingProperties>(InstanceFromInventory->FindFragmentByClass(UWitchPTInventoryItemFragment_IngredientCraftingProperties::StaticClass()));
-    if (!IngredientCraftingDetails)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: IngredientCraftingDetails is not valid for %s."), *RequestingCharacter->GetName());
-        return;
-    }
-
-    // Determine ingredient type based on SlotUsageTag
-    const FWitchPTGameplayTags& GameplayTags = FWitchPTGameplayTags::Get();
-    bool bIsBaseIngredient = IngredientCraftingDetails->SlotUsageTag.MatchesTag(GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_BaseSlot);
-    bool bIsPrincipalIngredient = IngredientCraftingDetails->SlotUsageTag.MatchesTag(GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_PrincipalSlot);
-    bool bIsModifierIngredient = IngredientCraftingDetails->SlotUsageTag.MatchesTag(GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_ModifierSlot);
-
-    // Check if the appropriate slot is already occupied
-    if (bIsBaseIngredient && BaseIngredient != nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Base ingredient slot is already occupied"));
-        return;
-    }
-    
-    if (bIsPrincipalIngredient && PrincipalIngredient != nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Principal ingredient slot is already occupied"));
-        return;
-    }
-    
-    if (bIsModifierIngredient && ModifierIngredient != nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Modifier ingredient slot is already occupied"));
-        return;
-    }
-
-    // If none of the slot usage tags match, this ingredient can't be used
-    if (!bIsBaseIngredient && !bIsPrincipalIngredient && !bIsModifierIngredient)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Ingredient %s doesn't have a valid slot usage tag"), *IngredientItemDef->GetName());
-        return;
-    }
-    
-    bool bConsumedSuccessfully = false;
-    int32 CurrentStackCount = InstanceFromInventory->GetTotalStackCount();
-    
-    if (CurrentStackCount > 0)
-    {
-        UWitchPTInventoryItemInstance* IngredientToSet = nullptr;
-        
-        if (CurrentStackCount == 1)
-        {
-            IngredientToSet = InstanceFromInventory;
-            InventoryManager->Server_RemoveItemInstance(InstanceFromInventory);
-            bConsumedSuccessfully = true;
-        }
-        else
-        {
-            InventoryManager->Server_UpdateItemStackCount(InstanceFromInventory, CurrentStackCount - 1);
-            IngredientToSet = InstanceFromInventory;
-            bConsumedSuccessfully = true;
-        }
-        
-        // Get UI fragment for icon
-        const UWitchPTInventoryFragment_UIDetails* UIFragment = Cast<UWitchPTInventoryFragment_UIDetails>(InstanceFromInventory->FindFragmentByClass(UWitchPTInventoryFragment_UIDetails::StaticClass()));
-        TSubclassOf<UUserWidget> IngredientIcon = nullptr;
-        if (IsValid(UIFragment))
-        {
-            IngredientIcon = UIFragment->IconWidget;
-        }
-        
-        // Set the ingredient in the appropriate slot
-        if (bIsBaseIngredient)
-        {
-            BaseIngredient = IngredientToSet;
-            BaseIngredientIcon = IngredientIcon;
-            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::TrySetIngredientInSlot: Base ingredient set successfully"));
-            
-            if (HasAuthority())
-            {
-                BroadcastBaseIngredientIconSet();
-            }
-        }
-        else if (bIsPrincipalIngredient)
-        {
-            PrincipalIngredient = IngredientToSet;
-            PrincipalIngredientIcon = IngredientIcon;
-            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::TrySetIngredientInSlot: Principal ingredient set successfully"));
-            
-            if (HasAuthority())
-            {
-                BroadcastPrincipalIngredientIconSet();
-            }
-        }
-        else if (bIsModifierIngredient)
-        {
-            ModifierIngredient = IngredientToSet;
-            ModifierIngredientIcon = IngredientIcon;
-            UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::TrySetIngredientInSlot: Modifier ingredient set successfully"));
-            
-            if (HasAuthority())
-            {
-                BroadcastModifierIngredientIconSet();
-            }
-        }
-    }
+    // Delegate to the craft component
+    CauldronCraftComponent->TrySetIngredientInSlot(RequestingCharacter, IngredientItemDef);
 }
-
 
 void ACauldronAltar::BeginPlay()
 {
@@ -271,8 +123,6 @@ void ACauldronAltar::BeginPlay()
         CauldronCraftComponent->RegisterComponent();
         CauldronCraftComponent->SetIsReplicated(true);
     }
-    
-    
 }
 
 bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
@@ -280,7 +130,6 @@ bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOu
 {
     return Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 }
-
 
 void ACauldronAltar::StartCarryCauldron(ACharacter* InteractingCharacter)
 {
@@ -331,7 +180,6 @@ bool ACauldronAltar::IsInPlacementPreview() const
     return CauldronPhysicState == ECauldronPhysicState::Previewing && CarryingCharacter != nullptr;
 }
 
-
 ACharacter* ACauldronAltar::GetCarryingCharacter() const
 {
     return CarryingCharacter;
@@ -370,8 +218,6 @@ void ACauldronAltar::AttachToCharacter(ACharacter* Character)
         
         UE_LOG(LogTemp, Log, TEXT("ACauldronAltar::AttachToCharacter: Cauldron attached to %s"), *Character->GetName());
     }
-    
-
 }
 
 void ACauldronAltar::DetachFromCharacter(ACharacter* Character)
@@ -449,17 +295,10 @@ void ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
         return BrewingPosition->SetOccupied(Character);
 
         // Teleport the character to the position facing the cauldron
-        
-
     }
-  
-
-    
 
     // Call the ritual state delegate for Listen Server
-  
 }
-
 
 ABaseInteractionPosition* ACauldronAltar::GetAvailableBrewingPosition(ACharacter* Character)
 {
@@ -536,14 +375,10 @@ void ACauldronAltar::StartPlacementPreview(ACharacter* Character)
     
     // Restablecer la escala normal
     Multicast_FinalizePlacement();
-    
-    
 }
 
 void ACauldronAltar::Client_UpdatePlacementPreview_Implementation(const FVector& HitLocation, const FVector& HitNormal)
 {
-   
-    
     // Actualizar el material según el estado
     // ApplyPlacementPreviewMaterial();
 }
@@ -582,12 +417,9 @@ void ACauldronAltar::UpdatePlacementPreview(const FVector& HitLocation, const FV
     SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
     SetActorLocation(PreviewLocation);
     
-    
     // Verificar si la posición es válida
     CurrentPlacementState = IsPlacementValid() ? ECauldronPlacementState::Valid : ECauldronPlacementState::Invalid;
 }
-
-
 
 void ACauldronAltar::FinalizePlacement()
 {
@@ -679,11 +511,7 @@ void ACauldronAltar::UnoccupyPosition(ACharacter* Character, ABaseInteractionPos
             break;
         }
     }
-    
 }
-
-
-
 
 void ACauldronAltar::Multicast_FinalizePlacement_Implementation()
 {
@@ -811,51 +639,40 @@ bool ACauldronAltar::IsPlacementValid() const
     
     // La posición es válida
     return true;
-} 
-// ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
-void ACauldronAltar::BroadcastBaseIngredientDropped() const
-{
-    OnBaseIngredientSetDelegate.Broadcast(BaseIngredient);
 }
 
-void ACauldronAltar::BroadcastBaseIngredientIconSet() const
-{
-    OnBaseIngredientIconSetDelegate.Broadcast(BaseIngredientIcon);
-}
+// ----------------------------------- DEBUG FUNCTIONS ---------------------------------------------- //
 
-void ACauldronAltar::BroadcastPrincipalIngredientDropped() const
+void ACauldronAltar::PrintCauldronDebugData() const
 {
-    OnPrincipalIngredientSetDelegate.Broadcast(PrincipalIngredient);
-}
-
-void ACauldronAltar::BroadcastPrincipalIngredientIconSet() const
-{
-    OnPrincipalIngredientIconSetDelegate.Broadcast(PrincipalIngredientIcon);
-}
-
-void ACauldronAltar::BroadcastModifierIngredientDropped() const
-{
-    OnModifierIngredientSetDelegate.Broadcast(ModifierIngredient);
-}
-
-void ACauldronAltar::BroadcastModifierIngredientIconSet() const
-{
-    OnModifierIngredientIconSetDelegate.Broadcast(ModifierIngredientIcon);
-}
-
-UWitchPTInventoryItemInstance* ACauldronAltar::GetBaseIngredient() const
-{
-    return BaseIngredient;
-}
-
-UWitchPTInventoryItemInstance* ACauldronAltar::GetPrincipalIngredient() const
-{
-    return PrincipalIngredient;
-}
-
-UWitchPTInventoryItemInstance* ACauldronAltar::GetModifierIngredient() const
-{
-    return ModifierIngredient;
+    UE_LOG(LogTemp, Warning, TEXT("=== CAULDRON ALTAR DEBUG DATA ==="));
+    UE_LOG(LogTemp, Warning, TEXT("Cauldron Name: %s"), *GetName());
+    UE_LOG(LogTemp, Warning, TEXT("Cauldron Location: %s"), *GetActorLocation().ToString());
+    UE_LOG(LogTemp, Warning, TEXT("Cauldron Physics State: %s"), 
+           CauldronPhysicState == ECauldronPhysicState::Static ? TEXT("Static") :
+           CauldronPhysicState == ECauldronPhysicState::Moving ? TEXT("Moving") :
+           CauldronPhysicState == ECauldronPhysicState::Previewing ? TEXT("Previewing") : TEXT("Unknown"));
+    UE_LOG(LogTemp, Warning, TEXT("Carrying Character: %s"), 
+           CarryingCharacter ? *CarryingCharacter->GetName() : TEXT("None"));
+    UE_LOG(LogTemp, Warning, TEXT("Placement State: %s"),
+           CurrentPlacementState == ECauldronPlacementState::Valid ? TEXT("Valid") :
+           CurrentPlacementState == ECauldronPlacementState::Invalid ? TEXT("Invalid") :
+           CurrentPlacementState == ECauldronPlacementState::None ? TEXT("None") : TEXT("Unknown"));
+    UE_LOG(LogTemp, Warning, TEXT("Number of Interaction Positions: %d"), InteractionPositions.Num());
+    UE_LOG(LogTemp, Warning, TEXT("Number of Participating Players: %d"), ParticipatingPlayers.Num());
+    
+    // Print CauldronCraftComponent debug data
+    if (CauldronCraftComponent)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("CauldronCraftComponent: Valid"));
+        CauldronCraftComponent->PrintIngredientDebugData();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("CauldronCraftComponent: NULL - This should not happen!"));
+    }
+    
+    UE_LOG(LogTemp, Warning, TEXT("=== END CAULDRON ALTAR DEBUG DATA ==="));
 }
 
 

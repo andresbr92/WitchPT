@@ -77,6 +77,7 @@ WitchPT/Private/Item/BaseInteractableAltar.cpp
 WitchPT/Private/Item/BaseInteractionPosition.cpp
 WitchPT/Private/Item/CauldronAltar.cpp
 WitchPT/Private/Item/CauldronPosition.cpp
+WitchPT/Private/Item/Components/CauldronCraftComponent.cpp
 WitchPT/Private/Item/Ingredient/IngredientBase.cpp
 WitchPT/Private/Item/Item.cpp
 WitchPT/Private/Item/MechanicsInterface.cpp
@@ -139,6 +140,7 @@ WitchPT/Public/Item/BaseInteractableAltar.h
 WitchPT/Public/Item/BaseInteractionPosition.h
 WitchPT/Public/Item/CauldronAltar.h
 WitchPT/Public/Item/CauldronPosition.h
+WitchPT/Public/Item/Components/CauldronCraftComponent.h
 WitchPT/Public/Item/Ingredient/IngredientBase.h
 WitchPT/Public/Item/Item.h
 WitchPT/Public/Item/MechanicsInterface.h
@@ -3727,6 +3729,7 @@ void ABaseInteractionPosition::RemoveCharacterFromPosition()
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Inventory/Fragments/WitchPTInventoryFragment_UIDetails.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
+#include "Item/Components/CauldronCraftComponent.h"
 #include "Player/WitchPTPlayerController.h"
 
 // Sets default values
@@ -3972,6 +3975,15 @@ void ACauldronAltar::BeginPlay()
 {
     Super::BeginPlay();
     SetReplicateMovement(true);
+    // Initialize the cauldron craft component
+    CauldronCraftComponent = NewObject<UCauldronCraftComponent>(this, TEXT("CauldronCraftComponent"));
+    if (CauldronCraftComponent)
+    {
+        CauldronCraftComponent->RegisterComponent();
+        CauldronCraftComponent->SetIsReplicated(true);
+    }
+    
+    
 }
 
 bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
@@ -4813,6 +4825,44 @@ void ACauldronPosition::HandleInteraction(ACharacter* InteractingCharacter)
 //     UE_LOG(LogTemp, Log, TEXT("ACauldronPosition::SetOccupied: %s is now %s"), 
 //            *GetName(), bIsOccupied ? TEXT("occupied") : TEXT("unoccupied"));
 // }
+</file>
+
+<file path="WitchPT/Private/Item/Components/CauldronCraftComponent.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Item/Components/CauldronCraftComponent.h"
+
+
+// Sets default values for this component's properties
+UCauldronCraftComponent::UCauldronCraftComponent()
+{
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// off to improve performance if you don't need them.
+	PrimaryComponentTick.bCanEverTick = true;
+
+	// ...
+}
+
+
+// Called when the game starts
+void UCauldronCraftComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// ...
+	
+}
+
+
+// Called every frame
+void UCauldronCraftComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+                                            FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// ...
+}
 </file>
 
 <file path="WitchPT/Private/Item/Ingredient/IngredientBase.cpp">
@@ -9700,6 +9750,7 @@ private:
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
+class UCauldronCraftComponent;
 class UWitchPTInventoryItemFragment_IngredientCraftingProperties;
 class UWitchPTInventoryItemFragment;
 class UCauldronUserWidget;
@@ -9796,6 +9847,9 @@ public:
 
     UPROPERTY(ReplicatedUsing = OnRep_PotentiatorIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
     TSubclassOf<UUserWidget> ModifierIngredientIcon;
+
+    UPROPERTY(VisibleAnywhere)
+    TObjectPtr<UCauldronCraftComponent> CauldronCraftComponent;
     
     // ----------------------------------- DELEGATES  ---------------------------------------------- //
 
@@ -10030,6 +10084,36 @@ private:
     // // Whether this position is currently occupied
     // UPROPERTY()
     // bool bIsOccupied;
+};
+</file>
+
+<file path="WitchPT/Public/Item/Components/CauldronCraftComponent.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "CauldronCraftComponent.generated.h"
+
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class WITCHPT_API UCauldronCraftComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this component's properties
+	UCauldronCraftComponent();
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 };
 </file>
 

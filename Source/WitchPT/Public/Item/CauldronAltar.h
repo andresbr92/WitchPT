@@ -57,12 +57,6 @@ enum class ECauldronPlacementState : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnECauldronPhysicStateChanged, ECauldronPhysicState, PhysicState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterPositioned, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientIconSetSignature, TSubclassOf<UUserWidget>, BaseIngredientIcon);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPrincipalIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPrincipalIngredientIconSetSignature, TSubclassOf<UUserWidget>, PrincipalIngredientIcon);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModifierIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModifierIngredientIconSetSignature, TSubclassOf<UUserWidget>, ModifierIngredientIcon);
 
 /**
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
@@ -90,34 +84,16 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
-    // Base ingredient
-    UPROPERTY(VisibleAnywhere)
-    UWitchPTInventoryItemInstance* BaseIngredient;
-    UPROPERTY(VisibleAnywhere)
-    UWitchPTInventoryItemInstance* PrincipalIngredient;
-    UPROPERTY(VisibleAnywhere)
-    UWitchPTInventoryItemInstance* ModifierIngredient;
-    
-    UPROPERTY(ReplicatedUsing = OnRep_BaseIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
-    TSubclassOf<UUserWidget> BaseIngredientIcon;
-
-    UPROPERTY(ReplicatedUsing = OnRep_PrincipalIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
-    TSubclassOf<UUserWidget> PrincipalIngredientIcon;
-
-    UPROPERTY(ReplicatedUsing = OnRep_PotentiatorIngredientIcon,Category= "Cauldron|Ingredients", VisibleAnywhere)
-    TSubclassOf<UUserWidget> ModifierIngredientIcon;
-
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere)
     TObjectPtr<UCauldronCraftComponent> CauldronCraftComponent;
+
+    // Base potion definition template used for generating crafted potions
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Potion Crafting")
+    TSubclassOf<UWitchPTInventoryItemDefinition> BasePotionItemDefinition;
+    
     
     // ----------------------------------- DELEGATES  ---------------------------------------------- //
 
-    FOnBaseIngredientSetSignature OnBaseIngredientSetDelegate;
-    FOnBaseIngredientIconSetSignature OnBaseIngredientIconSetDelegate;
-    FOnPrincipalIngredientSetSignature OnPrincipalIngredientSetDelegate;
-    FOnPrincipalIngredientIconSetSignature OnPrincipalIngredientIconSetDelegate;
-    FOnModifierIngredientSetSignature OnModifierIngredientSetDelegate;
-    FOnModifierIngredientIconSetSignature OnModifierIngredientIconSetDelegate;
     UPROPERTY(BlueprintAssignable, Category = "Cauldron|Placement")
     FOnECauldronPhysicStateChanged OnECauldronPhysicStateChanged;
     
@@ -151,12 +127,6 @@ public:
     
     UFUNCTION()
     void OnRep_CauldronPhysicState();
-    UFUNCTION()
-    void OnRep_BaseIngredientIcon();
-    UFUNCTION()
-    void OnRep_PrincipalIngredientIcon();
-    UFUNCTION()
-    void OnRep_PotentiatorIngredientIcon();
     
     UFUNCTION()
     void PositionCharacterForBrewing(ACharacter* Character);
@@ -202,23 +172,11 @@ public:
     
     UFUNCTION(BlueprintPure, Category = "Cauldron|Placement")
     bool IsInPlacementPreview() const;
-    // ----------------------------------- GETTERS ---------------------------------------------- //
-    
-    UWitchPTInventoryItemInstance* GetBaseIngredient() const;
-    UWitchPTInventoryItemInstance* GetPrincipalIngredient() const;
-    UWitchPTInventoryItemInstance* GetModifierIngredient() const;
-    
-protected:
-    // ----------------------------------- BROADCAST HELPER FUNCTIONS ---------------------------------------------- //
-	// These functions handle event broadcasting and are called both from server-side code and OnRep functions
-    void BroadcastBaseIngredientDropped() const;
-    void BroadcastBaseIngredientIconSet() const;
-    void BroadcastPrincipalIngredientDropped() const;
-    void BroadcastPrincipalIngredientIconSet() const;
-    void BroadcastModifierIngredientDropped() const;
-    void BroadcastModifierIngredientIconSet() const;
 
-    
+    // ----------------------------------- DEBUG FUNCTIONS ---------------------------------------------- //
+    UFUNCTION(BlueprintCallable, Category = "Debug|Cauldron")
+    void PrintCauldronDebugData() const;
+
 private:
     UPROPERTY(Replicated)
     TObjectPtr<ACharacter> CarryingCharacter;

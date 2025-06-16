@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
 #include "Item/RitualAltar.h"
+#include "Item/Components/CauldronCraftComponent.h"
 
 // Sets default values for this component's properties
 UWitchPTMechanicComponent::UWitchPTMechanicComponent()
@@ -170,8 +171,32 @@ void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldro
 	
 }
 
-void UWitchPTMechanicComponent::Server_RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
+void UWitchPTMechanicComponent::RequestSetPrincipalIngredient_Implementation(ACauldronAltar* TargetAltar,
 	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
+{
+	IMechanicsInterface::RequestSetPrincipalIngredient_Implementation(TargetAltar, IngredientItemDef);
+}
+
+void UWitchPTMechanicComponent::RequestSetModifierIngredient_Implementation(ACauldronAltar* TargetAltar,
+	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
+{
+	IMechanicsInterface::RequestSetModifierIngredient_Implementation(TargetAltar, IngredientItemDef);
+}
+
+void UWitchPTMechanicComponent::RequestPrintDebugData_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		FVector SpawnLocation = TargetAltar->GetActorLocation() + FVector(20, 0, 20);
+		FPotionResult Result = TargetAltar->CauldronCraftComponent->CraftPotion(false, nullptr, SpawnLocation);
+	}
+}
+
+void UWitchPTMechanicComponent::Server_RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
+                                                                               TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
