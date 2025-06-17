@@ -84,7 +84,7 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Replicated)
     TObjectPtr<UCauldronCraftComponent> CauldronCraftComponent;
 
     // Base potion definition template used for generating crafted potions

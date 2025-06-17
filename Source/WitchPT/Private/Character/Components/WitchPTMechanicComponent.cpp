@@ -151,7 +151,7 @@ void UWitchPTMechanicComponent::RequestUnOccupyPositionInCauldron_Implementation
 	}
 }
 
-void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
+void UWitchPTMechanicComponent::RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
 	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
 {
 	if (!TargetAltar) return;
@@ -164,23 +164,11 @@ void UWitchPTMechanicComponent::RequestSetBaseIngredient_Implementation(ACauldro
 	}
 	else
 	{
-		Server_RequestSetBaseIngredient(TargetAltar, IngredientItemDef);
+		Server_RequestSetIngredientInSlot(TargetAltar, IngredientItemDef);
 	}
 
 	
 	
-}
-
-void UWitchPTMechanicComponent::RequestSetPrincipalIngredient_Implementation(ACauldronAltar* TargetAltar,
-	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
-{
-	IMechanicsInterface::RequestSetPrincipalIngredient_Implementation(TargetAltar, IngredientItemDef);
-}
-
-void UWitchPTMechanicComponent::RequestSetModifierIngredient_Implementation(ACauldronAltar* TargetAltar,
-	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
-{
-	IMechanicsInterface::RequestSetModifierIngredient_Implementation(TargetAltar, IngredientItemDef);
 }
 
 void UWitchPTMechanicComponent::RequestPrintDebugData_Implementation(ACauldronAltar* TargetAltar)
@@ -190,12 +178,12 @@ void UWitchPTMechanicComponent::RequestPrintDebugData_Implementation(ACauldronAl
 	
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		FVector SpawnLocation = TargetAltar->GetActorLocation() + FVector(20, 0, 20);
+		FVector SpawnLocation = TargetAltar->GetActorLocation();
 		FPotionResult Result = TargetAltar->CauldronCraftComponent->CraftPotion(false, nullptr, SpawnLocation);
 	}
 }
 
-void UWitchPTMechanicComponent::Server_RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar,
+void UWitchPTMechanicComponent::Server_RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
                                                                                TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
 {
 	if (!TargetAltar) return;

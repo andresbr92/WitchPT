@@ -35,6 +35,8 @@ ACauldronAltar::ACauldronAltar()
     CurrentPlacementState = ECauldronPlacementState::None;
     bReplicateUsingRegisteredSubObjectList = true;
     
+    // Initialize the cauldron craft component in constructor
+    CauldronCraftComponent = CreateDefaultSubobject<UCauldronCraftComponent>(TEXT("CauldronCraftComponent"));
 }
 
 void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
@@ -56,6 +58,7 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
     DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
     DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
+    DOREPLIFETIME(ACauldronAltar, CauldronCraftComponent);
 }
 
 void ACauldronAltar::OnRep_CauldronPhysicState()
@@ -116,19 +119,20 @@ void ACauldronAltar::BeginPlay()
 {
     Super::BeginPlay();
     SetReplicateMovement(true);
-    // Initialize the cauldron craft component
-    CauldronCraftComponent = NewObject<UCauldronCraftComponent>(this, TEXT("CauldronCraftComponent"));
-    if (CauldronCraftComponent)
-    {
-        CauldronCraftComponent->RegisterComponent();
-        CauldronCraftComponent->SetIsReplicated(true);
-    }
 }
 
 bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
     FReplicationFlags* RepFlags)
 {
-    return Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+    bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+    
+    // Replicate the CauldronCraftComponent
+    if (CauldronCraftComponent)
+    {
+        bWroteSomething |= Channel->ReplicateSubobject(CauldronCraftComponent, *Bunch, *RepFlags);
+    }
+    
+    return bWroteSomething;
 }
 
 void ACauldronAltar::StartCarryCauldron(ACharacter* InteractingCharacter)

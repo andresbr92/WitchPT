@@ -27,7 +27,7 @@ void UCauldronWidgetController::BroadcastInitialValues()
 void UCauldronWidgetController::BindCallbacksToDependencies()
 {
 	Super::BindCallbacksToDependencies();
-	if(CauldronAltar)
+	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
 	{
 		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
 		CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);

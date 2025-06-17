@@ -71,13 +71,10 @@ public:
 
 	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
-	void RequestSetBaseIngredient(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
-	void RequestSetPrincipalIngredient(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
-	void RequestSetModifierIngredient(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
+	void RequestSetIngredientInSlot(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
 	void RequestPrintDebugData(ACauldronAltar* TargetAltar);
+	
 	
 	
 	

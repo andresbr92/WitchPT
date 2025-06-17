@@ -7,6 +7,7 @@
 #include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
 #include "WitchPTInventoryItemFragment_PotionProperties.generated.h"
 
+class UGameplayAbility;
 /**
  * Fragment that defines potion properties for crafted potions
  * This stores the calculated properties from the cauldron crafting system
@@ -18,6 +19,9 @@ class WITCHPT_API UWitchPTInventoryItemFragment_PotionProperties : public UWitch
 
 public:
 	// Core Potion Properties
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Potion Properties")
+	UGameplayAbility* CollectAbility;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Potion Properties")
 	FGameplayTag PotionEssenceTag;
 

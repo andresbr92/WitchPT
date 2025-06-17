@@ -28,13 +28,11 @@ public:
 	virtual void RequestFinalizePlacement_Implementation(ACauldronAltar* TargetAltar) override;
 	virtual void RequestUnOccupyPositionInCauldron_Implementation(ACauldronAltar* TargetCauldron) override;
 	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
-	virtual void RequestSetBaseIngredient_Implementation(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef) override;
-	virtual void RequestSetPrincipalIngredient_Implementation(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef) override;
-	virtual void RequestSetModifierIngredient_Implementation(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef) override;
+	virtual void RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef) override;
 	virtual void RequestPrintDebugData_Implementation(ACauldronAltar* TargetAltar) override;
 	
 	UFUNCTION(Server, Reliable)
-	void Server_RequestSetBaseIngredient(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
+	void Server_RequestSetIngredientInSlot(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
 	
 	
 

@@ -957,6 +957,9 @@ bool UCauldronCraftComponent::SpawnPotionInWorld(const FPotionResult& PotionData
         return false;
     }
 
+    UE_LOG(LogTemp, Log, TEXT("UCauldronCraftComponent::SpawnPotionInWorld: Attempting to spawn at location: %s"), *SpawnLocation.ToString());
+    UE_LOG(LogTemp, Log, TEXT("UCauldronCraftComponent::SpawnPotionInWorld: Cauldron owner location: %s"), *GetOwner()->GetActorLocation().ToString());
+
     // Create the potion definition instance with proper properties
     UWitchPTInventoryItemDefinition* PotionDefinition = CreatePotionItemDefinitionInstance(PotionData);
     if (!PotionDefinition)
@@ -978,11 +981,16 @@ bool UCauldronCraftComponent::SpawnPotionInWorld(const FPotionResult& PotionData
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
     
     APotionBase* PotionActor = World->SpawnActor<APotionBase>(SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+    FItemManifest ItemManifest;
+    ItemManifest.ItemDef = PotionDefinition->GetClass();
+    PotionActor->StaticInventory = ItemManifest;
     if (!PotionActor)
     {
         UE_LOG(LogTemp, Error, TEXT("UCauldronCraftComponent::SpawnPotionInWorld: Failed to spawn PotionBase actor"));
         return false;
     }
+
+    UE_LOG(LogTemp, Log, TEXT("UCauldronCraftComponent::SpawnPotionInWorld: Successfully spawned PotionBase at: %s"), *PotionActor->GetActorLocation().ToString());
 
     // Set up the static mesh from the world details fragment
     const UWitchPTInventoryItemFragment_WorldDetails* WorldDetails = 
@@ -1154,8 +1162,28 @@ FPotionResult UCauldronCraftComponent::CraftPotion(bool bAddToInventory, ACharac
     }
     else
     {
-        // Spawn in world (as ItemDefinition)
-        FVector SpawnLoc = (WorldSpawnLocation != FVector::ZeroVector) ? WorldSpawnLocation : GetOwner()->GetActorLocation();
+        // Calculate spawn location relative to cauldron's current position
+        FVector CauldronLocation = GetOwner()->GetActorLocation();
+        FVector SpawnLoc;
+        
+        if (WorldSpawnLocation != FVector::ZeroVector)
+        {
+            // Use specified location
+            SpawnLoc = WorldSpawnLocation;
+            UE_LOG(LogTemp, Log, TEXT("UCauldronCraftComponent::CraftPotion: Using specified spawn location: %s"), *SpawnLoc.ToString());
+        }
+        else
+        {
+            // Calculate offset from cauldron position (spawn slightly in front and up)
+            FRotator CauldronRotation = GetOwner()->GetActorRotation();
+            FVector ForwardOffset = CauldronRotation.RotateVector(FVector(150.0f, 0.0f, 0.0f)); // 150cm forward
+            FVector UpOffset = FVector(0.0f, 0.0f, 50.0f); // 50cm up
+            SpawnLoc = CauldronLocation + ForwardOffset + UpOffset;
+            
+            UE_LOG(LogTemp, Log, TEXT("UCauldronCraftComponent::CraftPotion: Cauldron location: %s"), *CauldronLocation.ToString());
+            UE_LOG(LogTemp, Log, TEXT("UCauldronCraftComponent::CraftPotion: Calculated spawn location: %s"), *SpawnLoc.ToString());
+        }
+        
         bPotionCreatedSuccessfully = SpawnPotionInWorld(CraftingResult, SpawnLoc);
     }
 
@@ -1281,12 +1309,12 @@ void UCauldronCraftComponent::DebugTestCrafting()
     if (bCanPerform)
     {
         UE_LOG(LogTemp, Warning, TEXT("--- ATTEMPTING WORLD SPAWN CRAFT ---"));
-        FVector SpawnLocation = GetOwner()->GetActorLocation() + FVector(100, 0, 100);
-        FPotionResult CraftResult = CraftPotion(false, nullptr, SpawnLocation);
+        // Use default location calculation (will be calculated relative to cauldron in CraftPotion)
+        FPotionResult CraftResult = CraftPotion(false, nullptr, FVector::ZeroVector);
         
         if (CraftResult.bIsValid)
         {
-            UE_LOG(LogTemp, Warning, TEXT("CRAFTING SUCCESS: Potion definition created and ready for world spawn at %s"), *SpawnLocation.ToString());
+            UE_LOG(LogTemp, Warning, TEXT("CRAFTING SUCCESS: Potion created and spawned near cauldron"));
         }
         else
         {
