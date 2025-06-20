@@ -176,7 +176,7 @@ public:
     // ----------------------------------- DEBUG FUNCTIONS ---------------------------------------------- //
     UFUNCTION(BlueprintCallable, Category = "Debug|Cauldron")
     void PrintCauldronDebugData() const;
-
+    
 private:
     UPROPERTY(Replicated)
     TObjectPtr<ACharacter> CarryingCharacter;

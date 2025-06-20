@@ -1,0 +1,1300 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: Source/LyraGame/Equipment
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+
+
+================================================================
+Directory Structure
+================================================================
+Source/LyraGame/Equipment/LyraEquipmentDefinition.cpp
+Source/LyraGame/Equipment/LyraEquipmentDefinition.h
+Source/LyraGame/Equipment/LyraEquipmentInstance.cpp
+Source/LyraGame/Equipment/LyraEquipmentInstance.h
+Source/LyraGame/Equipment/LyraEquipmentManagerComponent.cpp
+Source/LyraGame/Equipment/LyraEquipmentManagerComponent.h
+Source/LyraGame/Equipment/LyraGameplayAbility_FromEquipment.cpp
+Source/LyraGame/Equipment/LyraGameplayAbility_FromEquipment.h
+Source/LyraGame/Equipment/LyraPickupDefinition.cpp
+Source/LyraGame/Equipment/LyraPickupDefinition.h
+Source/LyraGame/Equipment/LyraQuickBarComponent.cpp
+Source/LyraGame/Equipment/LyraQuickBarComponent.h
+
+================================================================
+Files
+================================================================
+
+================
+File: Source/LyraGame/Equipment/LyraEquipmentDefinition.cpp
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "LyraEquipmentDefinition.h"
+#include "LyraEquipmentInstance.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraEquipmentDefinition)
+
+ULyraEquipmentDefinition::ULyraEquipmentDefinition(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	InstanceType = ULyraEquipmentInstance::StaticClass();
+}
+
+================
+File: Source/LyraGame/Equipment/LyraEquipmentDefinition.h
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "Templates/SubclassOf.h"
+
+#include "LyraEquipmentDefinition.generated.h"
+
+class AActor;
+class ULyraAbilitySet;
+class ULyraEquipmentInstance;
+
+USTRUCT()
+struct FLyraEquipmentActorToSpawn
+{
+	GENERATED_BODY()
+
+	FLyraEquipmentActorToSpawn()
+	{}
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	TSubclassOf<AActor> ActorToSpawn;
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FName AttachSocket;
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FTransform AttachTransform;
+};
+
+
+/**
+ * ULyraEquipmentDefinition
+ *
+ * Definition of a piece of equipment that can be applied to a pawn
+ */
+UCLASS(Blueprintable, Const, Abstract, BlueprintType)
+class ULyraEquipmentDefinition : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	ULyraEquipmentDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	// Class to spawn
+	
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TSubclassOf<ULyraEquipmentInstance> InstanceType;
+
+	// Gameplay ability sets to grant when this is equipped
+	
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TArray<TObjectPtr<const ULyraAbilitySet>> AbilitySetsToGrant;
+	
+
+	// Actors to spawn on the pawn when this is equipped
+	
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TArray<FLyraEquipmentActorToSpawn> ActorsToSpawn;
+};
+
+================
+File: Source/LyraGame/Equipment/LyraEquipmentInstance.cpp
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "LyraEquipmentInstance.h"
+
+#include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/Character.h"
+#include "LyraEquipmentDefinition.h"
+#include "Net/UnrealNetwork.h"
+
+#if UE_WITH_IRIS
+#include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
+#endif // UE_WITH_IRIS
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraEquipmentInstance)
+
+class FLifetimeProperty;
+class UClass;
+class USceneComponent;
+
+ULyraEquipmentInstance::ULyraEquipmentInstance(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
+UWorld* ULyraEquipmentInstance::GetWorld() const
+{
+	if (APawn* OwningPawn = GetPawn())
+	{
+		return OwningPawn->GetWorld();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+void ULyraEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, Instigator);
+	DOREPLIFETIME(ThisClass, SpawnedActors);
+}
+
+#if UE_WITH_IRIS
+void ULyraEquipmentInstance::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+{
+	using namespace UE::Net;
+
+	// Build descriptors and allocate PropertyReplicationFragments for this object
+	FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
+}
+#endif // UE_WITH_IRIS
+
+APawn* ULyraEquipmentInstance::GetPawn() const
+{
+	return Cast<APawn>(GetOuter());
+}
+
+APawn* ULyraEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
+{
+	APawn* Result = nullptr;
+	if (UClass* ActualPawnType = PawnType)
+	{
+		if (GetOuter()->IsA(ActualPawnType))
+		{
+			Result = Cast<APawn>(GetOuter());
+		}
+	}
+	return Result;
+}
+
+void ULyraEquipmentInstance::SpawnEquipmentActors(const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn)
+{
+	if (APawn* OwningPawn = GetPawn())
+	{
+		USceneComponent* AttachTarget = OwningPawn->GetRootComponent();
+		if (ACharacter* Char = Cast<ACharacter>(OwningPawn))
+		{
+			AttachTarget = Char->GetMesh();
+		}
+
+		for (const FLyraEquipmentActorToSpawn& SpawnInfo : ActorsToSpawn)
+		{
+			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnInfo.ActorToSpawn, FTransform::Identity, OwningPawn);
+			NewActor->FinishSpawning(FTransform::Identity, /*bIsDefaultTransform=*/ true);
+			NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
+			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform, SpawnInfo.AttachSocket);
+
+			SpawnedActors.Add(NewActor);
+		}
+	}
+}
+
+void ULyraEquipmentInstance::DestroyEquipmentActors()
+{
+	for (AActor* Actor : SpawnedActors)
+	{
+		if (Actor)
+		{
+			Actor->Destroy();
+		}
+	}
+}
+
+void ULyraEquipmentInstance::OnEquipped()
+{
+	K2_OnEquipped();
+}
+
+void ULyraEquipmentInstance::OnUnequipped()
+{
+	K2_OnUnequipped();
+}
+
+void ULyraEquipmentInstance::OnRep_Instigator()
+{
+}
+
+================
+File: Source/LyraGame/Equipment/LyraEquipmentInstance.h
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "Engine/World.h"
+
+#include "LyraEquipmentInstance.generated.h"
+
+class AActor;
+class APawn;
+struct FFrame;
+struct FLyraEquipmentActorToSpawn;
+
+/**
+ * ULyraEquipmentInstance
+ *
+ * A piece of equipment spawned and applied to a pawn
+ */
+UCLASS(BlueprintType, Blueprintable)
+class ULyraEquipmentInstance : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	ULyraEquipmentInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	//~UObject interface
+	virtual bool IsSupportedForNetworking() const override { return true; }
+	virtual UWorld* GetWorld() const override final;
+	//~End of UObject interface
+
+	UFUNCTION(BlueprintPure, Category=Equipment)
+	UObject* GetInstigator() const { return Instigator; }
+
+	void SetInstigator(UObject* InInstigator) { Instigator = InInstigator; }
+
+	UFUNCTION(BlueprintPure, Category=Equipment)
+	APawn* GetPawn() const;
+
+	UFUNCTION(BlueprintPure, Category=Equipment, meta=(DeterminesOutputType=PawnType))
+	APawn* GetTypedPawn(TSubclassOf<APawn> PawnType) const;
+
+	UFUNCTION(BlueprintPure, Category=Equipment)
+	TArray<AActor*> GetSpawnedActors() const { return SpawnedActors; }
+
+	virtual void SpawnEquipmentActors(const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn);
+	virtual void DestroyEquipmentActors();
+
+	virtual void OnEquipped();
+	virtual void OnUnequipped();
+
+protected:
+#if UE_WITH_IRIS
+	/** Register all replication fragments */
+	virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
+#endif // UE_WITH_IRIS
+
+	UFUNCTION(BlueprintImplementableEvent, Category=Equipment, meta=(DisplayName="OnEquipped"))
+	void K2_OnEquipped();
+
+	UFUNCTION(BlueprintImplementableEvent, Category=Equipment, meta=(DisplayName="OnUnequipped"))
+	void K2_OnUnequipped();
+
+private:
+	UFUNCTION()
+	void OnRep_Instigator();
+
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_Instigator)
+	TObjectPtr<UObject> Instigator;
+
+	UPROPERTY(Replicated)
+	TArray<TObjectPtr<AActor>> SpawnedActors;
+};
+
+================
+File: Source/LyraGame/Equipment/LyraEquipmentManagerComponent.cpp
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "LyraEquipmentManagerComponent.h"
+
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "Engine/ActorChannel.h"
+#include "LyraEquipmentDefinition.h"
+#include "LyraEquipmentInstance.h"
+#include "Net/UnrealNetwork.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraEquipmentManagerComponent)
+
+class FLifetimeProperty;
+struct FReplicationFlags;
+
+//////////////////////////////////////////////////////////////////////
+// FLyraAppliedEquipmentEntry
+
+FString FLyraAppliedEquipmentEntry::GetDebugString() const
+{
+	return FString::Printf(TEXT("%s of %s"), *GetNameSafe(Instance), *GetNameSafe(EquipmentDefinition.Get()));
+}
+
+//////////////////////////////////////////////////////////////////////
+// FLyraEquipmentList
+
+void FLyraEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
+{
+ 	for (int32 Index : RemovedIndices)
+ 	{
+ 		const FLyraAppliedEquipmentEntry& Entry = Entries[Index];
+		if (Entry.Instance != nullptr)
+		{
+			Entry.Instance->OnUnequipped();
+		}
+ 	}
+}
+
+void FLyraEquipmentList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+{
+	for (int32 Index : AddedIndices)
+	{
+		const FLyraAppliedEquipmentEntry& Entry = Entries[Index];
+		if (Entry.Instance != nullptr)
+		{
+			Entry.Instance->OnEquipped();
+		}
+	}
+}
+
+void FLyraEquipmentList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
+{
+// 	for (int32 Index : ChangedIndices)
+// 	{
+// 		const FGameplayTagStack& Stack = Stacks[Index];
+// 		TagToCountMap[Stack.Tag] = Stack.StackCount;
+// 	}
+}
+
+ULyraAbilitySystemComponent* FLyraEquipmentList::GetAbilitySystemComponent() const
+{
+	check(OwnerComponent);
+	AActor* OwningActor = OwnerComponent->GetOwner();
+	return Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor));
+}
+
+ULyraEquipmentInstance* FLyraEquipmentList::AddEntry(TSubclassOf<ULyraEquipmentDefinition> EquipmentDefinition)
+{
+	ULyraEquipmentInstance* Result = nullptr;
+
+	check(EquipmentDefinition != nullptr);
+ 	check(OwnerComponent);
+	check(OwnerComponent->GetOwner()->HasAuthority());
+	
+	const ULyraEquipmentDefinition* EquipmentCDO = GetDefault<ULyraEquipmentDefinition>(EquipmentDefinition);
+
+	TSubclassOf<ULyraEquipmentInstance> InstanceType = EquipmentCDO->InstanceType;
+	if (InstanceType == nullptr)
+	{
+		InstanceType = ULyraEquipmentInstance::StaticClass();
+	}
+	
+	FLyraAppliedEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
+	NewEntry.EquipmentDefinition = EquipmentDefinition;
+	NewEntry.Instance = NewObject<ULyraEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);  //@TODO: Using the actor instead of component as the outer due to UE-127172
+	Result = NewEntry.Instance;
+
+	if (ULyraAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		for (const TObjectPtr<const ULyraAbilitySet>& AbilitySet : EquipmentCDO->AbilitySetsToGrant)
+		{
+			AbilitySet->GiveToAbilitySystem(ASC, /*inout*/ &NewEntry.GrantedHandles, Result);
+		}
+	}
+	else
+	{
+		//@TODO: Warning logging?
+	}
+
+	Result->SpawnEquipmentActors(EquipmentCDO->ActorsToSpawn);
+
+
+	MarkItemDirty(NewEntry);
+
+	return Result;
+}
+
+void FLyraEquipmentList::RemoveEntry(ULyraEquipmentInstance* Instance)
+{
+	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
+	{
+		FLyraAppliedEquipmentEntry& Entry = *EntryIt;
+		if (Entry.Instance == Instance)
+		{
+			if (ULyraAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+			{
+				Entry.GrantedHandles.TakeFromAbilitySystem(ASC);
+			}
+
+			Instance->DestroyEquipmentActors();
+			
+
+			EntryIt.RemoveCurrent();
+			MarkArrayDirty();
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+// ULyraEquipmentManagerComponent
+
+ULyraEquipmentManagerComponent::ULyraEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+	, EquipmentList(this)
+{
+	SetIsReplicatedByDefault(true);
+	bWantsInitializeComponent = true;
+}
+
+void ULyraEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, EquipmentList);
+}
+
+ULyraEquipmentInstance* ULyraEquipmentManagerComponent::EquipItem(TSubclassOf<ULyraEquipmentDefinition> EquipmentClass)
+{
+	ULyraEquipmentInstance* Result = nullptr;
+	if (EquipmentClass != nullptr)
+	{
+		Result = EquipmentList.AddEntry(EquipmentClass);
+		if (Result != nullptr)
+		{
+			Result->OnEquipped();
+			bool bIsUsingRegisteredSubObjectList = IsUsingRegisteredSubObjectList();
+			UE_LOG(LogTemp, Log, TEXT("IsUsingRegisteredSubObjectList: %hhd"), bIsUsingRegisteredSubObjectList);
+			if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
+			{
+				AddReplicatedSubObject(Result);
+			}
+		}
+	}
+	return Result;
+}
+
+void ULyraEquipmentManagerComponent::UnequipItem(ULyraEquipmentInstance* ItemInstance)
+{
+	if (ItemInstance != nullptr)
+	{
+		if (IsUsingRegisteredSubObjectList())
+		{
+			RemoveReplicatedSubObject(ItemInstance);
+		}
+
+		ItemInstance->OnUnequipped();
+		EquipmentList.RemoveEntry(ItemInstance);
+	}
+}
+
+bool ULyraEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	for (FLyraAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		ULyraEquipmentInstance* Instance = Entry.Instance;
+
+		if (IsValid(Instance))
+		{
+			WroteSomething |= Channel->ReplicateSubobject(Instance, *Bunch, *RepFlags);
+		}
+	}
+
+	return WroteSomething;
+}
+
+void ULyraEquipmentManagerComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+}
+
+void ULyraEquipmentManagerComponent::UninitializeComponent()
+{
+	TArray<ULyraEquipmentInstance*> AllEquipmentInstances;
+
+	// gathering all instances before removal to avoid side effects affecting the equipment list iterator	
+	for (const FLyraAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		AllEquipmentInstances.Add(Entry.Instance);
+	}
+
+	for (ULyraEquipmentInstance* EquipInstance : AllEquipmentInstances)
+	{
+		UnequipItem(EquipInstance);
+	}
+
+	Super::UninitializeComponent();
+}
+
+void ULyraEquipmentManagerComponent::ReadyForReplication()
+{
+	Super::ReadyForReplication();
+
+	// Register existing LyraEquipmentInstances
+	if (IsUsingRegisteredSubObjectList())
+	{
+		for (const FLyraAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+		{
+			ULyraEquipmentInstance* Instance = Entry.Instance;
+
+			if (IsValid(Instance))
+			{
+				AddReplicatedSubObject(Instance);
+			}
+		}
+	}
+}
+
+ULyraEquipmentInstance* ULyraEquipmentManagerComponent::GetFirstInstanceOfType(TSubclassOf<ULyraEquipmentInstance> InstanceType)
+{
+	for (FLyraAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		if (ULyraEquipmentInstance* Instance = Entry.Instance)
+		{
+			if (Instance->IsA(InstanceType))
+			{
+				return Instance;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+TArray<ULyraEquipmentInstance*> ULyraEquipmentManagerComponent::GetEquipmentInstancesOfType(TSubclassOf<ULyraEquipmentInstance> InstanceType) const
+{
+	TArray<ULyraEquipmentInstance*> Results;
+	for (const FLyraAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		if (ULyraEquipmentInstance* Instance = Entry.Instance)
+		{
+			if (Instance->IsA(InstanceType))
+			{
+				Results.Add(Instance);
+			}
+		}
+	}
+	return Results;
+}
+
+================
+File: Source/LyraGame/Equipment/LyraEquipmentManagerComponent.h
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "AbilitySystem/LyraAbilitySet.h"
+#include "Components/PawnComponent.h"
+#include "Net/Serialization/FastArraySerializer.h"
+
+#include "LyraEquipmentManagerComponent.generated.h"
+
+class UActorComponent;
+class ULyraAbilitySystemComponent;
+class ULyraEquipmentDefinition;
+class ULyraEquipmentInstance;
+class ULyraEquipmentManagerComponent;
+class UObject;
+struct FFrame;
+struct FLyraEquipmentList;
+struct FNetDeltaSerializeInfo;
+struct FReplicationFlags;
+
+/** A single piece of applied equipment */
+USTRUCT(BlueprintType)
+struct FLyraAppliedEquipmentEntry : public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+
+	FLyraAppliedEquipmentEntry()
+	{}
+
+	FString GetDebugString() const;
+
+private:
+	friend FLyraEquipmentList;
+	friend ULyraEquipmentManagerComponent;
+
+	// The equipment class that got equipped
+	
+	UPROPERTY()
+	TSubclassOf<ULyraEquipmentDefinition> EquipmentDefinition;
+
+	UPROPERTY()
+	TObjectPtr<ULyraEquipmentInstance> Instance = nullptr;
+
+	// Authority-only list of granted handles
+	UPROPERTY(NotReplicated)
+	FLyraAbilitySet_GrantedHandles GrantedHandles;
+};
+
+/** List of applied equipment */
+USTRUCT(BlueprintType)
+struct FLyraEquipmentList : public FFastArraySerializer
+{
+	GENERATED_BODY()
+
+	FLyraEquipmentList()
+		: OwnerComponent(nullptr)
+	{
+	}
+
+	FLyraEquipmentList(UActorComponent* InOwnerComponent)
+		: OwnerComponent(InOwnerComponent)
+	{
+	}
+
+public:
+	//~FFastArraySerializer contract
+	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
+	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
+	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
+	//~End of FFastArraySerializer contract
+
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
+	{
+		return FFastArraySerializer::FastArrayDeltaSerialize<FLyraAppliedEquipmentEntry, FLyraEquipmentList>(Entries, DeltaParms, *this);
+	}
+
+	ULyraEquipmentInstance* AddEntry(TSubclassOf<ULyraEquipmentDefinition> EquipmentDefinition);
+	
+	void RemoveEntry(ULyraEquipmentInstance* Instance);
+
+private:
+	
+	ULyraAbilitySystemComponent* GetAbilitySystemComponent() const;
+
+	friend ULyraEquipmentManagerComponent;
+
+private:
+	// Replicated list of equipment entries
+	
+	UPROPERTY()
+	TArray<FLyraAppliedEquipmentEntry> Entries;
+
+	UPROPERTY(NotReplicated)
+	TObjectPtr<UActorComponent> OwnerComponent;
+};
+
+template<>
+struct TStructOpsTypeTraits<FLyraEquipmentList> : public TStructOpsTypeTraitsBase2<FLyraEquipmentList>
+{
+	enum { WithNetDeltaSerializer = true };
+};
+
+
+/**
+ * Manages equipment applied to a pawn
+ */
+UCLASS(BlueprintType, Const)
+class LYRAGAME_API ULyraEquipmentManagerComponent : public UPawnComponent
+{
+	GENERATED_BODY()
+
+public:
+	ULyraEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	ULyraEquipmentInstance* EquipItem(TSubclassOf<ULyraEquipmentDefinition> EquipmentDefinition);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void UnequipItem(ULyraEquipmentInstance* ItemInstance);
+
+	//~UObject interface
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	//~End of UObject interface
+
+	//~UActorComponent interface
+	//virtual void EndPlay() override;
+	virtual void InitializeComponent() override;
+	virtual void UninitializeComponent() override;
+	virtual void ReadyForReplication() override;
+	//~End of UActorComponent interface
+
+	/** Returns the first equipped instance of a given type, or nullptr if none are found */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	ULyraEquipmentInstance* GetFirstInstanceOfType(TSubclassOf<ULyraEquipmentInstance> InstanceType);
+
+ 	/** Returns all equipped instances of a given type, or an empty array if none are found */
+ 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<ULyraEquipmentInstance*> GetEquipmentInstancesOfType(TSubclassOf<ULyraEquipmentInstance> InstanceType) const;
+
+	template <typename T>
+	T* GetFirstInstanceOfType()
+	{
+		return (T*)GetFirstInstanceOfType(T::StaticClass());
+	}
+
+private:
+	
+	UPROPERTY(Replicated)
+	FLyraEquipmentList EquipmentList;
+};
+
+================
+File: Source/LyraGame/Equipment/LyraGameplayAbility_FromEquipment.cpp
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "LyraGameplayAbility_FromEquipment.h"
+#include "LyraEquipmentInstance.h"
+#include "Inventory/LyraInventoryItemInstance.h"
+
+#if WITH_EDITOR
+#include "Misc/DataValidation.h"
+#endif
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraGameplayAbility_FromEquipment)
+
+ULyraGameplayAbility_FromEquipment::ULyraGameplayAbility_FromEquipment(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
+ULyraEquipmentInstance* ULyraGameplayAbility_FromEquipment::GetAssociatedEquipment() const
+{
+	if (FGameplayAbilitySpec* Spec = UGameplayAbility::GetCurrentAbilitySpec())
+	{
+		return Cast<ULyraEquipmentInstance>(Spec->SourceObject.Get());
+	}
+
+	return nullptr;
+}
+
+ULyraInventoryItemInstance* ULyraGameplayAbility_FromEquipment::GetAssociatedItem() const
+{
+	if (ULyraEquipmentInstance* Equipment = GetAssociatedEquipment())
+	{
+		return Cast<ULyraInventoryItemInstance>(Equipment->GetInstigator());
+	}
+	return nullptr;
+}
+
+
+#if WITH_EDITOR
+EDataValidationResult ULyraGameplayAbility_FromEquipment::IsDataValid(FDataValidationContext& Context) const
+{
+	EDataValidationResult Result = Super::IsDataValid(Context);
+
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+	if (InstancingPolicy == EGameplayAbilityInstancingPolicy::NonInstanced)
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
+	{
+		Context.AddError(NSLOCTEXT("Lyra", "EquipmentAbilityMustBeInstanced", "Equipment ability must be instanced"));
+		Result = EDataValidationResult::Invalid;
+	}
+
+	return Result;
+}
+
+#endif
+
+================
+File: Source/LyraGame/Equipment/LyraGameplayAbility_FromEquipment.h
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "AbilitySystem/Abilities/LyraGameplayAbility.h"
+
+#include "LyraGameplayAbility_FromEquipment.generated.h"
+
+class ULyraEquipmentInstance;
+class ULyraInventoryItemInstance;
+
+/**
+ * ULyraGameplayAbility_FromEquipment
+ *
+ * An ability granted by and associated with an equipment instance
+ */
+UCLASS()
+class ULyraGameplayAbility_FromEquipment : public ULyraGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+
+	ULyraGameplayAbility_FromEquipment(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UFUNCTION(BlueprintCallable, Category="Lyra|Ability")
+	ULyraEquipmentInstance* GetAssociatedEquipment() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Lyra|Ability")
+	ULyraInventoryItemInstance* GetAssociatedItem() const;
+
+#if WITH_EDITOR
+	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
+#endif
+
+};
+
+================
+File: Source/LyraGame/Equipment/LyraPickupDefinition.cpp
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+
+#include "Equipment/LyraPickupDefinition.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraPickupDefinition)
+
+================
+File: Source/LyraGame/Equipment/LyraPickupDefinition.h
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "Engine/DataAsset.h"
+
+#include "LyraPickupDefinition.generated.h"
+
+class ULyraInventoryItemDefinition;
+class UNiagaraSystem;
+class UObject;
+class USoundBase;
+class UStaticMesh;
+
+/**
+ * 
+ */
+UCLASS(Blueprintable, BlueprintType, Const, Meta = (DisplayName = "Lyra Pickup Data", ShortTooltip = "Data asset used to configure a pickup."))
+class LYRAGAME_API ULyraPickupDefinition : public UDataAsset
+{
+	GENERATED_BODY()
+	
+public:
+
+	//Defines the pickup's actors to spawn, abilities to grant, and tags to add
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup|Equipment")
+	TSubclassOf<ULyraInventoryItemDefinition> InventoryItemDefinition;
+
+	//Visual representation of the pickup
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup|Mesh")
+	TObjectPtr<UStaticMesh> DisplayMesh;
+
+	//Cool down time between pickups in seconds
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup")
+	int32 SpawnCoolDownSeconds;
+
+	//Sound to play when picked up
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup")
+	TObjectPtr<USoundBase> PickedUpSound;
+
+	//Sound to play when pickup is respawned
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup")
+	TObjectPtr<USoundBase> RespawnedSound;
+
+	//Particle FX to play when picked up
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup")
+	TObjectPtr<UNiagaraSystem> PickedUpEffect;
+
+	//Particle FX to play when pickup is respawned
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup")
+	TObjectPtr<UNiagaraSystem> RespawnedEffect;
+};
+
+
+UCLASS(Blueprintable, BlueprintType, Const, Meta = (DisplayName = "Lyra Weapon Pickup Data", ShortTooltip = "Data asset used to configure a weapon pickup."))
+class LYRAGAME_API ULyraWeaponPickupDefinition : public ULyraPickupDefinition
+{
+	GENERATED_BODY()
+
+public:
+
+	//Sets the height of the display mesh above the Weapon spawner
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup|Mesh")
+	FVector WeaponMeshOffset;
+
+	//Sets the height of the display mesh above the Weapon spawner
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Pickup|Mesh")
+	FVector WeaponMeshScale = FVector(1.0f, 1.0f, 1.0f);
+};
+
+================
+File: Source/LyraGame/Equipment/LyraQuickBarComponent.cpp
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "LyraQuickBarComponent.h"
+
+#include "Equipment/LyraEquipmentDefinition.h"
+#include "Equipment/LyraEquipmentInstance.h"
+#include "Equipment/LyraEquipmentManagerComponent.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/Pawn.h"
+#include "Inventory/InventoryFragment_EquippableItem.h"
+#include "NativeGameplayTags.h"
+#include "Net/UnrealNetwork.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraQuickBarComponent)
+
+class FLifetimeProperty;
+class ULyraEquipmentDefinition;
+
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_QuickBar_Message_SlotsChanged, "Lyra.QuickBar.Message.SlotsChanged");
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_QuickBar_Message_ActiveIndexChanged, "Lyra.QuickBar.Message.ActiveIndexChanged");
+
+ULyraQuickBarComponent::ULyraQuickBarComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	SetIsReplicatedByDefault(true);
+}
+
+void ULyraQuickBarComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, Slots);
+	DOREPLIFETIME(ThisClass, ActiveSlotIndex);
+}
+
+void ULyraQuickBarComponent::BeginPlay()
+{
+	if (Slots.Num() < NumSlots)
+	{
+		Slots.AddDefaulted(NumSlots - Slots.Num());
+	}
+
+	Super::BeginPlay();
+}
+
+void ULyraQuickBarComponent::CycleActiveSlotForward()
+{
+	if (Slots.Num() < 2)
+	{
+		return;
+	}
+
+	const int32 OldIndex = (ActiveSlotIndex < 0 ? Slots.Num()-1 : ActiveSlotIndex);
+	int32 NewIndex = ActiveSlotIndex;
+	do
+	{
+		NewIndex = (NewIndex + 1) % Slots.Num();
+		if (Slots[NewIndex] != nullptr)
+		{
+			SetActiveSlotIndex(NewIndex);
+			return;
+		}
+	} while (NewIndex != OldIndex);
+}
+
+void ULyraQuickBarComponent::CycleActiveSlotBackward()
+{
+	if (Slots.Num() < 2)
+	{
+		return;
+	}
+
+	const int32 OldIndex = (ActiveSlotIndex < 0 ? Slots.Num()-1 : ActiveSlotIndex);
+	int32 NewIndex = ActiveSlotIndex;
+	do
+	{
+		NewIndex = (NewIndex - 1 + Slots.Num()) % Slots.Num();
+		if (Slots[NewIndex] != nullptr)
+		{
+			SetActiveSlotIndex(NewIndex);
+			return;
+		}
+	} while (NewIndex != OldIndex);
+}
+
+void ULyraQuickBarComponent::EquipItemInSlot()
+{
+	check(Slots.IsValidIndex(ActiveSlotIndex));
+	check(EquippedItem == nullptr);
+
+	if (ULyraInventoryItemInstance* SlotItem = Slots[ActiveSlotIndex])
+	{
+		if (const UInventoryFragment_EquippableItem* EquipInfo = SlotItem->FindFragmentByClass<UInventoryFragment_EquippableItem>())
+		{
+			TSubclassOf<ULyraEquipmentDefinition> EquipDef = EquipInfo->EquipmentDefinition;
+			if (EquipDef != nullptr)
+			{
+				if (ULyraEquipmentManagerComponent* EquipmentManager = FindEquipmentManager())
+				{
+					EquippedItem = EquipmentManager->EquipItem(EquipDef);
+					if (EquippedItem != nullptr)
+					{
+						EquippedItem->SetInstigator(SlotItem);
+					}
+				}
+			}
+		}
+	}
+}
+
+void ULyraQuickBarComponent::UnequipItemInSlot()
+{
+	if (ULyraEquipmentManagerComponent* EquipmentManager = FindEquipmentManager())
+	{
+		if (EquippedItem != nullptr)
+		{
+			EquipmentManager->UnequipItem(EquippedItem);
+			EquippedItem = nullptr;
+		}
+	}
+}
+
+ULyraEquipmentManagerComponent* ULyraQuickBarComponent::FindEquipmentManager() const
+{
+	if (AController* OwnerController = Cast<AController>(GetOwner()))
+	{
+		if (APawn* Pawn = OwnerController->GetPawn())
+		{
+			return Pawn->FindComponentByClass<ULyraEquipmentManagerComponent>();
+		}
+	}
+	return nullptr;
+}
+
+void ULyraQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
+{
+	if (Slots.IsValidIndex(NewIndex) && (ActiveSlotIndex != NewIndex))
+	{
+		UnequipItemInSlot();
+
+		ActiveSlotIndex = NewIndex;
+
+		EquipItemInSlot();
+
+		OnRep_ActiveSlotIndex();
+	}
+}
+
+ULyraInventoryItemInstance* ULyraQuickBarComponent::GetActiveSlotItem() const
+{
+	return Slots.IsValidIndex(ActiveSlotIndex) ? Slots[ActiveSlotIndex] : nullptr;
+}
+
+int32 ULyraQuickBarComponent::GetNextFreeItemSlot() const
+{
+	int32 SlotIndex = 0;
+	for (const TObjectPtr<ULyraInventoryItemInstance>& ItemPtr : Slots)
+	{
+		if (ItemPtr == nullptr)
+		{
+			return SlotIndex;
+		}
+		++SlotIndex;
+	}
+
+	return INDEX_NONE;
+}
+
+void ULyraQuickBarComponent::AddItemToSlot(int32 SlotIndex, ULyraInventoryItemInstance* Item)
+{
+	if (Slots.IsValidIndex(SlotIndex) && (Item != nullptr))
+	{
+		if (Slots[SlotIndex] == nullptr)
+		{
+			Slots[SlotIndex] = Item;
+			OnRep_Slots();
+		}
+	}
+}
+
+ULyraInventoryItemInstance* ULyraQuickBarComponent::RemoveItemFromSlot(int32 SlotIndex)
+{
+	ULyraInventoryItemInstance* Result = nullptr;
+
+	if (ActiveSlotIndex == SlotIndex)
+	{
+		UnequipItemInSlot();
+		ActiveSlotIndex = -1;
+	}
+
+	if (Slots.IsValidIndex(SlotIndex))
+	{
+		Result = Slots[SlotIndex];
+
+		if (Result != nullptr)
+		{
+			Slots[SlotIndex] = nullptr;
+			OnRep_Slots();
+		}
+	}
+
+	return Result;
+}
+
+void ULyraQuickBarComponent::OnRep_Slots()
+{
+	FLyraQuickBarSlotsChangedMessage Message;
+	Message.Owner = GetOwner();
+	Message.Slots = Slots;
+
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
+	MessageSystem.BroadcastMessage(TAG_Lyra_QuickBar_Message_SlotsChanged, Message);
+}
+
+void ULyraQuickBarComponent::OnRep_ActiveSlotIndex()
+{
+	FLyraQuickBarActiveIndexChangedMessage Message;
+	Message.Owner = GetOwner();
+	Message.ActiveIndex = ActiveSlotIndex;
+
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
+	MessageSystem.BroadcastMessage(TAG_Lyra_QuickBar_Message_ActiveIndexChanged, Message);
+}
+
+================
+File: Source/LyraGame/Equipment/LyraQuickBarComponent.h
+================
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "Components/ControllerComponent.h"
+#include "Inventory/LyraInventoryItemInstance.h"
+
+#include "LyraQuickBarComponent.generated.h"
+
+class AActor;
+class ULyraEquipmentInstance;
+class ULyraEquipmentManagerComponent;
+class UObject;
+struct FFrame;
+
+UCLASS(Blueprintable, meta=(BlueprintSpawnableComponent))
+class ULyraQuickBarComponent : public UControllerComponent
+{
+	GENERATED_BODY()
+
+public:
+	ULyraQuickBarComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UFUNCTION(BlueprintCallable, Category="Lyra")
+	void CycleActiveSlotForward();
+
+	UFUNCTION(BlueprintCallable, Category="Lyra")
+	void CycleActiveSlotBackward();
+
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="Lyra")
+	void SetActiveSlotIndex(int32 NewIndex);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false)
+	TArray<ULyraInventoryItemInstance*> GetSlots() const
+	{
+		return Slots;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false)
+	int32 GetActiveSlotIndex() const { return ActiveSlotIndex; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false)
+	ULyraInventoryItemInstance* GetActiveSlotItem() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false)
+	int32 GetNextFreeItemSlot() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void AddItemToSlot(int32 SlotIndex, ULyraInventoryItemInstance* Item);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	ULyraInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
+
+	virtual void BeginPlay() override;
+
+private:
+	void UnequipItemInSlot();
+	void EquipItemInSlot();
+
+	ULyraEquipmentManagerComponent* FindEquipmentManager() const;
+
+protected:
+	UPROPERTY()
+	int32 NumSlots = 3;
+
+	UFUNCTION()
+	void OnRep_Slots();
+
+	UFUNCTION()
+	void OnRep_ActiveSlotIndex();
+
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_Slots, VisibleAnywhere, Category="QuickBar")
+	TArray<TObjectPtr<ULyraInventoryItemInstance>> Slots;
+
+	UPROPERTY(ReplicatedUsing=OnRep_ActiveSlotIndex, VisibleAnywhere, Category="QuickBar")
+	int32 ActiveSlotIndex = -1;
+
+	UPROPERTY(VisibleAnywhere, Category="QuickBar")
+	TObjectPtr<ULyraEquipmentInstance> EquippedItem;
+};
+
+
+USTRUCT(BlueprintType)
+struct FLyraQuickBarSlotsChangedMessage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category=Inventory)
+	TObjectPtr<AActor> Owner = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TArray<TObjectPtr<ULyraInventoryItemInstance>> Slots;
+};
+
+
+USTRUCT(BlueprintType)
+struct FLyraQuickBarActiveIndexChangedMessage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category=Inventory)
+	TObjectPtr<AActor> Owner = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category=Inventory)
+	int32 ActiveIndex = 0;
+};
+
+
+
+
+================================================================
+End of Codebase
+================================================================
