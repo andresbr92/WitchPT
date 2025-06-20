@@ -59,6 +59,9 @@ WitchPT/Private/Character/Components/WitchPTMechanicComponent.cpp
 WitchPT/Private/Character/WitchPTCharacter.cpp
 WitchPT/Private/Character/WitchPTCharacterBase.cpp
 WitchPT/Private/Character/WitchPTEnemy.cpp
+WitchPT/Private/Equipment/WitchPTEquipmentDefinition.cpp
+WitchPT/Private/Equipment/WitchPTEquipmentInstance.cpp
+WitchPT/Private/Equipment/WitchPTEquipmentManagerComponent.cpp
 WitchPT/Private/Game/WitchPTGameModeBase.cpp
 WitchPT/Private/Input/WitchPTInputComponent.cpp
 WitchPT/Private/Input/WitchPTInputConfig.cpp
@@ -123,6 +126,9 @@ WitchPT/Public/Character/Components/WitchPTMechanicComponent.h
 WitchPT/Public/Character/WitchPTCharacter.h
 WitchPT/Public/Character/WitchPTCharacterBase.h
 WitchPT/Public/Character/WitchPTEnemy.h
+WitchPT/Public/Equipment/WitchPTEquipmentDefinition.h
+WitchPT/Public/Equipment/WitchPTEquipmentInstance.h
+WitchPT/Public/Equipment/WitchPTEquipmentManagerComponent.h
 WitchPT/Public/FWitchPTGameplayTags.cpp
 WitchPT/Public/FWitchPTGameplayTags.h
 WitchPT/Public/Game/WitchPTGameModeBase.h
@@ -2399,6 +2405,7 @@ void UWitchPTMechanicComponent::RequestRitualInput_Implementation(ARitualAltar* 
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAttributeSet.h"
 #include "Character/Components/WitchPTMechanicComponent.h"
+#include "Equipment/WitchPTEquipmentManagerComponent.h"
 #include "Item/RitualAltar.h"
 #include "Item/RitualPosition.h"
 #include "Player/WitchPTPlayerController.h"
@@ -2414,6 +2421,8 @@ AWitchPTCharacter::AWitchPTCharacter(const class FObjectInitializer& ObjectIniti
 	PrimaryActorTick.bCanEverTick = true;
 	// Initialize the MechanicComponent
 	MechanicComponent = CreateDefaultSubobject<UWitchPTMechanicComponent>(TEXT("MechanicComponent"));
+	// Initialize the EquipmentManagerComponent
+	EquipmentManagerComponent = CreateDefaultSubobject<UWitchPTEquipmentManagerComponent>(TEXT("EquipmentManagerComponent"));
 	
 }
 
@@ -2701,6 +2710,141 @@ void AWitchPTEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	// Test commit again
+}
+</file>
+
+<file path="WitchPT/Private/Equipment/WitchPTEquipmentDefinition.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Equipment/WitchPTEquipmentDefinition.h"
+
+#include "Equipment/WitchPTEquipmentInstance.h"
+
+UWitchPTEquipmentDefinition::UWitchPTEquipmentDefinition(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	InstanceType = UWitchPTEquipmentInstance::StaticClass();
+}
+</file>
+
+<file path="WitchPT/Private/Equipment/WitchPTEquipmentInstance.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Equipment/WitchPTEquipmentInstance.h"
+
+UWitchPTEquipmentInstance::UWitchPTEquipmentInstance(const FObjectInitializer& ObjectInitializer)
+{
+}
+
+void UWitchPTEquipmentInstance::OnEquipped()
+{
+	UE_LOG(LogTemp, Warning, TEXT("✅ EQUIPPED: %s"), *GetClass()->GetName());
+	K2_OnEquipped();
+}
+
+void UWitchPTEquipmentInstance::OnUnequipped()
+{
+	UE_LOG(LogTemp, Warning, TEXT("❌ UNEQUIPPED: %s"), *GetClass()->GetName());
+	K2_OnUnequipped();
+}
+
+APawn* UWitchPTEquipmentInstance::GetPawn() const
+{
+	return Cast<APawn>(GetOuter());
+}
+</file>
+
+<file path="WitchPT/Private/Equipment/WitchPTEquipmentManagerComponent.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Equipment/WitchPTEquipmentManagerComponent.h"
+
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "Equipment/WitchPTEquipmentDefinition.h"
+#include "Equipment/WitchPTEquipmentInstance.h"
+
+
+// Sets default values for this component's properties
+UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent()
+{
+	
+}
+
+UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::EquipItem(
+	TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+{
+	if (!EquipmentDefinition) return nullptr;
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	if (!OwnerPawn) return nullptr;
+	const UWitchPTEquipmentDefinition* EquipmentCDO = GetDefault<UWitchPTEquipmentDefinition>(EquipmentDefinition);
+	TSubclassOf<UWitchPTEquipmentInstance> InstanceType = EquipmentCDO->InstanceType;
+	if (!InstanceType) InstanceType = UWitchPTEquipmentInstance::StaticClass();
+	UWitchPTEquipmentInstance* NewInstance = NewObject<UWitchPTEquipmentInstance>(OwnerPawn, InstanceType);
+	EquippedItems.Add(NewInstance);
+	NewInstance->OnEquipped();
+
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		FEquipmentAbilityHandles& AbilityHandles = EquipmentAbilities.Add(NewInstance);
+		for (TSubclassOf<UGameplayAbility> AbilityClass : EquipmentCDO->AbilitiesToGrant)
+		{
+			if (AbilityClass)
+			{
+				FGameplayAbilitySpec AbilitySpec(AbilityClass, 1, INDEX_NONE, NewInstance);
+				FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(AbilitySpec);
+				AbilityHandles.GrantedHandles.Add(SpecHandle);
+				UE_LOG(LogTemp, Warning, TEXT("🎯 Granted ability: %s"), *AbilityClass->GetName());
+			}
+		}
+		
+	}
+    
+	return NewInstance;
+}
+
+void UWitchPTEquipmentManagerComponent::UnequipItem(UWitchPTEquipmentInstance* ItemInstance)
+{
+	if (!ItemInstance) return;
+    
+	ItemInstance->OnUnequipped();
+	EquippedItems.Remove(ItemInstance);
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		if (FEquipmentAbilityHandles* AbilityHandles = EquipmentAbilities.Find(ItemInstance))
+		{
+			for (const FGameplayAbilitySpecHandle& Handle : AbilityHandles->GrantedHandles)
+			{
+				if (Handle.IsValid())
+				{
+					ASC->ClearAbility(Handle);
+					UE_LOG(LogTemp, Warning, TEXT("🚫 Removed ability"));
+				}
+			}
+			EquipmentAbilities.Remove(ItemInstance);
+		}
+	}
+}
+
+void UWitchPTEquipmentManagerComponent::PrintEquippedItems()
+{
+	UE_LOG(LogTemp, Warning, TEXT("📦 EQUIPPED ITEMS: %d total"), EquippedItems.Num());
+	for (int32 i = 0; i < EquippedItems.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("  [%d]: %s"), i, EquippedItems[i] ? *EquippedItems[i]->GetClass()->GetName() : TEXT("NULL"));
+	}
+}
+
+UAbilitySystemComponent* UWitchPTEquipmentManagerComponent::GetAbilitySystemComponent() const
+{
+	if (APawn* OwnerPawn = Cast<APawn>(GetOwner()))
+	{
+		return UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerPawn);
+	}
+	return nullptr;
 }
 </file>
 
@@ -9539,6 +9683,7 @@ public:
 #include "UObject/ConstructorHelpers.h"
 #include "WitchPTCharacter.generated.h"
 
+class UWitchPTEquipmentManagerComponent;
 class UWitchPTMechanicComponent;
 class ACauldronAltar;
 class ARitualPosition;
@@ -9557,15 +9702,9 @@ public:
 	virtual void InitAbilityActorInfo() override;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UWitchPTMechanicComponent> MechanicComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UWitchPTEquipmentManagerComponent> EquipmentManagerComponent;
 	
-
-	
-
-
-
-
-	
-
 
 };
 </file>
@@ -9701,6 +9840,134 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+};
+</file>
+
+<file path="WitchPT/Public/Equipment/WitchPTEquipmentDefinition.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
+#include "WitchPTEquipmentDefinition.generated.h"
+
+class UWitchPTEquipmentInstance;
+class UGameplayAbility;
+/**
+ * 
+ */
+
+
+/**
+ * UWitchPTEquipmentDefinition
+ * Definition of a piece of equipment that can be applied to a pawn
+ */
+UCLASS(Blueprintable, BlueprintType)
+class WITCHPT_API UWitchPTEquipmentDefinition : public UObject
+{
+	GENERATED_BODY()
+public:
+	UWitchPTEquipmentDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	// Class to spawn for equipment instance
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TSubclassOf<UWitchPTEquipmentInstance> InstanceType;
+
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TArray<TSubclassOf<UGameplayAbility>> AbilitiesToGrant;
+};
+</file>
+
+<file path="WitchPT/Public/Equipment/WitchPTEquipmentInstance.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
+#include "WitchPTEquipmentInstance.generated.h"
+
+/**
+ * 
+ */
+UCLASS(BlueprintType, Blueprintable)
+class WITCHPT_API UWitchPTEquipmentInstance : public UObject
+{
+	GENERATED_BODY()
+public:
+	UWitchPTEquipmentInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	
+
+	// Equipment lifecycle
+	virtual void OnEquipped();
+	virtual void OnUnequipped();
+
+	UFUNCTION(BlueprintPure, Category=Equipment)
+	APawn* GetPawn() const;
+protected:
+	UFUNCTION(BlueprintImplementableEvent, Category=Equipment)
+	void K2_OnEquipped();
+    
+	UFUNCTION(BlueprintImplementableEvent, Category=Equipment)
+	void K2_OnUnequipped();
+
+	
+};
+</file>
+
+<file path="WitchPT/Public/Equipment/WitchPTEquipmentManagerComponent.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "WitchPTEquipmentManagerComponent.generated.h"
+
+
+class UAbilitySystemComponent;
+struct FGameplayAbilitySpecHandle;
+class UWitchPTEquipmentDefinition;
+class UWitchPTEquipmentInstance;
+
+USTRUCT()
+struct FEquipmentAbilityHandles
+{
+	GENERATED_BODY()
+	TArray<FGameplayAbilitySpecHandle> GrantedHandles;
+};
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class WITCHPT_API UWitchPTEquipmentManagerComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this component's properties
+	UWitchPTEquipmentManagerComponent();
+
+	UFUNCTION(BlueprintCallable, Category="Equipment")
+	UWitchPTEquipmentInstance* EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
+
+	UFUNCTION(BlueprintCallable, Category="Equipment")
+	void UnequipItem(UWitchPTEquipmentInstance* ItemInstance);
+
+	UFUNCTION(BlueprintCallable, Category="Equipment")
+	void PrintEquippedItems();
+
+protected:
+	UPROPERTY(VisibleAnywhere, Category="Equipment")
+	TArray<TObjectPtr<UWitchPTEquipmentInstance>> EquippedItems;
+
+	// Add after EquippedItems:
+	UPROPERTY()
+	TMap<TObjectPtr<UWitchPTEquipmentInstance>, FEquipmentAbilityHandles> EquipmentAbilities;
+
+private:
+	UAbilitySystemComponent* GetAbilitySystemComponent() const;
+
+
 };
 </file>
 
@@ -11338,7 +11605,7 @@ public:
     // ----------------------------------- DEBUG FUNCTIONS ---------------------------------------------- //
     UFUNCTION(BlueprintCallable, Category = "Debug|Cauldron")
     void PrintCauldronDebugData() const;
-
+    
 private:
     UPROPERTY(Replicated)
     TObjectPtr<ACharacter> CarryingCharacter;

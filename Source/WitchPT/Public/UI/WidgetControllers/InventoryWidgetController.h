@@ -6,6 +6,7 @@
 #include "WitchPTWidgetController.h"
 #include "InventoryWidgetController.generated.h"
 
+class UWitchPTInventoryItemInstance;
 /**
  * 
  */
@@ -29,6 +30,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
+	void EquipItem(UWitchPTInventoryItemInstance* ItemInstance);
 
 	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnItemAddedSignature OnItemAddedDelegate;

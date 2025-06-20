@@ -595,6 +595,19 @@ void TestInventoryEquipment()
 
 ## Goal: Make equipment system work in multiplayer
 
+## Networking Requirements
+Equipment systems need replication because:
+- **Equipment instances** must exist on all clients for visual effects, animations, and UI
+- **Equipment manager state** needs to sync so all players see what others have equipped
+- **Server authority** prevents cheating (only server can actually equip/unequip items)
+- **Ability replication** ensures abilities granted by equipment work correctly across network
+
+## Key Concepts
+- **Equipment Instance Replication**: Each equipped item becomes a replicated object
+- **Authority Checks**: Only server can modify equipment state (equip/unequip)
+- **Client Prediction**: Clients can show immediate visual feedback while waiting for server confirmation
+- **Subobject Replication**: Equipment instances are subobjects of the character, need special handling
+
 ### Step 21: Add Replication to Equipment Instance
 
 **Update**: `Source/WitchPT/Public/Equipment/WitchPTEquipmentInstance.h`
@@ -672,6 +685,8 @@ struct FWitchPTEquipmentEntry : public FFastArraySerializerItem
 
     // Non-replicated ability handles
     FEquipmentAbilityHandles AbilityHandles;
+    
+    FString GetDebugString() const;
 };
 
 USTRUCT(BlueprintType)
@@ -696,11 +711,16 @@ struct FWitchPTEquipmentList : public FFastArraySerializer
     UWitchPTEquipmentInstance* AddEntry(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
     void RemoveEntry(UWitchPTEquipmentInstance* Instance);
 
+private:
+    UAbilitySystemComponent* GetAbilitySystemComponent() const;
+
     UPROPERTY()
     TArray<FWitchPTEquipmentEntry> Entries;
 
     UPROPERTY(NotReplicated)
     TObjectPtr<UActorComponent> OwnerComponent;
+    
+    friend UWitchPTEquipmentManagerComponent;
 };
 
 // Add template specialization:
@@ -710,46 +730,319 @@ struct TStructOpsTypeTraits<FWitchPTEquipmentList> : public TStructOpsTypeTraits
     enum { WithNetDeltaSerializer = true };
 };
 
-// Update component:
-// Add to constructor:
-SetIsReplicatedByDefault(true);
+// Update component constructor:
+UWitchPTEquipmentManagerComponent() : EquipmentList(this) { SetIsReplicatedByDefault(true); }
 
 // Replace EquippedItems with:
 UPROPERTY(Replicated)
 FWitchPTEquipmentList EquipmentList;
 
+// Remove old EquipmentAbilities map and EquippedItems array
+
 // Add networking functions:
 virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 virtual void ReadyForReplication() override;
+virtual void InitializeComponent() override;
+virtual void UninitializeComponent() override;
+
+// Add utility functions:
+UFUNCTION(BlueprintCallable, BlueprintPure)
+UWitchPTEquipmentInstance* GetFirstInstanceOfType(TSubclassOf<UWitchPTEquipmentInstance> InstanceType);
+
+UFUNCTION(BlueprintCallable, BlueprintPure)
+TArray<UWitchPTEquipmentInstance*> GetEquipmentInstancesOfType(TSubclassOf<UWitchPTEquipmentInstance> InstanceType) const;
 ```
 
-### Step 23: Implement Fast Array Logic
+### Step 23: Implement Complete Fast Array Logic
 
-This is getting complex - let's implement a simplified version first:
-
-**Simplified Update**: Just add basic replication to equipment manager:
+**Update**: `Source/WitchPT/Private/Equipment/WitchPTEquipmentManagerComponent.cpp`
 ```cpp
-// In constructor:
-UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent()
+// Add includes:
+#include "Engine/ActorChannel.h"
+#include "AbilitySystemGlobals.h"
+
+//////////////////////////////////////////////////////////////////////
+// FWitchPTEquipmentEntry
+
+FString FWitchPTEquipmentEntry::GetDebugString() const
+{
+    return FString::Printf(TEXT("%s of %s"), *GetNameSafe(Instance), *GetNameSafe(EquipmentDefinition.Get()));
+}
+
+//////////////////////////////////////////////////////////////////////
+// FWitchPTEquipmentList
+
+void FWitchPTEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
+{
+    for (int32 Index : RemovedIndices)
+    {
+        const FWitchPTEquipmentEntry& Entry = Entries[Index];
+        if (Entry.Instance != nullptr)
+        {
+            Entry.Instance->OnUnequipped();
+        }
+    }
+}
+
+void FWitchPTEquipmentList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+{
+    for (int32 Index : AddedIndices)
+    {
+        const FWitchPTEquipmentEntry& Entry = Entries[Index];
+        if (Entry.Instance != nullptr)
+        {
+            Entry.Instance->OnEquipped();
+        }
+    }
+}
+
+void FWitchPTEquipmentList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
+{
+    // Handle any changes to existing entries if needed
+}
+
+UAbilitySystemComponent* FWitchPTEquipmentList::GetAbilitySystemComponent() const
+{
+    check(OwnerComponent);
+    AActor* OwningActor = OwnerComponent->GetOwner();
+    return Cast<UAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor));
+}
+
+UWitchPTEquipmentInstance* FWitchPTEquipmentList::AddEntry(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+{
+    UWitchPTEquipmentInstance* Result = nullptr;
+
+    check(EquipmentDefinition != nullptr);
+    check(OwnerComponent);
+    check(OwnerComponent->GetOwner()->HasAuthority());
+    
+    const UWitchPTEquipmentDefinition* EquipmentCDO = GetDefault<UWitchPTEquipmentDefinition>(EquipmentDefinition);
+
+    TSubclassOf<UWitchPTEquipmentInstance> InstanceType = EquipmentCDO->InstanceType;
+    if (InstanceType == nullptr)
+    {
+        InstanceType = UWitchPTEquipmentInstance::StaticClass();
+    }
+    
+    FWitchPTEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
+    NewEntry.EquipmentDefinition = EquipmentDefinition;
+    NewEntry.Instance = NewObject<UWitchPTEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);
+    Result = NewEntry.Instance;
+
+    // Grant abilities
+    if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+    {
+        for (TSubclassOf<UGameplayAbility> AbilityClass : EquipmentCDO->AbilitiesToGrant)
+        {
+            if (AbilityClass)
+            {
+                FGameplayAbilitySpec AbilitySpec(AbilityClass, 1, INDEX_NONE, Result);
+                FGameplayAbilitySpecHandle Handle = ASC->GiveAbility(AbilitySpec);
+                NewEntry.AbilityHandles.GrantedHandles.Add(Handle);
+                UE_LOG(LogTemp, Warning, TEXT("🎯 Granted ability: %s"), *AbilityClass->GetName());
+            }
+        }
+    }
+
+    MarkItemDirty(NewEntry);
+    return Result;
+}
+
+void FWitchPTEquipmentList::RemoveEntry(UWitchPTEquipmentInstance* Instance)
+{
+    for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
+    {
+        FWitchPTEquipmentEntry& Entry = *EntryIt;
+        if (Entry.Instance == Instance)
+        {
+            // Remove abilities
+            if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+            {
+                for (const FGameplayAbilitySpecHandle& Handle : Entry.AbilityHandles.GrantedHandles)
+                {
+                    if (Handle.IsValid())
+                    {
+                        ASC->ClearAbility(Handle);
+                        UE_LOG(LogTemp, Warning, TEXT("🚫 Removed ability"));
+                    }
+                }
+            }
+
+            EntryIt.RemoveCurrent();
+            MarkArrayDirty();
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////
+// UWitchPTEquipmentManagerComponent
+
+UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer)
+    : Super(ObjectInitializer)
+    , EquipmentList(this)
 {
     PrimaryComponentTick.bCanEverTick = false;
     SetIsReplicatedByDefault(true);
+    bWantsInitializeComponent = true;
 }
 
-// Add replication:
 void UWitchPTEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ThisClass, EquippedItems);
+    DOREPLIFETIME(ThisClass, EquipmentList);
 }
 
-// Add authority checks to EquipItem and UnequipItem:
-// At start of EquipItem:
-if (!GetOwner()->HasAuthority()) return nullptr;
+UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+{
+    UWitchPTEquipmentInstance* Result = nullptr;
+    if (EquipmentDefinition != nullptr)
+    {
+        if (!GetOwner()->HasAuthority()) return nullptr;
+        
+        Result = EquipmentList.AddEntry(EquipmentDefinition);
+        if (Result != nullptr)
+        {
+            Result->OnEquipped();
+            
+            if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
+            {
+                AddReplicatedSubObject(Result);
+            }
+        }
+    }
+    return Result;
+}
 
-// At start of UnequipItem:
-if (!GetOwner()->HasAuthority()) return;
+void UWitchPTEquipmentManagerComponent::UnequipItem(UWitchPTEquipmentInstance* ItemInstance)
+{
+    if (ItemInstance != nullptr)
+    {
+        if (!GetOwner()->HasAuthority()) return;
+        
+        if (IsUsingRegisteredSubObjectList())
+        {
+            RemoveReplicatedSubObject(ItemInstance);
+        }
+
+        ItemInstance->OnUnequipped();
+        EquipmentList.RemoveEntry(ItemInstance);
+    }
+}
+
+bool UWitchPTEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+    bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+    for (FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+    {
+        UWitchPTEquipmentInstance* Instance = Entry.Instance;
+        if (IsValid(Instance))
+        {
+            WroteSomething |= Channel->ReplicateSubobject(Instance, *Bunch, *RepFlags);
+        }
+    }
+
+    return WroteSomething;
+}
+
+void UWitchPTEquipmentManagerComponent::InitializeComponent()
+{
+    Super::InitializeComponent();
+}
+
+void UWitchPTEquipmentManagerComponent::UninitializeComponent()
+{
+    TArray<UWitchPTEquipmentInstance*> AllEquipmentInstances;
+
+    // Gather all instances before removal to avoid side effects affecting the equipment list iterator    
+    for (const FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+    {
+        AllEquipmentInstances.Add(Entry.Instance);
+    }
+
+    for (UWitchPTEquipmentInstance* EquipInstance : AllEquipmentInstances)
+    {
+        UnequipItem(EquipInstance);
+    }
+
+    Super::UninitializeComponent();
+}
+
+void UWitchPTEquipmentManagerComponent::ReadyForReplication()
+{
+    Super::ReadyForReplication();
+
+    // Register existing equipment instances
+    if (IsUsingRegisteredSubObjectList())
+    {
+        for (const FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+        {
+            UWitchPTEquipmentInstance* Instance = Entry.Instance;
+            if (IsValid(Instance))
+            {
+                AddReplicatedSubObject(Instance);
+            }
+        }
+    }
+}
+
+UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::GetFirstInstanceOfType(TSubclassOf<UWitchPTEquipmentInstance> InstanceType)
+{
+    for (FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+    {
+        if (UWitchPTEquipmentInstance* Instance = Entry.Instance)
+        {
+            if (Instance->IsA(InstanceType))
+            {
+                return Instance;
+            }
+        }
+    }
+    return nullptr;
+}
+
+TArray<UWitchPTEquipmentInstance*> UWitchPTEquipmentManagerComponent::GetEquipmentInstancesOfType(TSubclassOf<UWitchPTEquipmentInstance> InstanceType) const
+{
+    TArray<UWitchPTEquipmentInstance*> Results;
+    for (const FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+    {
+        if (UWitchPTEquipmentInstance* Instance = Entry.Instance)
+        {
+            if (Instance->IsA(InstanceType))
+            {
+                Results.Add(Instance);
+            }
+        }
+    }
+    return Results;
+}
+
+// Update inventory integration functions to use EquipmentList:
+UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::FindEquipmentByInventoryItem(UWitchPTInventoryItemInstance* InventoryItem) const
+{
+    for (const FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+    {
+        if (UWitchPTEquipmentInstance* Equipment = Entry.Instance)
+        {
+            if (Equipment && Equipment->GetInstigator() == InventoryItem)
+            {
+                return Equipment;
+            }
+        }
+    }
+    return nullptr;
+}
+
+void UWitchPTEquipmentManagerComponent::PrintEquippedItems()
+{
+    UE_LOG(LogTemp, Warning, TEXT("📦 EQUIPPED ITEMS: %d total"), EquipmentList.Entries.Num());
+    for (int32 i = 0; i < EquipmentList.Entries.Num(); i++)
+    {
+        const FWitchPTEquipmentEntry& Entry = EquipmentList.Entries[i];
+        UE_LOG(LogTemp, Warning, TEXT("  [%d]: %s"), i, Entry.Instance ? *Entry.Instance->GetClass()->GetName() : TEXT("NULL"));
+    }
+}
 ```
 
 ### Step 24: Test Networking

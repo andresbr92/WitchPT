@@ -8,9 +8,22 @@
 
 class UWitchPTEquipmentInstance;
 class UGameplayAbility;
-/**
- * 
- */
+
+USTRUCT()
+struct FWitchPTEquipmentActorToSpawn
+{
+	GENERATED_BODY()
+	FWitchPTEquipmentActorToSpawn() {};
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	TSubclassOf<AActor> ActorToSpawn;
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FName AttachSocket;
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FTransform AttachTransform;
+};
 
 
 /**
@@ -30,4 +43,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category=Equipment)
 	TArray<TSubclassOf<UGameplayAbility>> AbilitiesToGrant;
+
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TArray<FWitchPTEquipmentActorToSpawn> ActorsToSpawn;
 };

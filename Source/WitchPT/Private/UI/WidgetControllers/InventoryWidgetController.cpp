@@ -3,9 +3,15 @@
 
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 
+#include "Equipment/WitchPTEquipmentManagerComponent.h"
+#include "GameFramework/Character.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
+
+class UWitchPTEquipmentInstance;
+class UWitchPTEquipmentManagerComponent;
 
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
@@ -61,5 +67,35 @@ void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* 
 	{
 		// Otherwise, reduce the stack count by the requested amount
 		InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
+	}
+}
+
+void UInventoryWidgetController::EquipItem(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (ItemInstance)
+	{
+		ACharacter* OwningCharacter = Cast<ACharacter>(PlayerController->GetPawn());
+		if (OwningCharacter)
+		{
+			UWitchPTEquipmentManagerComponent* EquipmentManager = OwningCharacter->FindComponentByClass<UWitchPTEquipmentManagerComponent>();
+			if (EquipmentManager)
+			{
+				UWitchPTEquipmentInstance* EquipmentInstance = EquipmentManager->FindEquipmentByInventoryItem(ItemInstance);
+				if (EquipmentInstance)
+				{
+					EquipmentManager->UnequipItem(EquipmentInstance);
+				}
+				else
+				{
+					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass());
+					const UWitchPTInventoryItemFragment_EquippableItem* EquippableFragment = Cast<const UWitchPTInventoryItemFragment_EquippableItem>(BaseFragment);
+					EquipmentManager->EquipItem(EquippableFragment->EquipmentDefinition);
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Owning character is not a valid ACharacter instance."));
+		}
 	}
 }

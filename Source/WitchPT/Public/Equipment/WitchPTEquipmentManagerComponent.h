@@ -3,21 +3,81 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "Components/ActorComponent.h"
+#include "Net/Serialization/FastArraySerializer.h"
 #include "WitchPTEquipmentManagerComponent.generated.h"
 
 
+class UWitchPTEquipmentManagerComponent;
+class UWitchPTInventoryItemInstance;
 class UAbilitySystemComponent;
-struct FGameplayAbilitySpecHandle;
 class UWitchPTEquipmentDefinition;
 class UWitchPTEquipmentInstance;
-
 USTRUCT()
 struct FEquipmentAbilityHandles
 {
 	GENERATED_BODY()
 	TArray<FGameplayAbilitySpecHandle> GrantedHandles;
 };
+
+USTRUCT(BlueprintType)
+struct FWitchPTEquipmentEntry: public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+	FWitchPTEquipmentEntry() {};
+
+	UPROPERTY()
+	TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition;
+
+	UPROPERTY()
+	TObjectPtr<UWitchPTEquipmentInstance> Instance = nullptr;
+
+	FEquipmentAbilityHandles AbilityHandles;
+};
+
+USTRUCT(BlueprintType)
+struct FWitchPTEquipmentList : public FFastArraySerializer
+{
+	GENERATED_BODY()
+
+	FWitchPTEquipmentList() : OwnerComponent(nullptr) {}
+	FWitchPTEquipmentList(UActorComponent* InOwnerComponent) : OwnerComponent(InOwnerComponent) {}
+
+	//~FFastArraySerializer contract
+	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
+	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
+	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
+	//~End of FFastArraySerializer contract
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
+	{
+		return FFastArraySerializer::FastArrayDeltaSerialize<FWitchPTEquipmentEntry, FWitchPTEquipmentList>(Entries, DeltaParms, *this);
+	}
+
+	
+
+	UWitchPTEquipmentInstance* AddEntry(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
+	void RemoveEntry(UWitchPTEquipmentInstance* Instance);
+
+private:
+	UAbilitySystemComponent* GetAbilitySystemComponent() const;
+
+	UPROPERTY()
+	TArray<FWitchPTEquipmentEntry> Entries;
+
+	UPROPERTY(NotReplicated)
+	TObjectPtr<UActorComponent> OwnerComponent;
+    
+	friend UWitchPTEquipmentManagerComponent;
+};
+
+// Add template specialization:
+template<>
+struct TStructOpsTypeTraits<FWitchPTEquipmentList> : public TStructOpsTypeTraitsBase2<FWitchPTEquipmentList>
+{
+	enum { WithNetDeltaSerializer = true };
+};
+
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class WITCHPT_API UWitchPTEquipmentManagerComponent : public UActorComponent
@@ -26,20 +86,37 @@ class WITCHPT_API UWitchPTEquipmentManagerComponent : public UActorComponent
 
 public:
 	// Sets default values for this component's properties
-	UWitchPTEquipmentManagerComponent();
+	UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	//~UActorComponent interface
+	//virtual void EndPlay() override;
+	virtual void InitializeComponent() override;
+	virtual void UninitializeComponent() override;
+	virtual void ReadyForReplication() override;
+	//~End of UActorComponent interface
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	UWitchPTEquipmentInstance* EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void UnequipItem(UWitchPTEquipmentInstance* ItemInstance);
+	
+
+	UFUNCTION(BlueprintPure, Category="Equipment")
+	bool IsInventoryItemEquipped(UWitchPTInventoryItemInstance* InventoryItem) const;
+
+	UFUNCTION(BlueprintPure, Category="Equipment")
+	UWitchPTEquipmentInstance* FindEquipmentByInventoryItem(UWitchPTInventoryItemInstance* InventoryItem) const;
+	
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void PrintEquippedItems();
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category="Equipment")
-	TArray<TObjectPtr<UWitchPTEquipmentInstance>> EquippedItems;
+	UPROPERTY(Replicated)
+	FWitchPTEquipmentList EquipmentList;
 
 	// Add after EquippedItems:
 	UPROPERTY()
