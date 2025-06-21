@@ -23,18 +23,7 @@ void UWitchPTMechanicComponent::GetLifetimeReplicatedProps(TArray<class FLifetim
 	// Agregar propiedades replicadas aquí si es necesario
 }
 
-// Called when the game starts
-void UWitchPTMechanicComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
 
-// Called every frame
-void UWitchPTMechanicComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
 
 // --- RITUAL IMPLEMENTATION ---
 void UWitchPTMechanicComponent::RequestStartBrewingPotion_Implementation(ACauldronAltar* TargetAltar)
@@ -183,8 +172,23 @@ void UWitchPTMechanicComponent::RequestPrintDebugData_Implementation(ACauldronAl
 	}
 }
 
+void UWitchPTMechanicComponent::RequestCraftPotion_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		TargetAltar->CauldronCraftComponent->CraftPotion(false, Character, TargetAltar->GetActorLocation());
+	}
+	else
+	{
+		Server_RequestCraftPotion(TargetAltar);
+	}
+	
+}
+
 void UWitchPTMechanicComponent::Server_RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
-                                                                               TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
+                                                                                 TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
@@ -216,6 +220,13 @@ void UWitchPTMechanicComponent::RequestUnOccupyPositionInRitual_Implementation(A
 		TargetAltar->UnoccupyPosition(Character, Position);
 	}
 	
+}
+
+void UWitchPTMechanicComponent::Server_RequestCraftPotion_Implementation(ACauldronAltar* TargetAltar)
+{
+	if (!TargetAltar) return;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	TargetAltar->CauldronCraftComponent->CraftPotion(false, Character, TargetAltar->GetActorLocation());
 }
 
 void UWitchPTMechanicComponent::RequestStartRitual_Implementation(ARitualAltar* TargetAltar)

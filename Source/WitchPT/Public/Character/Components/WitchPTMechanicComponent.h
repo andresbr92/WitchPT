@@ -30,9 +30,12 @@ public:
 	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
 	virtual void RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef) override;
 	virtual void RequestPrintDebugData_Implementation(ACauldronAltar* TargetAltar) override;
+	virtual void RequestCraftPotion_Implementation(ACauldronAltar* TargetAltar) override;
 	
 	UFUNCTION(Server, Reliable)
 	void Server_RequestSetIngredientInSlot(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
+	UFUNCTION(Server, Reliable)
+	void Server_RequestCraftPotion(ACauldronAltar* TargetAltar);
 	
 	
 
@@ -43,15 +46,4 @@ public:
 	virtual void RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position) override;
 	virtual void RequestUnOccupyPositionInRitual_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position) override;
 	
-
-	
-
-protected:
-
-	
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

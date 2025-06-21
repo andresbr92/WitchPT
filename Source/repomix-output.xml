@@ -69,6 +69,7 @@ WitchPT/Private/Inventory/Collectable.cpp
 WitchPT/Private/Inventory/FastArray/FastArrayList.cpp
 WitchPT/Private/Inventory/Fragments/WitchPTInventoryFragment_Stackable.cpp
 WitchPT/Private/Inventory/Fragments/WitchPTInventoryFragment_UIDetails.cpp
+WitchPT/Private/Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.cpp
 WitchPT/Private/Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.cpp
 WitchPT/Private/Inventory/Fragments/WitchPTInventoryItemFragment_PotionProperties.cpp
 WitchPT/Private/Inventory/Fragments/WitchPTInventoryItemFragment_WorldDetails.cpp
@@ -138,6 +139,7 @@ WitchPT/Public/Inventory/Collectable.h
 WitchPT/Public/Inventory/FastArray/FastArrayList.h
 WitchPT/Public/Inventory/Fragments/WitchPTInventoryFragment_Stackable.h
 WitchPT/Public/Inventory/Fragments/WitchPTInventoryFragment_UIDetails.h
+WitchPT/Public/Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h
 WitchPT/Public/Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h
 WitchPT/Public/Inventory/Fragments/WitchPTInventoryItemFragment_PotionProperties.h
 WitchPT/Public/Inventory/Fragments/WitchPTInventoryItemFragment_WorldDetails.h
@@ -2734,8 +2736,59 @@ UWitchPTEquipmentDefinition::UWitchPTEquipmentDefinition(const FObjectInitialize
 
 #include "Equipment/WitchPTEquipmentInstance.h"
 
+#include "Equipment/WitchPTEquipmentDefinition.h"
+#include "GameFramework/Character.h"
+
 UWitchPTEquipmentInstance::UWitchPTEquipmentInstance(const FObjectInitializer& ObjectInitializer)
 {
+}
+
+UWorld* UWitchPTEquipmentInstance::GetWorld() const
+{
+	if (const APawn* OwningPawn = GetPawn())
+	{
+		return OwningPawn->GetWorld();
+	}
+	return nullptr;
+}
+
+void UWitchPTEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, Instigator);
+}
+
+void UWitchPTEquipmentInstance::SpawnEquipmentActors(const TArray<FWitchPTEquipmentActorToSpawn>& ActorsToSpawn)
+{
+	if (APawn* OwningPawn = GetPawn())
+	{
+		USceneComponent* AttachTarget = OwningPawn->GetRootComponent();
+		if (ACharacter* Char = Cast<ACharacter>(OwningPawn))
+		{
+			AttachTarget = Char->GetMesh();
+		}
+
+		for (const FWitchPTEquipmentActorToSpawn& SpawnInfo : ActorsToSpawn)
+		{
+			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnInfo.ActorToSpawn, FTransform::Identity, OwningPawn);
+			NewActor->FinishSpawning(FTransform::Identity, /*bIsDefaultTransform=*/ true);
+			NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
+			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform, SpawnInfo.AttachSocket);
+
+			SpawnedActors.Add(NewActor);
+		}
+	}
+}
+
+void UWitchPTEquipmentInstance::DestroyEquipmentActors()
+{
+	for (AActor* Actor : SpawnedActors)
+	{
+		if (Actor)
+		{
+			Actor->Destroy();
+		}
+	}
 }
 
 void UWitchPTEquipmentInstance::OnEquipped()
@@ -2754,6 +2807,10 @@ APawn* UWitchPTEquipmentInstance::GetPawn() const
 {
 	return Cast<APawn>(GetOuter());
 }
+
+void UWitchPTEquipmentInstance::OnRep_Instigator()
+{
+}
 </file>
 
 <file path="WitchPT/Private/Equipment/WitchPTEquipmentManagerComponent.cpp">
@@ -2764,77 +2821,265 @@ APawn* UWitchPTEquipmentInstance::GetPawn() const
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "Engine/ActorChannel.h"
 #include "Equipment/WitchPTEquipmentDefinition.h"
 #include "Equipment/WitchPTEquipmentInstance.h"
+#include "Inventory/WitchPTInventoryItemDefinition.h"
+#include "Inventory/WitchPTInventoryItemInstance.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
 
 
-// Sets default values for this component's properties
-UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent()
+void FWitchPTEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
 {
-	
+	for (int32 Index : RemovedIndices)
+	{
+		const FWitchPTEquipmentEntry& Entry = Entries[Index];
+		if (Entry.Instance != nullptr)
+		{
+			Entry.Instance->OnUnequipped();
+		}
+	}
+}
+
+void FWitchPTEquipmentList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+{
+	for (int32 Index : AddedIndices)
+	{
+		const FWitchPTEquipmentEntry& Entry = Entries[Index];
+		if (Entry.Instance != nullptr)
+		{
+			Entry.Instance->OnEquipped();
+		}
+	}
+}
+
+void FWitchPTEquipmentList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
+{
+}
+
+UWitchPTEquipmentInstance* FWitchPTEquipmentList::AddEntry(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+{
+	UWitchPTEquipmentInstance* Result = nullptr;
+
+	check(EquipmentDefinition != nullptr);
+	check(OwnerComponent);
+	check(OwnerComponent->GetOwner()->HasAuthority());
+    
+	const UWitchPTEquipmentDefinition* EquipmentCDO = GetDefault<UWitchPTEquipmentDefinition>(EquipmentDefinition);
+
+	TSubclassOf<UWitchPTEquipmentInstance> InstanceType = EquipmentCDO->InstanceType;
+	if (InstanceType == nullptr)
+	{
+		InstanceType = UWitchPTEquipmentInstance::StaticClass();
+	}
+    
+	FWitchPTEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
+	NewEntry.EquipmentDefinition = EquipmentDefinition;
+	NewEntry.Instance = NewObject<UWitchPTEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);
+	Result = NewEntry.Instance;
+
+	// Grant abilities
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		for (TSubclassOf<UGameplayAbility> AbilityClass : EquipmentCDO->AbilitiesToGrant)
+		{
+			if (AbilityClass)
+			{
+				FGameplayAbilitySpec AbilitySpec(AbilityClass, 1, INDEX_NONE, Result);
+				FGameplayAbilitySpecHandle Handle = ASC->GiveAbility(AbilitySpec);
+				NewEntry.AbilityHandles.GrantedHandles.Add(Handle);
+				UE_LOG(LogTemp, Warning, TEXT("🎯 Granted ability: %s"), *AbilityClass->GetName());
+			}
+		}
+	}
+	Result->SpawnEquipmentActors(EquipmentCDO->ActorsToSpawn);
+
+	MarkItemDirty(NewEntry);
+	return Result;
+}
+
+void FWitchPTEquipmentList::RemoveEntry(UWitchPTEquipmentInstance* Instance)
+{
+	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
+	{
+		FWitchPTEquipmentEntry& Entry = *EntryIt;
+		if (Entry.Instance == Instance)
+		{
+			// Remove abilities
+			if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+			{
+				for (const FGameplayAbilitySpecHandle& Handle : Entry.AbilityHandles.GrantedHandles)
+				{
+					if (Handle.IsValid())
+					{
+						ASC->ClearAbility(Handle);
+						UE_LOG(LogTemp, Warning, TEXT("🚫 Removed ability"));
+					}
+				}
+			}
+
+			EntryIt.RemoveCurrent();
+			Instance->DestroyEquipmentActors();
+			MarkArrayDirty();
+		}
+	}
+}
+
+UAbilitySystemComponent* FWitchPTEquipmentList::GetAbilitySystemComponent() const
+{
+	check(OwnerComponent);
+	AActor* OwningActor = OwnerComponent->GetOwner();
+	return Cast<UAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor));
+}
+
+//-------------------------------      UWitchPTEquipmentManagerComponent           -----------------------//
+// -------------------------------------------------------------------------------------------------------//
+UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+	, EquipmentList(this)
+{
+	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
+	bWantsInitializeComponent = true;
+}
+
+void UWitchPTEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, EquipmentList);
+}
+
+bool UWitchPTEquipmentManagerComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
+	FReplicationFlags* RepFlags)
+{
+	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	for (FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		UWitchPTEquipmentInstance* Instance = Entry.Instance;
+		if (IsValid(Instance))
+		{
+			WroteSomething |= Channel->ReplicateSubobject(Instance, *Bunch, *RepFlags);
+		}
+	}
+
+	return WroteSomething;
+}
+
+void UWitchPTEquipmentManagerComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+}
+
+void UWitchPTEquipmentManagerComponent::UninitializeComponent()
+{
+	TArray<UWitchPTEquipmentInstance*> AllEquipmentInstances;
+
+	// Gather all instances before removal to avoid side effects affecting the equipment list iterator    
+	for (const FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		AllEquipmentInstances.Add(Entry.Instance);
+	}
+
+	for (UWitchPTEquipmentInstance* EquipInstance : AllEquipmentInstances)
+	{
+		UnequipItem(EquipInstance);
+	}
+
+	Super::UninitializeComponent();
+}
+
+void UWitchPTEquipmentManagerComponent::ReadyForReplication()
+{
+	Super::ReadyForReplication();
+	// Register existing equipment instances
+	if (IsUsingRegisteredSubObjectList())
+	{
+		for (const FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+		{
+			UWitchPTEquipmentInstance* Instance = Entry.Instance;
+			if (IsValid(Instance))
+			{
+				AddReplicatedSubObject(Instance);
+			}
+		}
+	}
 }
 
 UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::EquipItem(
 	TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
 {
-	if (!EquipmentDefinition) return nullptr;
-	APawn* OwnerPawn = Cast<APawn>(GetOwner());
-	if (!OwnerPawn) return nullptr;
-	const UWitchPTEquipmentDefinition* EquipmentCDO = GetDefault<UWitchPTEquipmentDefinition>(EquipmentDefinition);
-	TSubclassOf<UWitchPTEquipmentInstance> InstanceType = EquipmentCDO->InstanceType;
-	if (!InstanceType) InstanceType = UWitchPTEquipmentInstance::StaticClass();
-	UWitchPTEquipmentInstance* NewInstance = NewObject<UWitchPTEquipmentInstance>(OwnerPawn, InstanceType);
-	EquippedItems.Add(NewInstance);
-	NewInstance->OnEquipped();
-
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	UWitchPTEquipmentInstance* NewInstance = nullptr;
+	if (EquipmentDefinition != nullptr)
 	{
-		FEquipmentAbilityHandles& AbilityHandles = EquipmentAbilities.Add(NewInstance);
-		for (TSubclassOf<UGameplayAbility> AbilityClass : EquipmentCDO->AbilitiesToGrant)
+		if (!GetOwner()->HasAuthority()) return nullptr;
+		NewInstance = EquipmentList.AddEntry(EquipmentDefinition);
+		if (NewInstance != nullptr)
 		{
-			if (AbilityClass)
+			NewInstance->OnEquipped();
+			if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
 			{
-				FGameplayAbilitySpec AbilitySpec(AbilityClass, 1, INDEX_NONE, NewInstance);
-				FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(AbilitySpec);
-				AbilityHandles.GrantedHandles.Add(SpecHandle);
-				UE_LOG(LogTemp, Warning, TEXT("🎯 Granted ability: %s"), *AbilityClass->GetName());
+				AddReplicatedSubObject(NewInstance);
+				UE_LOG(LogTemp, Warning, TEXT("✅ Registered subobject: %s"), *NewInstance->GetClass()->GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("❌ Not registered subobject: %s"), *NewInstance->GetClass()->GetName());
 			}
 		}
-		
 	}
+
+
     
 	return NewInstance;
 }
 
 void UWitchPTEquipmentManagerComponent::UnequipItem(UWitchPTEquipmentInstance* ItemInstance)
 {
-	if (!ItemInstance) return;
-    
-	ItemInstance->OnUnequipped();
-	EquippedItems.Remove(ItemInstance);
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	if (ItemInstance != nullptr)
 	{
-		if (FEquipmentAbilityHandles* AbilityHandles = EquipmentAbilities.Find(ItemInstance))
+		if (!GetOwner()->HasAuthority()) return;
+        
+		if (IsUsingRegisteredSubObjectList())
 		{
-			for (const FGameplayAbilitySpecHandle& Handle : AbilityHandles->GrantedHandles)
+			RemoveReplicatedSubObject(ItemInstance);
+		}
+
+		ItemInstance->OnUnequipped();
+		EquipmentList.RemoveEntry(ItemInstance);
+		UE_LOG(LogTemp, Warning, TEXT("❌ Unequipped item: %s"), *ItemInstance->GetClass()->GetName());
+	}
+}
+
+
+bool UWitchPTEquipmentManagerComponent::IsInventoryItemEquipped(UWitchPTInventoryItemInstance* InventoryItem) const
+{
+	return FindEquipmentByInventoryItem(InventoryItem) != nullptr;
+}
+
+UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::FindEquipmentByInventoryItem(
+	UWitchPTInventoryItemInstance* InventoryItem) const
+{
+	for (const FWitchPTEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		if (UWitchPTEquipmentInstance* Equipment = Entry.Instance)
+		{
+			if (Equipment && Equipment->GetInstigator() == InventoryItem)
 			{
-				if (Handle.IsValid())
-				{
-					ASC->ClearAbility(Handle);
-					UE_LOG(LogTemp, Warning, TEXT("🚫 Removed ability"));
-				}
+				return Equipment;
 			}
-			EquipmentAbilities.Remove(ItemInstance);
 		}
 	}
+	return nullptr;
 }
 
 void UWitchPTEquipmentManagerComponent::PrintEquippedItems()
 {
-	UE_LOG(LogTemp, Warning, TEXT("📦 EQUIPPED ITEMS: %d total"), EquippedItems.Num());
-	for (int32 i = 0; i < EquippedItems.Num(); i++)
+	UE_LOG(LogTemp, Warning, TEXT("📦 EQUIPPED ITEMS: %d total"), EquipmentList.Entries.Num());
+	for (int32 i = 0; i < EquipmentList.Entries.Num(); i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("  [%d]: %s"), i, EquippedItems[i] ? *EquippedItems[i]->GetClass()->GetName() : TEXT("NULL"));
+		const FWitchPTEquipmentEntry& Entry = EquipmentList.Entries[i];
+		UE_LOG(LogTemp, Warning, TEXT("  [%d]: %s"), i, Entry.Instance ? *Entry.Instance->GetClass()->GetName() : TEXT("NULL"));
 	}
 }
 
@@ -3072,6 +3317,13 @@ TArray<UWitchPTInventoryItemInstance*> FWitchPTInventoryList::GetAllItems() cons
 
 
 #include "Inventory/Fragments/WitchPTInventoryFragment_UIDetails.h"
+</file>
+
+<file path="WitchPT/Private/Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
 </file>
 
 <file path="WitchPT/Private/Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.cpp">
@@ -8172,9 +8424,15 @@ void UCauldronWidgetController::HandleModifierIngredientIconSet(TSubclassOf<UUse
 
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 
+#include "Equipment/WitchPTEquipmentManagerComponent.h"
+#include "GameFramework/Character.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
+
+class UWitchPTEquipmentInstance;
+class UWitchPTEquipmentManagerComponent;
 
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
@@ -8230,6 +8488,36 @@ void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* 
 	{
 		// Otherwise, reduce the stack count by the requested amount
 		InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
+	}
+}
+
+void UInventoryWidgetController::EquipItem(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (ItemInstance)
+	{
+		ACharacter* OwningCharacter = Cast<ACharacter>(PlayerController->GetPawn());
+		if (OwningCharacter)
+		{
+			UWitchPTEquipmentManagerComponent* EquipmentManager = OwningCharacter->FindComponentByClass<UWitchPTEquipmentManagerComponent>();
+			if (EquipmentManager)
+			{
+				UWitchPTEquipmentInstance* EquipmentInstance = EquipmentManager->FindEquipmentByInventoryItem(ItemInstance);
+				if (EquipmentInstance)
+				{
+					EquipmentManager->UnequipItem(EquipmentInstance);
+				}
+				else
+				{
+					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass());
+					const UWitchPTInventoryItemFragment_EquippableItem* EquippableFragment = Cast<const UWitchPTInventoryItemFragment_EquippableItem>(BaseFragment);
+					EquipmentManager->EquipItem(EquippableFragment->EquipmentDefinition);
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Owning character is not a valid ACharacter instance."));
+		}
 	}
 }
 </file>
@@ -9854,9 +10142,22 @@ public:
 
 class UWitchPTEquipmentInstance;
 class UGameplayAbility;
-/**
- * 
- */
+
+USTRUCT()
+struct FWitchPTEquipmentActorToSpawn
+{
+	GENERATED_BODY()
+	FWitchPTEquipmentActorToSpawn() {};
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	TSubclassOf<AActor> ActorToSpawn;
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FName AttachSocket;
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FTransform AttachTransform;
+};
 
 
 /**
@@ -9876,6 +10177,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category=Equipment)
 	TArray<TSubclassOf<UGameplayAbility>> AbilitiesToGrant;
+
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TArray<FWitchPTEquipmentActorToSpawn> ActorsToSpawn;
 };
 </file>
 
@@ -9886,8 +10190,10 @@ public:
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "Net/UnrealNetwork.h"
 #include "WitchPTEquipmentInstance.generated.h"
 
+struct FWitchPTEquipmentActorToSpawn;
 /**
  * 
  */
@@ -9900,11 +10206,22 @@ public:
 	
 
 	// Equipment lifecycle
+	// UObject Interface
+	virtual bool IsSupportedForNetworking() const override { return true; }
+	virtual UWorld* GetWorld() const override final;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	// End of UObject Interface
+	virtual void SpawnEquipmentActors(const TArray<FWitchPTEquipmentActorToSpawn>& ActorsToSpawn);
+	virtual void DestroyEquipmentActors();
 	virtual void OnEquipped();
 	virtual void OnUnequipped();
 
 	UFUNCTION(BlueprintPure, Category=Equipment)
 	APawn* GetPawn() const;
+	UFUNCTION(BlueprintPure, Category=Equipment)
+	UObject* GetInstigator() const { return Instigator; }
+
+	void SetInstigator(UObject* InInstigator) { Instigator = InInstigator; }
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category=Equipment)
 	void K2_OnEquipped();
@@ -9912,6 +10229,16 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category=Equipment)
 	void K2_OnUnequipped();
 
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_Instigator)
+	TObjectPtr<UObject> Instigator;
+	
+	UPROPERTY(Replicated)
+	TArray<TObjectPtr<AActor>> SpawnedActors;
+
+	// Add rep notify:
+	UFUNCTION()
+	void OnRep_Instigator();
 	
 };
 </file>
@@ -9922,21 +10249,81 @@ protected:
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "Components/ActorComponent.h"
+#include "Net/Serialization/FastArraySerializer.h"
 #include "WitchPTEquipmentManagerComponent.generated.h"
 
 
+class UWitchPTEquipmentManagerComponent;
+class UWitchPTInventoryItemInstance;
 class UAbilitySystemComponent;
-struct FGameplayAbilitySpecHandle;
 class UWitchPTEquipmentDefinition;
 class UWitchPTEquipmentInstance;
-
 USTRUCT()
 struct FEquipmentAbilityHandles
 {
 	GENERATED_BODY()
 	TArray<FGameplayAbilitySpecHandle> GrantedHandles;
 };
+
+USTRUCT(BlueprintType)
+struct FWitchPTEquipmentEntry: public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+	FWitchPTEquipmentEntry() {};
+
+	UPROPERTY()
+	TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition;
+
+	UPROPERTY()
+	TObjectPtr<UWitchPTEquipmentInstance> Instance = nullptr;
+
+	FEquipmentAbilityHandles AbilityHandles;
+};
+
+USTRUCT(BlueprintType)
+struct FWitchPTEquipmentList : public FFastArraySerializer
+{
+	GENERATED_BODY()
+
+	FWitchPTEquipmentList() : OwnerComponent(nullptr) {}
+	FWitchPTEquipmentList(UActorComponent* InOwnerComponent) : OwnerComponent(InOwnerComponent) {}
+
+	//~FFastArraySerializer contract
+	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
+	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
+	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
+	//~End of FFastArraySerializer contract
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
+	{
+		return FFastArraySerializer::FastArrayDeltaSerialize<FWitchPTEquipmentEntry, FWitchPTEquipmentList>(Entries, DeltaParms, *this);
+	}
+
+	
+
+	UWitchPTEquipmentInstance* AddEntry(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
+	void RemoveEntry(UWitchPTEquipmentInstance* Instance);
+
+private:
+	UAbilitySystemComponent* GetAbilitySystemComponent() const;
+
+	UPROPERTY()
+	TArray<FWitchPTEquipmentEntry> Entries;
+
+	UPROPERTY(NotReplicated)
+	TObjectPtr<UActorComponent> OwnerComponent;
+    
+	friend UWitchPTEquipmentManagerComponent;
+};
+
+// Add template specialization:
+template<>
+struct TStructOpsTypeTraits<FWitchPTEquipmentList> : public TStructOpsTypeTraitsBase2<FWitchPTEquipmentList>
+{
+	enum { WithNetDeltaSerializer = true };
+};
+
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class WITCHPT_API UWitchPTEquipmentManagerComponent : public UActorComponent
@@ -9945,20 +10332,37 @@ class WITCHPT_API UWitchPTEquipmentManagerComponent : public UActorComponent
 
 public:
 	// Sets default values for this component's properties
-	UWitchPTEquipmentManagerComponent();
+	UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	//~UActorComponent interface
+	//virtual void EndPlay() override;
+	virtual void InitializeComponent() override;
+	virtual void UninitializeComponent() override;
+	virtual void ReadyForReplication() override;
+	//~End of UActorComponent interface
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	UWitchPTEquipmentInstance* EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void UnequipItem(UWitchPTEquipmentInstance* ItemInstance);
+	
+
+	UFUNCTION(BlueprintPure, Category="Equipment")
+	bool IsInventoryItemEquipped(UWitchPTInventoryItemInstance* InventoryItem) const;
+
+	UFUNCTION(BlueprintPure, Category="Equipment")
+	UWitchPTEquipmentInstance* FindEquipmentByInventoryItem(UWitchPTInventoryItemInstance* InventoryItem) const;
+	
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void PrintEquippedItems();
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category="Equipment")
-	TArray<TObjectPtr<UWitchPTEquipmentInstance>> EquippedItems;
+	UPROPERTY(Replicated)
+	FWitchPTEquipmentList EquipmentList;
 
 	// Add after EquippedItems:
 	UPROPERTY()
@@ -10696,6 +11100,29 @@ public:
 	FGameplayTag TierTag;
 	
 	
+};
+</file>
+
+<file path="WitchPT/Public/Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPTInventoryItemFragment.h"
+#include "WitchPTInventoryItemFragment_EquippableItem.generated.h"
+
+class UWitchPTEquipmentDefinition;
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UWitchPTInventoryItemFragment_EquippableItem : public UWitchPTInventoryItemFragment
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition;
 };
 </file>
 
@@ -13150,6 +13577,7 @@ protected:
 #include "WitchPTWidgetController.h"
 #include "InventoryWidgetController.generated.h"
 
+class UWitchPTInventoryItemInstance;
 /**
  * 
  */
@@ -13173,6 +13601,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
+	void EquipItem(UWitchPTInventoryItemInstance* ItemInstance);
 
 	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnItemAddedSignature OnItemAddedDelegate;

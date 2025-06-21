@@ -74,8 +74,8 @@ public:
 	void RequestSetIngredientInSlot(ACauldronAltar* TargetAltar, TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
 	void RequestPrintDebugData(ACauldronAltar* TargetAltar);
-	
-	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	void RequestCraftPotion(ACauldronAltar* TargetAltar);
 	
 	
 	// General Queries that might be implemented by positions or other interactables
