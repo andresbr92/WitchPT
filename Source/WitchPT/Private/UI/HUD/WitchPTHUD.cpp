@@ -3,6 +3,8 @@
 
 #include "UI/HUD/WitchPTHUD.h"
 
+#include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Player/WitchPTPlayerController.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"

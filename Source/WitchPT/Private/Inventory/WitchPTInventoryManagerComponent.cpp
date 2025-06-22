@@ -4,6 +4,7 @@
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Components/PanelWidget.h"
 #include "Engine/ActorChannel.h"
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
@@ -12,6 +13,8 @@
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/Widgets/Inventory/InventoryUserWidget.h"
+#include "Inventory/InventoryFunctionLibrary.h"
+#include "UI/WidgetControllers/InventoryWidgetController.h"
 
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(WitchPTInventoryManagerComponent)
@@ -20,11 +23,13 @@
 void UWitchPTInventoryManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	ConstructInventory();
+	// Inventory widget is now constructed by HUD system for proper timing
+	// Don't construct here - will be called by HUD::InitInventoryWidget
 }
 
 UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
+	, bInventoryMenuOpen(false)
 	, InventoryList(this)
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -279,54 +284,43 @@ void UWitchPTInventoryManagerComponent::ReadyForReplication()
 	}
 }
 
-void UWitchPTInventoryManagerComponent::ToggleInventoryMenu()
-{
-	if (bInventoryMenuOpen)
-	{
-		CloseInventoryMenu();
-	}
-	else
-	{
-		OpenInventoryMenu();
-	}
-}
 
 void UWitchPTInventoryManagerComponent::ConstructInventory()
 {
-	OwningController = Cast<APlayerController>(GetOwner());
-	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
-	if (!OwningController->IsLocalController()) return;
-	InventoryMenu = CreateWidget<UInventoryUserWidget>(OwningController.Get(), InventoryMenuClass);
-	InventoryMenu->AddToViewport();
-	CloseInventoryMenu();
-}
-
-void UWitchPTInventoryManagerComponent::OpenInventoryMenu()
-{
-	if (!IsValid(InventoryMenu)) return;
-
-	InventoryMenu->SetVisibility(ESlateVisibility::Visible);
-	bInventoryMenuOpen = true;
-
-	if (!OwningController.IsValid()) return;
-
-	FInputModeGameAndUI InputMode;
+	// Ensure we have a valid owning controller
+	if (!OwningController.IsValid())
+	{
+		OwningController = Cast<APlayerController>(GetOwner());
+	}
 	
-	OwningController->SetInputMode(InputMode);
-	OwningController->SetShowMouseCursor(true);
-}
-
-void UWitchPTInventoryManagerComponent::CloseInventoryMenu()
-{
-	if (!IsValid(InventoryMenu)) return;
-
+	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
+	if (!OwningController->IsLocalController()) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ConstructInventory called on non-local controller, skipping widget creation"));
+		return;
+	}
+	
+	// Check if widget already exists
+	if (IsValid(InventoryMenu))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InventoryMenu already exists, skipping recreation"));
+		return;
+	}
+	
+	// Check if InventoryMenuClass is set
+	if (!InventoryMenuClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("InventoryMenuClass is not set! Please assign it in the Blueprint."));
+		return;
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("Creating InventoryMenu widget on-demand..."));
+	InventoryMenu = CreateWidget<UInventoryUserWidget>(OwningController.Get(), InventoryMenuClass);
+	
+	InventoryMenu->AddToViewport(1);
 	InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
-	bInventoryMenuOpen = false;
-
-	if (!OwningController.IsValid()) return;
-
-	FInputModeGameOnly InputMode;
-	OwningController->SetInputMode(InputMode);
-	OwningController->SetShowMouseCursor(false);
+	
 }
+
+
 

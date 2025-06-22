@@ -19,6 +19,7 @@
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
 #include "UI/Widgets/CauldronUserWidget.h"
+#include "UI/Widgets/Inventory/InventoryUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
 #include "WitchPT/WitchPT.h"
 
@@ -66,6 +67,44 @@ void AWitchPTPlayerController::LocalToggleCauldronMenu()
 	{
 		OpenCauldronMenu();
 	}
+}
+void AWitchPTPlayerController::OpenInventoryMenu()
+{
+	
+	if (!IsValid(InventoryManager->InventoryMenu)) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
+		return;
+	}
+	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Visible);
+	InventoryManager->bInventoryMenuOpen = true;
+	
+	
+
+	FInputModeGameAndUI InputMode;
+	
+	SetInputMode(InputMode);
+	SetShowMouseCursor(true);
+}
+
+void AWitchPTPlayerController::CloseInventoryMenu()
+{
+	if (!IsValid(InventoryManager->InventoryMenu)) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
+		return;
+	}
+
+	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
+	InventoryManager->bInventoryMenuOpen = false;
+	
+	UE_LOG(LogTemp, Log, TEXT("Inventory menu closed - Visibility set to Collapsed"));
+
+	
+
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+	SetShowMouseCursor(false);
 }
 
 void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar)
@@ -171,6 +210,10 @@ void AWitchPTPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
 	CreateHUDWidget();
+	if (IsValid(InventoryManager))
+	{
+		InventoryManager->ConstructInventory();
+	}
 	ConstructCauldronWidget();
 }
 

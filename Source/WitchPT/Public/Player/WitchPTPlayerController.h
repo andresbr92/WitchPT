@@ -45,6 +45,11 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_ToggleCauldronMenu();
 
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
+	void OpenInventoryMenu();
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
+	void CloseInventoryMenu();
+
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;

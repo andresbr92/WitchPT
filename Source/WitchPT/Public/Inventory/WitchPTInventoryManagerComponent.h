@@ -107,7 +107,11 @@ public:
 	 */
 	virtual void ReadyForReplication() override;
 	//~End of UObject interface
+	void ConstructInventory();
 
+	UPROPERTY()
+	TObjectPtr<UInventoryUserWidget> InventoryMenu;
+	bool bInventoryMenuOpen;
 private:
 	/**
 	 * The replicated list of inventory items
@@ -115,20 +119,12 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	FWitchPTInventoryList InventoryList;
-	UPROPERTY()
-	TObjectPtr<UInventoryUserWidget> InventoryMenu;
 
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInventoryUserWidget> InventoryMenuClass;
 
 	TWeakObjectPtr<APlayerController> OwningController;
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void ToggleInventoryMenu();
-	void ConstructInventory();
-	bool bInventoryMenuOpen;
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void OpenInventoryMenu();
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void CloseInventoryMenu();
+	
+
 };
