@@ -7524,17 +7524,22 @@ void ARitualAltar::CleanupRitual()
 	
 	// Clear timers
 	GetWorldTimerManager().ClearTimer(InputTimerHandle);
+	GetWorldTimerManager().ClearTimer(RitualStartCountdownHandle);
+	
+	// Hide ritual widgets for all participating players
+	HideRitualWidgetForAllPlayers();
 	
 	// Reset ritual-specific variables
 	CurrentSequenceIndex = 0;
 	InputSequence.Empty();
 	CurrentActivePlayer = nullptr;
+	ReadyPlayers.Empty();
 	
 	// Don't reset corruption or state - these should persist for UI feedback
 	
 	// Reset positions? This depends on design - maybe players stay in position
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up"));
+	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up and widgets hidden"));
 }
 
 float ARitualAltar::GetCurrentSequenceProgress() const
@@ -7685,21 +7690,22 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 	// Update ready players data
 	UpdateReadyPlayersData();
 
-	// Call the ritual state delegate for Listen Server
-	if (Player->GetLocalRole() == ROLE_Authority && Player->IsLocallyControlled()) // Im the listen server
+	// Show ritual widget for the player
+	AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetController());
+	if (PC)
 	{
-		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
-		if (!PC->HasRitualWidgetInitialized(this))
+		if (Player->IsLocallyControlled())
 		{
-			PC->LocalInitializeRitualUserWidget(this);
+			// Local player (either Listen Server or Client)
+			PC->LocalShowRitualWidget(this);
 		}
-	} else if (Player->HasAuthority() && !Player->IsLocallyControlled()) // The call is from the client
-	{
-		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
-		if (!PC->HasRitualWidgetInitialized(this))
+		else
 		{
-			PC->Client_InitializeRitualUserWidget(this);
+			// Remote player - use RPC
+			PC->Client_ShowRitualWidget(this);
 		}
+		
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Showing ritual widget for player %s"), *Player->GetName());
 	}
 }
 
@@ -7716,9 +7722,15 @@ void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 	bRitualCompleted = true;
 	bRitualWasSuccessful = true;
 	
+	// Hide ritual widgets for all players (since this is multicast, each client handles their own widget)
+	if (HasAuthority())
+	{
+		HideRitualWidgetForAllPlayers();
+	}
+	
 	DestroyAltarPositions();
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback"));
+	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback and widgets hidden"));
 }
 
 void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
@@ -7734,7 +7746,13 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	bRitualCompleted = true;
 	bRitualWasSuccessful = false;
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
+	// Hide ritual widgets for all players (since this is multicast, each client handles their own widget)
+	if (HasAuthority())
+	{
+		HideRitualWidgetForAllPlayers();
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback and widgets hidden"));
 }
 
 float ARitualAltar::GetCorruptionPercentage() const
@@ -7745,6 +7763,87 @@ float ARitualAltar::GetCorruptionPercentage() const
 	}
 	
 	return CorruptionAmount / MaxCorruption;
+}
+
+void ARitualAltar::HideRitualWidgetForAllPlayers()
+{
+	// Hide ritual widget for all participating players
+	for (ACharacter* Player : ParticipatingPlayers)
+	{
+		if (Player)
+		{
+			AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetController());
+			if (PC)
+			{
+							// Hide widget based on player's network role
+			if (Player->IsLocallyControlled())
+			{
+				// Local player (either Listen Server or Client)
+				PC->LocalHideRitualWidget();
+			}
+			else
+			{
+				// Remote player - use RPC
+				PC->Client_HideRitualWidget();
+			}
+				
+				UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Hidden ritual widget for player %s"), *Player->GetName());
+			}
+		}
+	}
+}
+
+void ARitualAltar::UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
+{
+	if (!Player || !HasAuthority())
+	{
+		return;
+	}
+	
+	// Hide the ritual widget for this specific player
+	AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetController());
+	if (PC)
+	{
+		// Always try to hide the widget - no need to check visibility since it's not replicated
+		if (Player->IsLocallyControlled())
+		{
+			// Local player (either Listen Server or Client)
+			PC->LocalHideRitualWidget();
+		}
+		else
+		{
+			// Remote player - use RPC
+			PC->Client_HideRitualWidget();
+		}
+		
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Hidden ritual widget for leaving player %s"), *Player->GetName());
+	}
+	
+	// Call parent implementation to handle the actual position logic
+	Super::UnoccupyPosition(Player, Position);
+	
+	// Update ready players data if needed
+	ReadyPlayers.Remove(Player);
+	UpdateReadyPlayersData();
+	
+	// Check if we should change ritual state
+	if (ParticipatingPlayers.Num() == 0)
+	{
+		// No players left, reset to inactive
+		CurrentRitualState = EInteractionState::Inactive;
+		BroadcastRitualStateChanged();
+		
+		// Clear any ongoing ritual data
+		CurrentSequenceIndex = 0;
+		InputSequence.Empty();
+		CurrentActivePlayer = nullptr;
+		ReadyPlayers.Empty();
+		UpdateReadyPlayersData();
+		
+		// Clear timers
+		GetWorldTimerManager().ClearTimer(RitualStartCountdownHandle);
+		GetWorldTimerManager().ClearTimer(InputTimerHandle);
+	}
 }
 </file>
 
@@ -8068,11 +8167,11 @@ void AWitchPTPlayerController::CloseInventoryMenu()
 	SetShowMouseCursor(false);
 }
 
-void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar)
+void AWitchPTPlayerController::LocalShowRitualWidget(ABaseInteractableAltar* Altar)
 {
-	if (!Altar || !Altar->AltarUserWidgetClass || !IsLocalController())
+	if (!Altar || !IsLocalController())
 	{
-		UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Invalid altar or widget class!"));
+		UE_LOG(LogTemp, Error, TEXT("LocalShowRitualWidget: Invalid altar or not local controller!"));
 		return;
 	}
 	
@@ -8080,46 +8179,47 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractable
 	{
 		// Cast the altar to a ritual altar
 		ARitualAltar* RitualAltar = Cast<ARitualAltar>(Altar);
-
-		if (!ThisRitualAltarHasWidget || ThisRitualAltarHasWidget != RitualAltar)
-		{
-			ThisRitualAltarHasWidget = RitualAltar;
-		}
 		
-		URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, Altar->AltarUserWidgetClass);
-		
-		if (IsValid(RitualUserWidget))
+		// Get the HUD and show the ritual widget
+		AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+		if (WitchPTHUD)
 		{
-			// Get or create the ritual widget controller
-			URitualWidgetController* RitualWidgetController = URitualFunctionLibrary::SetRitualWidgetController(this);
-			
-			if (!RitualWidgetController)
-			{
-				UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Failed to get or create RitualWidgetController!"));
-				return;
-			}
-			
-			RitualWidgetController->SetRitualAltar(RitualAltar);
-			// Set widget controller reference for the user widget
-			RitualUserWidget->SetWidgetController(RitualWidgetController);
-			
-			
-			// Add the widget to viewport
-			RitualUserWidget->AddToViewport();
+			WitchPTHUD->ShowRitualWidget(RitualAltar);
+			bRitualWidgetVisible = true;
+			UE_LOG(LogTemp, Log, TEXT("LocalShowRitualWidget: Ritual widget shown for altar %s"), *RitualAltar->GetName());
 		}
-			
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("LocalShowRitualWidget: Failed to get WitchPTHUD!"));
+		}
 	}
-	
-	
 }
 
-bool AWitchPTPlayerController::HasRitualWidgetInitialized(ABaseInteractableAltar* Altar)
+void AWitchPTPlayerController::LocalHideRitualWidget()
 {
-	if (Altar->IsA<ARitualAltar>())
+	if (!IsLocalController())
 	{
-		return ThisRitualAltarHasWidget == Altar;
+		UE_LOG(LogTemp, Error, TEXT("LocalHideRitualWidget: Not local controller!"));
+		return;
 	}
-	return false;
+	
+	// Get the HUD and hide the ritual widget
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->HideRitualWidget();
+		bRitualWidgetVisible = false;
+		UE_LOG(LogTemp, Log, TEXT("LocalHideRitualWidget: Ritual widget hidden"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("LocalHideRitualWidget: Failed to get WitchPTHUD!"));
+	}
+}
+
+bool AWitchPTPlayerController::IsRitualWidgetVisible()
+{
+	return bRitualWidgetVisible;
 }
 
 void AWitchPTPlayerController::OpenCauldronMenu()
@@ -8149,12 +8249,16 @@ void AWitchPTPlayerController::CloseCauldronMenu()
 	SetShowMouseCursor(false);
 }
 
-void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(ABaseInteractableAltar* Altar)
+void AWitchPTPlayerController::Client_ShowRitualWidget_Implementation(ABaseInteractableAltar* Altar)
 {
-	if (!HasRitualWidgetInitialized(Altar))
-	{
-		LocalInitializeRitualUserWidget(Altar);
-	}
+	// Always call LocalShowRitualWidget - it handles the visibility check locally
+	LocalShowRitualWidget(Altar);
+}
+
+void AWitchPTPlayerController::Client_HideRitualWidget_Implementation()
+{
+	// Always call LocalHideRitualWidget - it handles the visibility check locally
+	LocalHideRitualWidget();
 }
 
 void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
@@ -8278,6 +8382,40 @@ UWitchPTAbilitySystemComponent* AWitchPTPlayerController::GetASC()
 	}
 	return WitchPtAbilitySystemComponent;
 }
+
+// Debug console commands for testing Step 4
+void AWitchPTPlayerController::ShowRitualWidgetDebug()
+{
+	// Find a ritual altar in the level for testing
+	ARitualAltar* TestAltar = Cast<ARitualAltar>(UGameplayStatics::GetActorOfClass(this, ARitualAltar::StaticClass()));
+	if (TestAltar)
+	{
+		LocalShowRitualWidget(TestAltar);
+		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: Showing ritual widget for test altar"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: No ritual altar found in level"));
+	}
+}
+
+void AWitchPTPlayerController::HideRitualWidgetDebug()
+{
+	LocalHideRitualWidget();
+	UE_LOG(LogTemp, Warning, TEXT("[DEBUG] HideRitualWidgetDebug: Hiding ritual widget"));
+}
+
+void AWitchPTPlayerController::ToggleRitualWidgetDebug()
+{
+	if (IsRitualWidgetVisible())
+	{
+		HideRitualWidgetDebug();
+	}
+	else
+	{
+		ShowRitualWidgetDebug();
+	}
+}
 </file>
 
 <file path="WitchPT/Private/Player/WitchPTPlayerState.cpp">
@@ -8323,6 +8461,7 @@ UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 #include "UI/WidgetControllers/OverlayWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
+#include "UI/Widgets/Inventory/RitualUserWidget.h"
 
 UOverlayWidgetController* AWitchPTHUD::SetOverlayWidgetController(const FWidgetControllerParams& WCParams)
 {
@@ -8372,7 +8511,7 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 	checkf(OverlayWidgetClass, TEXT("Overlay Widget Class uninitialized, please fill out BP_WitchPTHUD"));
 	checkf(OverlayWidgetControllerClass, TEXT("Overlay Widget Controller Class uninitialized, please fill out BP_WitchPTHUD"));
 
-	
+	// Initialize Overlay Widget
 	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
 	OverlayWidget = Cast<UWitchPTUserWidget>(Widget);
 
@@ -8382,6 +8521,85 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 	OverlayWidget->SetWidgetController(WidgetController);
 	WidgetController->BroadcastInitialValues();
 	Widget->AddToViewport();
+
+	// Initialize Ritual Widget (but keep it hidden)
+	if (RitualWidgetClass)
+	{
+		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
+		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
+		
+		if (RitualWidget)
+		{
+			// Create and set the ritual widget controller
+			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
+			RitualWidget->SetWidgetController(RitualController);
+			
+			// Add to viewport but set visibility to collapsed
+			RitualWidgetInstance->AddToViewport();
+			RitualWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)
+{
+	if (RitualWidget && RitualWidgetController)
+	{
+		// Set the ritual altar reference in the controller
+		// Note: SetRitualAltar() already calls BindCallbacksToDependencies() and BroadcastInitialValues()
+		RitualWidgetController->SetRitualAltar(RitualAltar);
+		
+		// Use enhanced widget show method if available
+		URitualUserWidget* RitualUserWidget = Cast<URitualUserWidget>(RitualWidget);
+		if (RitualUserWidget)
+		{
+			RitualUserWidget->ShowForRitual(RitualAltar);
+		}
+		
+		// Show the widget
+		RitualWidget->SetVisibility(ESlateVisibility::Visible);
+		
+		// Set input mode to allow UI interaction
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			FInputModeGameAndUI InputMode;
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			InputMode.SetHideCursorDuringCapture(false);
+			PC->SetInputMode(InputMode);
+			PC->bShowMouseCursor = true;
+		}
+	}
+}
+
+void AWitchPTHUD::HideRitualWidget()
+{
+	if (RitualWidget)
+	{
+		// Use enhanced widget hide method if available
+		URitualUserWidget* RitualUserWidget = Cast<URitualUserWidget>(RitualWidget);
+		if (RitualUserWidget)
+		{
+			RitualUserWidget->HideFromRitual();
+		}
+		
+		// Hide the widget
+		RitualWidget->SetVisibility(ESlateVisibility::Collapsed);
+		
+		// Clear the ritual altar reference in the controller
+		if (RitualWidgetController)
+		{
+			RitualWidgetController->SetRitualAltar(nullptr);
+		}
+		
+		// Restore game-only input mode
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeGameOnly());
+			PC->bShowMouseCursor = false;
+		}
+	}
 }
 </file>
 
@@ -8677,51 +8895,63 @@ URitualWidgetController::URitualWidgetController()
 
 void URitualWidgetController::BroadcastInitialValues()
 {
-    // If we have an altar, broadcast its initial values
-    if (RitualAltar)
+    // Enhanced null safety - only broadcast if we have a valid altar
+    if (!IsValid(RitualAltar))
     {
-        // Broadcast current state
-        OnRitualStateChanged.Broadcast(RitualAltar->GetCurrentRitualState());
-        
-        // Broadcast ready players data
-        FRitualReadyPlayersData ReadyPlayersData;
-        ReadyPlayersData.TotalPlayers = RitualAltar->GetNumberOfTotalPlayers();
-        ReadyPlayersData.ReadyPlayers = RitualAltar->GetNumberOfReadyPlayers();
-        OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
-        
-        // Broadcast current turn data (processed for local player)
-        FUIRitualData CurrentTurnData = RitualAltar->GetCurrentTurnData();
-        FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(CurrentTurnData);
-        OnTurnDataChanged.Broadcast(ProcessedTurnData);
-        
-        // Broadcast corruption
-        OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
-        
-        // Broadcast sequence progress
-        OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
+        UE_LOG(LogTemp, Warning, TEXT("[RitualWidgetController] BroadcastInitialValues called with invalid altar"));
+        return;
     }
+    
+    // Broadcast current state
+    OnRitualStateChanged.Broadcast(RitualAltar->GetCurrentRitualState());
+    
+    // Broadcast ready players data
+    FRitualReadyPlayersData ReadyPlayersData;
+    ReadyPlayersData.TotalPlayers = RitualAltar->GetNumberOfTotalPlayers();
+    ReadyPlayersData.ReadyPlayers = RitualAltar->GetNumberOfReadyPlayers();
+    OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
+    
+    // Broadcast current turn data (processed for local player)
+    FUIRitualData CurrentTurnData = RitualAltar->GetCurrentTurnData();
+    FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(CurrentTurnData);
+    OnTurnDataChanged.Broadcast(ProcessedTurnData);
+    
+    // Broadcast corruption
+    OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
+    
+    // Broadcast sequence progress
+    OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
+    
+    UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Initial values broadcasted"));
 }
 
 void URitualWidgetController::BindCallbacksToDependencies()
 {
-    // Bind to altar delegates if it exists
-    if (RitualAltar)
+    // Enhanced null safety - only bind if we have a valid altar
+    if (!IsValid(RitualAltar))
     {
-        // Bind to all the new dynamic multicast delegates
-        RitualAltar->OnRitualStateChangedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualStateChanged);
-        RitualAltar->OnReadyPlayersChangedEvent.AddDynamic(this, &URitualWidgetController::HandleReadyPlayersChanged);
-        RitualAltar->OnCountdownTickEvent.AddDynamic(this, &URitualWidgetController::HandleCountdownTick);
-        RitualAltar->OnTurnDataChangedEvent.AddDynamic(this, &URitualWidgetController::HandleTurnDataChanged);
-        RitualAltar->OnCorruptionChangedEvent.AddDynamic(this, &URitualWidgetController::HandleCorruptionChanged);
-        RitualAltar->OnSequenceProgressChangedEvent.AddDynamic(this, &URitualWidgetController::HandleSequenceProgressChanged);
-        RitualAltar->OnRitualCompletedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
+        UE_LOG(LogTemp, Warning, TEXT("[RitualWidgetController] BindCallbacksToDependencies called with invalid altar"));
+        return;
     }
+    
+    // Bind to all the dynamic multicast delegates
+    RitualAltar->OnRitualStateChangedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualStateChanged);
+    RitualAltar->OnReadyPlayersChangedEvent.AddDynamic(this, &URitualWidgetController::HandleReadyPlayersChanged);
+    RitualAltar->OnCountdownTickEvent.AddDynamic(this, &URitualWidgetController::HandleCountdownTick);
+    RitualAltar->OnTurnDataChangedEvent.AddDynamic(this, &URitualWidgetController::HandleTurnDataChanged);
+    RitualAltar->OnCorruptionChangedEvent.AddDynamic(this, &URitualWidgetController::HandleCorruptionChanged);
+    RitualAltar->OnSequenceProgressChangedEvent.AddDynamic(this, &URitualWidgetController::HandleSequenceProgressChanged);
+    RitualAltar->OnRitualCompletedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
+    
+    UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Callbacks bound to dependencies"));
 }
 
 void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
 {
+    // Enhanced null safety and cleanup
+    
     // Unbind any existing callbacks first
-    if (RitualAltar != nullptr)
+    if (IsValid(RitualAltar))
     {
         RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
         RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
@@ -8730,35 +8960,44 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
         RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
         RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
         RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
+        
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Unbound callbacks from previous altar"));
     }
     
     // Assign the new altar
     RitualAltar = InRitualAltar;
     
     // Rebind and broadcast if we have a valid altar
-    if (RitualAltar)
+    if (IsValid(RitualAltar))
     {
         BindCallbacksToDependencies();
         BroadcastInitialValues();
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Set new ritual altar and bound callbacks"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Cleared ritual altar reference"));
     }
 }
 
 bool URitualWidgetController::IsLocalPlayerActive() const
 {
-    if (!RitualAltar || !PlayerController)
+    // Enhanced null safety checks
+    if (!IsValid(RitualAltar) || !IsValid(PlayerController))
     {
         return false;
     }
     
     // Get the local character
     ACharacter* LocalCharacter = Cast<ACharacter>(PlayerController->GetPawn());
-    if (!LocalCharacter)
+    if (!IsValid(LocalCharacter))
     {
         return false;
     }
     
     // Check if this character is the active player
-    return RitualAltar->GetCurrentActivePlayer() == LocalCharacter;
+    ACharacter* ActivePlayer = RitualAltar->GetCurrentActivePlayer();
+    return IsValid(ActivePlayer) && ActivePlayer == LocalCharacter;
 }
 
 FUIRitualData URitualWidgetController::ProcessTurnDataForLocalPlayer(const FUIRitualData& InTurnData) const
@@ -8826,8 +9065,8 @@ void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
 {
     OnRitualCompleted.Broadcast(bWasSuccessful);
     
-    // Unbind all delegates when ritual is completed to prevent memory leaks
-    if (RitualAltar)
+    // Enhanced cleanup: Unbind all delegates when ritual is completed to prevent memory leaks
+    if (IsValid(RitualAltar))
     {
         RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
         RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
@@ -8836,7 +9075,12 @@ void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
         RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
         RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
         RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
+        
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Unbound all delegates after ritual completion"));
     }
+    
+    // Clear the altar reference
+    RitualAltar = nullptr;
 }
 </file>
 
@@ -8905,8 +9149,89 @@ FReply UInventoryUserWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry
 <file path="WitchPT/Private/UI/Widgets/Inventory/RitualUserWidget.cpp">
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
+#include "Item/RitualAltar.h"
+#include "Components/Widget.h"
+
+URitualUserWidget::URitualUserWidget(const FObjectInitializer& ObjectInitializer)
+    : Super(ObjectInitializer)
+    , bIsActiveForRitual(false)
+    , CurrentRitualAltar(nullptr)
+{
+    // Constructor
+}
+
+void URitualUserWidget::NativeOnInitialized()
+{
+    Super::NativeOnInitialized();
+    
+    // Initialize widget state
+    ResetWidgetState();
+}
+
+void URitualUserWidget::NativeDestruct()
+{
+    // Clean up when widget is destroyed
+    HideFromRitual();
+    
+    Super::NativeDestruct();
+}
+
+void URitualUserWidget::ShowForRitual(ARitualAltar* Altar)
+{
+    if (!Altar)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[RitualUserWidget] ShowForRitual called with null altar"));
+        return;
+    }
+    
+    // If we're already active for a different ritual, reset first
+    if (bIsActiveForRitual && CurrentRitualAltar != Altar)
+    {
+        ResetWidgetState();
+    }
+    
+    // Set up for the new ritual
+    CurrentRitualAltar = Altar;
+    bIsActiveForRitual = true;
+    
+    // Call Blueprint implementable event
+    OnShownForRitual(Altar);
+    
+    UE_LOG(LogTemp, Log, TEXT("[RitualUserWidget] Shown for ritual altar"));
+}
+
+void URitualUserWidget::HideFromRitual()
+{
+    if (!bIsActiveForRitual)
+    {
+        return; // Already hidden
+    }
+    
+    // Clear state
+    bIsActiveForRitual = false;
+    ARitualAltar* PreviousAltar = CurrentRitualAltar;
+    CurrentRitualAltar = nullptr;
+    
+    // Call Blueprint implementable event
+    OnHiddenFromRitual();
+    
+    // Reset widget state
+    ResetWidgetState();
+    
+    UE_LOG(LogTemp, Log, TEXT("[RitualUserWidget] Hidden from ritual"));
+}
+
+void URitualUserWidget::ResetWidgetState()
+{
+    // Reset any internal widget state here
+    // This ensures the widget is clean for the next use
+    
+    // Clear any cached data or temporary state
+    // Blueprint implementers can override this for custom reset logic
+    
+    UE_LOG(LogTemp, Log, TEXT("[RitualUserWidget] Widget state reset"));
+}
 </file>
 
 <file path="WitchPT/Private/UI/Widgets/PointerWidget.cpp">
@@ -12977,6 +13302,9 @@ public:
 	
 	void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
 	
+	// Override to handle widget hiding when players leave positions
+	virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
+	
 	// ---------------------------- GETTERS FOR WC ---------------------------- //
 	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }
 	ACharacter* GetCurrentActivePlayer() const { return CurrentActivePlayer; }
@@ -13032,6 +13360,10 @@ protected:
 	void BroadcastCorruptionChanged();
 	void BroadcastSequenceProgressChanged();
 	void BroadcastRitualCompleted();
+	
+	// ----------------------------------- UI MANAGEMENT HELPER FUNCTIONS ---------------------------------------------- //
+	// Helper function to hide ritual widgets for all participating players
+	void HideRitualWidgetForAllPlayers();
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> PrimaryAnimMontage;
@@ -13145,15 +13477,19 @@ public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar);
-	bool HasRitualWidgetInitialized(ABaseInteractableAltar* Altar);
+	void LocalShowRitualWidget(ABaseInteractableAltar* Altar);
+	void LocalHideRitualWidget();
+	bool IsRitualWidgetVisible();
 	void LocalToggleCauldronMenu();
 	
 
 
 
 	UFUNCTION(Client, Reliable)
-	void Client_InitializeRitualUserWidget(ABaseInteractableAltar* Altar);
+	void Client_ShowRitualWidget(ABaseInteractableAltar* Altar);
+
+	UFUNCTION(Client, Reliable)
+	void Client_HideRitualWidget();
 
 	UFUNCTION(Client, Reliable)
 	void Client_ToggleCauldronMenu();
@@ -13162,6 +13498,14 @@ public:
 	void OpenInventoryMenu();
 	UFUNCTION(BlueprintCallable, Category= "Inventory")
 	void CloseInventoryMenu();
+
+	// Debug console commands for testing (Step 4 testing)
+	UFUNCTION(Exec, Category = "Debug")
+	void ShowRitualWidgetDebug();
+	UFUNCTION(Exec, Category = "Debug") 
+	void HideRitualWidgetDebug();
+	UFUNCTION(Exec, Category = "Debug")
+	void ToggleRitualWidgetDebug();
 
 
 	UPROPERTY(Replicated, VisibleAnywhere)
@@ -13215,9 +13559,9 @@ private:
 	void CloseCauldronMenu();
 	bool bCauldronMenuOpen = false;
 	
-	// Array de altares para los que ya se ha creado un widget
-	UPROPERTY()
-	TObjectPtr<ARitualAltar> ThisRitualAltarHasWidget;
+	// Track ritual widget visibility state
+	bool bRitualWidgetVisible = false;
+	
 	UPROPERTY()
 	TObjectPtr<UCauldronUserWidget> CauldronAltarMenu;
 	
@@ -13506,6 +13850,9 @@ public:
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
+	void ShowRitualWidget(class ARitualAltar* RitualAltar);
+	void HideRitualWidget();
+
 
 
 private:
@@ -13514,6 +13861,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> OverlayWidgetClass;
 
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> RitualWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> RitualWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
@@ -13988,13 +14339,59 @@ class WITCHPT_API UInventoryUserWidget : public UWitchPTUserWidget
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "RitualUserWidget.generated.h"
 
+class ARitualAltar;
+
 /**
- * 
+ * User Widget for ritual interactions - enhanced for visibility management
  */
 UCLASS()
 class WITCHPT_API URitualUserWidget : public UWitchPTUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	URitualUserWidget(const FObjectInitializer& ObjectInitializer);
+
+	// Enhanced visibility management methods
+	UFUNCTION(BlueprintCallable, Category = "Ritual Widget")
+	void ShowForRitual(ARitualAltar* Altar);
+	
+	UFUNCTION(BlueprintCallable, Category = "Ritual Widget")
+	void HideFromRitual();
+	
+	// Check if widget is currently active for a ritual
+	UFUNCTION(BlueprintPure, Category = "Ritual Widget")
+	bool IsActiveForRitual() const { return bIsActiveForRitual; }
+	
+	// Get the current ritual altar (if any)
+	UFUNCTION(BlueprintPure, Category = "Ritual Widget")
+	ARitualAltar* GetCurrentRitualAltar() const { return CurrentRitualAltar; }
+
+protected:
+	// Override from UWitchPTUserWidget for enhanced visibility management
+	virtual void NativeOnInitialized() override;
+	virtual void NativeDestruct() override;
+	
+	// Called when the widget is shown for a ritual
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ritual Widget")
+	void OnShownForRitual(ARitualAltar* Altar);
+	
+	// Called when the widget is hidden from a ritual
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ritual Widget")
+	void OnHiddenFromRitual();
+	
+	// Reset widget state when switching between rituals
+	UFUNCTION(BlueprintCallable, Category = "Ritual Widget")
+	void ResetWidgetState();
+
+private:
+	// Track if widget is currently active for a ritual
+	UPROPERTY()
+	bool bIsActiveForRitual = false;
+	
+	// Reference to the current ritual altar
+	UPROPERTY()
+	TObjectPtr<ARitualAltar> CurrentRitualAltar;
 };
 </file>
 

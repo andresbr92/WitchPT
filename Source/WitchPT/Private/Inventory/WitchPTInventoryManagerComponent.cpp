@@ -23,13 +23,11 @@
 void UWitchPTInventoryManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	// Inventory widget is now constructed by HUD system for proper timing
-	// Don't construct here - will be called by HUD::InitInventoryWidget
+
 }
 
 UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
-	, bInventoryMenuOpen(false)
 	, InventoryList(this)
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -283,44 +281,5 @@ void UWitchPTInventoryManagerComponent::ReadyForReplication()
 		}
 	}
 }
-
-
-void UWitchPTInventoryManagerComponent::ConstructInventory()
-{
-	// Ensure we have a valid owning controller
-	if (!OwningController.IsValid())
-	{
-		OwningController = Cast<APlayerController>(GetOwner());
-	}
-	
-	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
-	if (!OwningController->IsLocalController()) 
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ConstructInventory called on non-local controller, skipping widget creation"));
-		return;
-	}
-	
-	// Check if widget already exists
-	if (IsValid(InventoryMenu))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InventoryMenu already exists, skipping recreation"));
-		return;
-	}
-	
-	// Check if InventoryMenuClass is set
-	if (!InventoryMenuClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("InventoryMenuClass is not set! Please assign it in the Blueprint."));
-		return;
-	}
-	
-	UE_LOG(LogTemp, Log, TEXT("Creating InventoryMenu widget on-demand..."));
-	InventoryMenu = CreateWidget<UInventoryUserWidget>(OwningController.Get(), InventoryMenuClass);
-	
-	InventoryMenu->AddToViewport(1);
-	InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
-	
-}
-
 
 

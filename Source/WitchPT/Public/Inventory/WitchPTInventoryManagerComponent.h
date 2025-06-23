@@ -40,8 +40,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	UInventoryUserWidget* GetInventoryMenuWidget() const { return InventoryMenu; }
 	
 	UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
@@ -106,12 +104,10 @@ public:
 	 * Registers all existing inventory items for replication
 	 */
 	virtual void ReadyForReplication() override;
-	//~End of UObject interface
-	void ConstructInventory();
 
-	UPROPERTY()
-	TObjectPtr<UInventoryUserWidget> InventoryMenu;
-	bool bInventoryMenuOpen;
+
+
+
 private:
 	/**
 	 * The replicated list of inventory items
@@ -119,10 +115,7 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	FWitchPTInventoryList InventoryList;
-
-
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	TSubclassOf<UInventoryUserWidget> InventoryMenuClass;
+	
 
 	TWeakObjectPtr<APlayerController> OwningController;
 	

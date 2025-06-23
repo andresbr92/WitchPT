@@ -70,41 +70,18 @@ void AWitchPTPlayerController::LocalToggleCauldronMenu()
 }
 void AWitchPTPlayerController::OpenInventoryMenu()
 {
-	
-	if (!IsValid(InventoryManager->InventoryMenu)) 
+	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
-		return;
+		WitchPTHUD->ShowInventoryWidget();
 	}
-	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Visible);
-	InventoryManager->bInventoryMenuOpen = true;
-	
-	
-
-	FInputModeGameAndUI InputMode;
-	
-	SetInputMode(InputMode);
-	SetShowMouseCursor(true);
 }
 
 void AWitchPTPlayerController::CloseInventoryMenu()
 {
-	if (!IsValid(InventoryManager->InventoryMenu)) 
+	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
-		return;
+		WitchPTHUD->HideInventoryWidget();
 	}
-
-	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
-	InventoryManager->bInventoryMenuOpen = false;
-	
-	UE_LOG(LogTemp, Log, TEXT("Inventory menu closed - Visibility set to Collapsed"));
-
-	
-
-	FInputModeGameOnly InputMode;
-	SetInputMode(InputMode);
-	SetShowMouseCursor(false);
 }
 
 void AWitchPTPlayerController::LocalShowRitualWidget(ABaseInteractableAltar* Altar)
@@ -164,29 +141,30 @@ bool AWitchPTPlayerController::IsRitualWidgetVisible()
 
 void AWitchPTPlayerController::OpenCauldronMenu()
 {
-	if (!IsValid(CauldronAltarMenu)) return;
-
-	CauldronAltarMenu->SetVisibility(ESlateVisibility::Visible);
-	bCauldronMenuOpen = true;
-	
-	FInputModeGameAndUI InputMode;
-	
-	SetInputMode(InputMode);
-	SetShowMouseCursor(true);
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		// Find cauldron altar in level (or pass as parameter if available)
+		ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(
+			UGameplayStatics::GetActorOfClass(this, ACauldronAltar::StaticClass())
+		);
+        
+		if (CauldronAltar)
+		{
+			WitchPTHUD->ShowCauldronWithInventory(CauldronAltar);
+			bCauldronMenuOpen = true;
+		}
+	}
 }
 
 void AWitchPTPlayerController::CloseCauldronMenu()
 {
-	if (!IsValid(CauldronAltarMenu)) return;
-
-	CauldronAltarMenu->SetVisibility(ESlateVisibility::Collapsed);
-	bCauldronMenuOpen = false;
-
-	
-
-	FInputModeGameOnly InputMode;
-	SetInputMode(InputMode);
-	SetShowMouseCursor(false);
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->HideCauldronWithInventory();
+		bCauldronMenuOpen = false;
+	}
 }
 
 void AWitchPTPlayerController::Client_ShowRitualWidget_Implementation(ABaseInteractableAltar* Altar)
@@ -215,11 +193,6 @@ void AWitchPTPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
 	CreateHUDWidget();
-	if (IsValid(InventoryManager))
-	{
-		InventoryManager->ConstructInventory();
-	}
-	ConstructCauldronWidget();
 }
 
 void AWitchPTPlayerController::SetupInputComponent()
@@ -284,23 +257,6 @@ void AWitchPTPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	{
 		GetASC()->AbilityInputTagHeld(InputTag);
 	}
-}
-
-void AWitchPTPlayerController::ConstructCauldronWidget()
-{
-	if (!this->IsLocalController()) return;
-	CauldronAltarMenu = CreateWidget<UCauldronUserWidget>(this, CauldronAltarWidgetClass);
-	UCauldronWidgetController* CauldronWidgetController = URitualFunctionLibrary::SetCauldronWidgetController(this);
-	CauldronAltarMenu->SetWidgetController(CauldronWidgetController);
-	// Find ACauldronAltar in the level
-	ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(UGameplayStatics::GetActorOfClass(this, ACauldronAltar::StaticClass()));
-	if (CauldronAltar)
-	{
-		CauldronWidgetController->SetCauldronAltar(CauldronAltar);
-	}
-	CauldronWidgetController->BindCallbacksToDependencies();
-	CauldronAltarMenu->AddToViewport();
-	CloseCauldronMenu();
 }
 
 void AWitchPTPlayerController::CreateHUDWidget()

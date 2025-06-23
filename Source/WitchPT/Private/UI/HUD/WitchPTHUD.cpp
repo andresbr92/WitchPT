@@ -72,13 +72,26 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 	Widget->AddToViewport();
 
 	// Initialize Ritual Widget (but keep it hidden)
+	InitRitualWidget(PC, PS, ASC, AS);
+	// Initialize Inventory Widget (but keep it hidden)
+	InitInventoryWidget(PC, PS, ASC, AS);
+	// Initialize Cauldron Widget (but keep it hidden)
+	InitCauldronWidget(PC, PS, ASC, AS);
+	
+}
+
+void AWitchPTHUD::InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+	UAttributeSet* AS)
+{
 	if (RitualWidgetClass)
 	{
+		
 		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
 		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
 		
 		if (RitualWidget)
 		{
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			// Create and set the ritual widget controller
 			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
 			RitualWidget->SetWidgetController(RitualController);
@@ -86,6 +99,43 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 			// Add to viewport but set visibility to collapsed
 			RitualWidgetInstance->AddToViewport();
 			RitualWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+	UAttributeSet* AS)
+{
+	if (InventoryWidgetClass && !InventoryWidget)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+		InventoryWidget = Cast<UWitchPTUserWidget>(Widget);
+        
+		if (InventoryWidget)
+		{
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
+			InventoryWidget->SetWidgetController(Controller);
+			Widget->AddToViewport();
+			Widget->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+{
+	if (CauldronWidgetClass && !CauldronWidget)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
+		CauldronWidget = Cast<UWitchPTUserWidget>(Widget);
+        
+		if (CauldronWidget)
+		{
+			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
+			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
+			CauldronWidget->SetWidgetController(Controller);
+			Widget->AddToViewport();
+			Widget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }
@@ -147,6 +197,89 @@ void AWitchPTHUD::HideRitualWidget()
 		{
 			PC->SetInputMode(FInputModeGameOnly());
 			PC->bShowMouseCursor = false;
+		}
+	}
+}
+
+void AWitchPTHUD::ShowInventoryWidget()
+{
+	if (InventoryWidget)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+        
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			FInputModeGameAndUI InputMode;
+			PC->SetInputMode(InputMode);
+			PC->SetShowMouseCursor(true);
+		}
+	}
+	
+}
+
+void AWitchPTHUD::HideInventoryWidget()
+{
+	if (InventoryWidget)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+        
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeGameOnly());
+			PC->SetShowMouseCursor(false);
+		}
+	}
+}
+
+void AWitchPTHUD::ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar)
+{
+	if (CauldronWidget && InventoryWidget && CauldronWidgetController)
+	{
+		// Set up cauldron altar reference
+		CauldronWidgetController->SetCauldronAltar(CauldronAltar);
+		CauldronWidgetController->BindCallbacksToDependencies();
+		CauldronWidgetController->BroadcastInitialValues();
+        
+		// Show both widgets
+		CauldronWidget->SetVisibility(ESlateVisibility::Visible);
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+        
+		bCauldronWidgetVisible = true;
+        
+		// Set input mode
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			FInputModeGameAndUI InputMode;
+			PC->SetInputMode(InputMode);
+			PC->SetShowMouseCursor(true);
+		}
+	}
+}
+
+void AWitchPTHUD::HideCauldronWithInventory()
+{
+	if (CauldronWidget && InventoryWidget)
+	{
+		CauldronWidget->SetVisibility(ESlateVisibility::Collapsed);
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+        
+		bCauldronWidgetVisible = false;
+        
+		// Clear cauldron altar reference
+		if (CauldronWidgetController)
+		{
+			CauldronWidgetController->SetCauldronAltar(nullptr);
+		}
+        
+		// Restore game input mode
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeGameOnly());
+			PC->SetShowMouseCursor(false);
 		}
 	}
 }

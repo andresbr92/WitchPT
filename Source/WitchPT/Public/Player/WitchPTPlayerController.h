@@ -106,8 +106,7 @@ private:
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
-
-	void ConstructCauldronWidget();
+	
 
 	void CreateHUDWidget();
 	void OpenCauldronMenu();
@@ -117,8 +116,6 @@ private:
 	// Track ritual widget visibility state
 	bool bRitualWidgetVisible = false;
 	
-	UPROPERTY()
-	TObjectPtr<UCauldronUserWidget> CauldronAltarMenu;
 	
 };
 

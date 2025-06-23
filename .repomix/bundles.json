@@ -10,15 +10,16 @@
         "Source/WitchPT/Private/AbilitySystem/Interaction"
       ]
     },
-    "UI-524": {
+    "UI": {
       "name": "UI",
       "created": "2025-06-21T15:56:29.126Z",
-      "lastUsed": "2025-06-21T15:56:29.126Z",
+      "lastUsed": "2025-06-23T17:56:06.467Z",
       "tags": [],
       "files": [
         "Source/WitchPT/Private/UI",
         "Source/WitchPT/Public/UI"
-      ]
+      ],
+      "outputPath": "UI"
     }
   }
 }

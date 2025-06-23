@@ -29,9 +29,16 @@ public:
 	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
 	void ShowRitualWidget(class ARitualAltar* RitualAltar);
 	void HideRitualWidget();
+	void ShowInventoryWidget();
+	void HideInventoryWidget();
+	void ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar);
+	void HideCauldronWithInventory();
 
 
 
@@ -40,6 +47,17 @@ private:
 	TObjectPtr<UWitchPTUserWidget> OverlayWidget;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> OverlayWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> InventoryWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> InventoryWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> CauldronWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> CauldronWidgetClass;
+	bool bCauldronWidgetVisible = false;
 
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> RitualWidget;
