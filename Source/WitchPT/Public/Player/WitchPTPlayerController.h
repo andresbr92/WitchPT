@@ -32,15 +32,19 @@ public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar);
-	bool HasRitualWidgetInitialized(ABaseInteractableAltar* Altar);
+	void LocalShowRitualWidget(ABaseInteractableAltar* Altar);
+	void LocalHideRitualWidget();
+	bool IsRitualWidgetVisible();
 	void LocalToggleCauldronMenu();
 	
 
 
 
 	UFUNCTION(Client, Reliable)
-	void Client_InitializeRitualUserWidget(ABaseInteractableAltar* Altar);
+	void Client_ShowRitualWidget(ABaseInteractableAltar* Altar);
+
+	UFUNCTION(Client, Reliable)
+	void Client_HideRitualWidget();
 
 	UFUNCTION(Client, Reliable)
 	void Client_ToggleCauldronMenu();
@@ -49,6 +53,14 @@ public:
 	void OpenInventoryMenu();
 	UFUNCTION(BlueprintCallable, Category= "Inventory")
 	void CloseInventoryMenu();
+
+	// Debug console commands for testing (Step 4 testing)
+	UFUNCTION(Exec, Category = "Debug")
+	void ShowRitualWidgetDebug();
+	UFUNCTION(Exec, Category = "Debug") 
+	void HideRitualWidgetDebug();
+	UFUNCTION(Exec, Category = "Debug")
+	void ToggleRitualWidgetDebug();
 
 
 	UPROPERTY(Replicated, VisibleAnywhere)
@@ -102,9 +114,9 @@ private:
 	void CloseCauldronMenu();
 	bool bCauldronMenuOpen = false;
 	
-	// Array de altares para los que ya se ha creado un widget
-	UPROPERTY()
-	TObjectPtr<ARitualAltar> ThisRitualAltarHasWidget;
+	// Track ritual widget visibility state
+	bool bRitualWidgetVisible = false;
+	
 	UPROPERTY()
 	TObjectPtr<UCauldronUserWidget> CauldronAltarMenu;
 	

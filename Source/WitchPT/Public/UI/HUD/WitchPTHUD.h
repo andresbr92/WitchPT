@@ -30,6 +30,9 @@ public:
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
+	void ShowRitualWidget(class ARitualAltar* RitualAltar);
+	void HideRitualWidget();
+
 
 
 private:
@@ -38,6 +41,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> OverlayWidgetClass;
 
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> RitualWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> RitualWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;

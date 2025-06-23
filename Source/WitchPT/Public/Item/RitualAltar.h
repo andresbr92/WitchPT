@@ -214,6 +214,9 @@ public:
 	
 	void OccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position);
 	
+	// Override to handle widget hiding when players leave positions
+	virtual void UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position) override;
+	
 	// ---------------------------- GETTERS FOR WC ---------------------------- //
 	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }
 	ACharacter* GetCurrentActivePlayer() const { return CurrentActivePlayer; }
@@ -269,6 +272,10 @@ protected:
 	void BroadcastCorruptionChanged();
 	void BroadcastSequenceProgressChanged();
 	void BroadcastRitualCompleted();
+	
+	// ----------------------------------- UI MANAGEMENT HELPER FUNCTIONS ---------------------------------------------- //
+	// Helper function to hide ritual widgets for all participating players
+	void HideRitualWidgetForAllPlayers();
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> PrimaryAnimMontage;

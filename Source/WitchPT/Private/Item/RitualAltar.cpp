@@ -835,17 +835,22 @@ void ARitualAltar::CleanupRitual()
 	
 	// Clear timers
 	GetWorldTimerManager().ClearTimer(InputTimerHandle);
+	GetWorldTimerManager().ClearTimer(RitualStartCountdownHandle);
+	
+	// Hide ritual widgets for all participating players
+	HideRitualWidgetForAllPlayers();
 	
 	// Reset ritual-specific variables
 	CurrentSequenceIndex = 0;
 	InputSequence.Empty();
 	CurrentActivePlayer = nullptr;
+	ReadyPlayers.Empty();
 	
 	// Don't reset corruption or state - these should persist for UI feedback
 	
 	// Reset positions? This depends on design - maybe players stay in position
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up"));
+	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual cleaned up and widgets hidden"));
 }
 
 float ARitualAltar::GetCurrentSequenceProgress() const
@@ -996,21 +1001,22 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 	// Update ready players data
 	UpdateReadyPlayersData();
 
-	// Call the ritual state delegate for Listen Server
-	if (Player->GetLocalRole() == ROLE_Authority && Player->IsLocallyControlled()) // Im the listen server
+	// Show ritual widget for the player
+	AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetController());
+	if (PC)
 	{
-		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
-		if (!PC->HasRitualWidgetInitialized(this))
+		if (Player->IsLocallyControlled())
 		{
-			PC->LocalInitializeRitualUserWidget(this);
+			// Local player (either Listen Server or Client)
+			PC->LocalShowRitualWidget(this);
 		}
-	} else if (Player->HasAuthority() && !Player->IsLocallyControlled()) // The call is from the client
-	{
-		AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetOwner());
-		if (!PC->HasRitualWidgetInitialized(this))
+		else
 		{
-			PC->Client_InitializeRitualUserWidget(this);
+			// Remote player - use RPC
+			PC->Client_ShowRitualWidget(this);
 		}
+		
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Showing ritual widget for player %s"), *Player->GetName());
 	}
 }
 
@@ -1027,9 +1033,15 @@ void ARitualAltar::Multicast_OnRitualSucceeded_Implementation()
 	bRitualCompleted = true;
 	bRitualWasSuccessful = true;
 	
+	// Hide ritual widgets for all players (since this is multicast, each client handles their own widget)
+	if (HasAuthority())
+	{
+		HideRitualWidgetForAllPlayers();
+	}
+	
 	DestroyAltarPositions();
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback"));
+	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual succeeded feedback and widgets hidden"));
 }
 
 void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
@@ -1045,7 +1057,13 @@ void ARitualAltar::Multicast_OnRitualCatastrophicFail_Implementation()
 	bRitualCompleted = true;
 	bRitualWasSuccessful = false;
 	
-	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback"));
+	// Hide ritual widgets for all players (since this is multicast, each client handles their own widget)
+	if (HasAuthority())
+	{
+		HideRitualWidgetForAllPlayers();
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Ritual catastrophically failed feedback and widgets hidden"));
 }
 
 float ARitualAltar::GetCorruptionPercentage() const
@@ -1056,5 +1074,86 @@ float ARitualAltar::GetCorruptionPercentage() const
 	}
 	
 	return CorruptionAmount / MaxCorruption;
+}
+
+void ARitualAltar::HideRitualWidgetForAllPlayers()
+{
+	// Hide ritual widget for all participating players
+	for (ACharacter* Player : ParticipatingPlayers)
+	{
+		if (Player)
+		{
+			AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetController());
+			if (PC)
+			{
+							// Hide widget based on player's network role
+			if (Player->IsLocallyControlled())
+			{
+				// Local player (either Listen Server or Client)
+				PC->LocalHideRitualWidget();
+			}
+			else
+			{
+				// Remote player - use RPC
+				PC->Client_HideRitualWidget();
+			}
+				
+				UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Hidden ritual widget for player %s"), *Player->GetName());
+			}
+		}
+	}
+}
+
+void ARitualAltar::UnoccupyPosition(ACharacter* Player, ABaseInteractionPosition* Position)
+{
+	if (!Player || !HasAuthority())
+	{
+		return;
+	}
+	
+	// Hide the ritual widget for this specific player
+	AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Player->GetController());
+	if (PC)
+	{
+		// Always try to hide the widget - no need to check visibility since it's not replicated
+		if (Player->IsLocallyControlled())
+		{
+			// Local player (either Listen Server or Client)
+			PC->LocalHideRitualWidget();
+		}
+		else
+		{
+			// Remote player - use RPC
+			PC->Client_HideRitualWidget();
+		}
+		
+		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Hidden ritual widget for leaving player %s"), *Player->GetName());
+	}
+	
+	// Call parent implementation to handle the actual position logic
+	Super::UnoccupyPosition(Player, Position);
+	
+	// Update ready players data if needed
+	ReadyPlayers.Remove(Player);
+	UpdateReadyPlayersData();
+	
+	// Check if we should change ritual state
+	if (ParticipatingPlayers.Num() == 0)
+	{
+		// No players left, reset to inactive
+		CurrentRitualState = EInteractionState::Inactive;
+		BroadcastRitualStateChanged();
+		
+		// Clear any ongoing ritual data
+		CurrentSequenceIndex = 0;
+		InputSequence.Empty();
+		CurrentActivePlayer = nullptr;
+		ReadyPlayers.Empty();
+		UpdateReadyPlayersData();
+		
+		// Clear timers
+		GetWorldTimerManager().ClearTimer(RitualStartCountdownHandle);
+		GetWorldTimerManager().ClearTimer(InputTimerHandle);
+	}
 }
 

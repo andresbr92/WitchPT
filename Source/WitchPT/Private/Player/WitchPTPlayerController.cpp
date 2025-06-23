@@ -107,11 +107,11 @@ void AWitchPTPlayerController::CloseInventoryMenu()
 	SetShowMouseCursor(false);
 }
 
-void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar)
+void AWitchPTPlayerController::LocalShowRitualWidget(ABaseInteractableAltar* Altar)
 {
-	if (!Altar || !Altar->AltarUserWidgetClass || !IsLocalController())
+	if (!Altar || !IsLocalController())
 	{
-		UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Invalid altar or widget class!"));
+		UE_LOG(LogTemp, Error, TEXT("LocalShowRitualWidget: Invalid altar or not local controller!"));
 		return;
 	}
 	
@@ -119,46 +119,47 @@ void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractable
 	{
 		// Cast the altar to a ritual altar
 		ARitualAltar* RitualAltar = Cast<ARitualAltar>(Altar);
-
-		if (!ThisRitualAltarHasWidget || ThisRitualAltarHasWidget != RitualAltar)
-		{
-			ThisRitualAltarHasWidget = RitualAltar;
-		}
 		
-		URitualUserWidget* RitualUserWidget = CreateWidget<URitualUserWidget>(this, Altar->AltarUserWidgetClass);
-		
-		if (IsValid(RitualUserWidget))
+		// Get the HUD and show the ritual widget
+		AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+		if (WitchPTHUD)
 		{
-			// Get or create the ritual widget controller
-			URitualWidgetController* RitualWidgetController = URitualFunctionLibrary::SetRitualWidgetController(this);
-			
-			if (!RitualWidgetController)
-			{
-				UE_LOG(LogTemp, Error, TEXT("InitializeRitualUserWidget: Failed to get or create RitualWidgetController!"));
-				return;
-			}
-			
-			RitualWidgetController->SetRitualAltar(RitualAltar);
-			// Set widget controller reference for the user widget
-			RitualUserWidget->SetWidgetController(RitualWidgetController);
-			
-			
-			// Add the widget to viewport
-			RitualUserWidget->AddToViewport();
+			WitchPTHUD->ShowRitualWidget(RitualAltar);
+			bRitualWidgetVisible = true;
+			UE_LOG(LogTemp, Log, TEXT("LocalShowRitualWidget: Ritual widget shown for altar %s"), *RitualAltar->GetName());
 		}
-			
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("LocalShowRitualWidget: Failed to get WitchPTHUD!"));
+		}
 	}
-	
-	
 }
 
-bool AWitchPTPlayerController::HasRitualWidgetInitialized(ABaseInteractableAltar* Altar)
+void AWitchPTPlayerController::LocalHideRitualWidget()
 {
-	if (Altar->IsA<ARitualAltar>())
+	if (!IsLocalController())
 	{
-		return ThisRitualAltarHasWidget == Altar;
+		UE_LOG(LogTemp, Error, TEXT("LocalHideRitualWidget: Not local controller!"));
+		return;
 	}
-	return false;
+	
+	// Get the HUD and hide the ritual widget
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->HideRitualWidget();
+		bRitualWidgetVisible = false;
+		UE_LOG(LogTemp, Log, TEXT("LocalHideRitualWidget: Ritual widget hidden"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("LocalHideRitualWidget: Failed to get WitchPTHUD!"));
+	}
+}
+
+bool AWitchPTPlayerController::IsRitualWidgetVisible()
+{
+	return bRitualWidgetVisible;
 }
 
 void AWitchPTPlayerController::OpenCauldronMenu()
@@ -188,12 +189,16 @@ void AWitchPTPlayerController::CloseCauldronMenu()
 	SetShowMouseCursor(false);
 }
 
-void AWitchPTPlayerController::Client_InitializeRitualUserWidget_Implementation(ABaseInteractableAltar* Altar)
+void AWitchPTPlayerController::Client_ShowRitualWidget_Implementation(ABaseInteractableAltar* Altar)
 {
-	if (!HasRitualWidgetInitialized(Altar))
-	{
-		LocalInitializeRitualUserWidget(Altar);
-	}
+	// Always call LocalShowRitualWidget - it handles the visibility check locally
+	LocalShowRitualWidget(Altar);
+}
+
+void AWitchPTPlayerController::Client_HideRitualWidget_Implementation()
+{
+	// Always call LocalHideRitualWidget - it handles the visibility check locally
+	LocalHideRitualWidget();
 }
 
 void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
@@ -316,4 +321,38 @@ UWitchPTAbilitySystemComponent* AWitchPTPlayerController::GetASC()
 		WitchPtAbilitySystemComponent = Cast<UWitchPTAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
 	}
 	return WitchPtAbilitySystemComponent;
+}
+
+// Debug console commands for testing Step 4
+void AWitchPTPlayerController::ShowRitualWidgetDebug()
+{
+	// Find a ritual altar in the level for testing
+	ARitualAltar* TestAltar = Cast<ARitualAltar>(UGameplayStatics::GetActorOfClass(this, ARitualAltar::StaticClass()));
+	if (TestAltar)
+	{
+		LocalShowRitualWidget(TestAltar);
+		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: Showing ritual widget for test altar"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: No ritual altar found in level"));
+	}
+}
+
+void AWitchPTPlayerController::HideRitualWidgetDebug()
+{
+	LocalHideRitualWidget();
+	UE_LOG(LogTemp, Warning, TEXT("[DEBUG] HideRitualWidgetDebug: Hiding ritual widget"));
+}
+
+void AWitchPTPlayerController::ToggleRitualWidgetDebug()
+{
+	if (IsRitualWidgetVisible())
+	{
+		HideRitualWidgetDebug();
+	}
+	else
+	{
+		ShowRitualWidgetDebug();
+	}
 }

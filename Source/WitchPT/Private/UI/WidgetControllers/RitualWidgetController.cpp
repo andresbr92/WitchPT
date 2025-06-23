@@ -15,51 +15,63 @@ URitualWidgetController::URitualWidgetController()
 
 void URitualWidgetController::BroadcastInitialValues()
 {
-    // If we have an altar, broadcast its initial values
-    if (RitualAltar)
+    // Enhanced null safety - only broadcast if we have a valid altar
+    if (!IsValid(RitualAltar))
     {
-        // Broadcast current state
-        OnRitualStateChanged.Broadcast(RitualAltar->GetCurrentRitualState());
-        
-        // Broadcast ready players data
-        FRitualReadyPlayersData ReadyPlayersData;
-        ReadyPlayersData.TotalPlayers = RitualAltar->GetNumberOfTotalPlayers();
-        ReadyPlayersData.ReadyPlayers = RitualAltar->GetNumberOfReadyPlayers();
-        OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
-        
-        // Broadcast current turn data (processed for local player)
-        FUIRitualData CurrentTurnData = RitualAltar->GetCurrentTurnData();
-        FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(CurrentTurnData);
-        OnTurnDataChanged.Broadcast(ProcessedTurnData);
-        
-        // Broadcast corruption
-        OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
-        
-        // Broadcast sequence progress
-        OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
+        UE_LOG(LogTemp, Warning, TEXT("[RitualWidgetController] BroadcastInitialValues called with invalid altar"));
+        return;
     }
+    
+    // Broadcast current state
+    OnRitualStateChanged.Broadcast(RitualAltar->GetCurrentRitualState());
+    
+    // Broadcast ready players data
+    FRitualReadyPlayersData ReadyPlayersData;
+    ReadyPlayersData.TotalPlayers = RitualAltar->GetNumberOfTotalPlayers();
+    ReadyPlayersData.ReadyPlayers = RitualAltar->GetNumberOfReadyPlayers();
+    OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
+    
+    // Broadcast current turn data (processed for local player)
+    FUIRitualData CurrentTurnData = RitualAltar->GetCurrentTurnData();
+    FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(CurrentTurnData);
+    OnTurnDataChanged.Broadcast(ProcessedTurnData);
+    
+    // Broadcast corruption
+    OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
+    
+    // Broadcast sequence progress
+    OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
+    
+    UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Initial values broadcasted"));
 }
 
 void URitualWidgetController::BindCallbacksToDependencies()
 {
-    // Bind to altar delegates if it exists
-    if (RitualAltar)
+    // Enhanced null safety - only bind if we have a valid altar
+    if (!IsValid(RitualAltar))
     {
-        // Bind to all the new dynamic multicast delegates
-        RitualAltar->OnRitualStateChangedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualStateChanged);
-        RitualAltar->OnReadyPlayersChangedEvent.AddDynamic(this, &URitualWidgetController::HandleReadyPlayersChanged);
-        RitualAltar->OnCountdownTickEvent.AddDynamic(this, &URitualWidgetController::HandleCountdownTick);
-        RitualAltar->OnTurnDataChangedEvent.AddDynamic(this, &URitualWidgetController::HandleTurnDataChanged);
-        RitualAltar->OnCorruptionChangedEvent.AddDynamic(this, &URitualWidgetController::HandleCorruptionChanged);
-        RitualAltar->OnSequenceProgressChangedEvent.AddDynamic(this, &URitualWidgetController::HandleSequenceProgressChanged);
-        RitualAltar->OnRitualCompletedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
+        UE_LOG(LogTemp, Warning, TEXT("[RitualWidgetController] BindCallbacksToDependencies called with invalid altar"));
+        return;
     }
+    
+    // Bind to all the dynamic multicast delegates
+    RitualAltar->OnRitualStateChangedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualStateChanged);
+    RitualAltar->OnReadyPlayersChangedEvent.AddDynamic(this, &URitualWidgetController::HandleReadyPlayersChanged);
+    RitualAltar->OnCountdownTickEvent.AddDynamic(this, &URitualWidgetController::HandleCountdownTick);
+    RitualAltar->OnTurnDataChangedEvent.AddDynamic(this, &URitualWidgetController::HandleTurnDataChanged);
+    RitualAltar->OnCorruptionChangedEvent.AddDynamic(this, &URitualWidgetController::HandleCorruptionChanged);
+    RitualAltar->OnSequenceProgressChangedEvent.AddDynamic(this, &URitualWidgetController::HandleSequenceProgressChanged);
+    RitualAltar->OnRitualCompletedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
+    
+    UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Callbacks bound to dependencies"));
 }
 
 void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
 {
+    // Enhanced null safety and cleanup
+    
     // Unbind any existing callbacks first
-    if (RitualAltar != nullptr)
+    if (IsValid(RitualAltar))
     {
         RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
         RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
@@ -68,35 +80,44 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
         RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
         RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
         RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
+        
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Unbound callbacks from previous altar"));
     }
     
     // Assign the new altar
     RitualAltar = InRitualAltar;
     
     // Rebind and broadcast if we have a valid altar
-    if (RitualAltar)
+    if (IsValid(RitualAltar))
     {
         BindCallbacksToDependencies();
         BroadcastInitialValues();
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Set new ritual altar and bound callbacks"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Cleared ritual altar reference"));
     }
 }
 
 bool URitualWidgetController::IsLocalPlayerActive() const
 {
-    if (!RitualAltar || !PlayerController)
+    // Enhanced null safety checks
+    if (!IsValid(RitualAltar) || !IsValid(PlayerController))
     {
         return false;
     }
     
     // Get the local character
     ACharacter* LocalCharacter = Cast<ACharacter>(PlayerController->GetPawn());
-    if (!LocalCharacter)
+    if (!IsValid(LocalCharacter))
     {
         return false;
     }
     
     // Check if this character is the active player
-    return RitualAltar->GetCurrentActivePlayer() == LocalCharacter;
+    ACharacter* ActivePlayer = RitualAltar->GetCurrentActivePlayer();
+    return IsValid(ActivePlayer) && ActivePlayer == LocalCharacter;
 }
 
 FUIRitualData URitualWidgetController::ProcessTurnDataForLocalPlayer(const FUIRitualData& InTurnData) const
@@ -164,8 +185,8 @@ void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
 {
     OnRitualCompleted.Broadcast(bWasSuccessful);
     
-    // Unbind all delegates when ritual is completed to prevent memory leaks
-    if (RitualAltar)
+    // Enhanced cleanup: Unbind all delegates when ritual is completed to prevent memory leaks
+    if (IsValid(RitualAltar))
     {
         RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
         RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
@@ -174,7 +195,12 @@ void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
         RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
         RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
         RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
+        
+        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Unbound all delegates after ritual completion"));
     }
+    
+    // Clear the altar reference
+    RitualAltar = nullptr;
 }
 
 

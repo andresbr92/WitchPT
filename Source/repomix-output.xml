@@ -3600,6 +3600,7 @@ const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragment
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Components/PanelWidget.h"
 #include "Engine/ActorChannel.h"
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
@@ -3608,6 +3609,8 @@ const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragment
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/Widgets/Inventory/InventoryUserWidget.h"
+#include "Inventory/InventoryFunctionLibrary.h"
+#include "UI/WidgetControllers/InventoryWidgetController.h"
 
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(WitchPTInventoryManagerComponent)
@@ -3616,11 +3619,13 @@ const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragment
 void UWitchPTInventoryManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	ConstructInventory();
+	// Inventory widget is now constructed by HUD system for proper timing
+	// Don't construct here - will be called by HUD::InitInventoryWidget
 }
 
 UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
+	, bInventoryMenuOpen(false)
 	, InventoryList(this)
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -3875,55 +3880,42 @@ void UWitchPTInventoryManagerComponent::ReadyForReplication()
 	}
 }
 
-void UWitchPTInventoryManagerComponent::ToggleInventoryMenu()
-{
-	if (bInventoryMenuOpen)
-	{
-		CloseInventoryMenu();
-	}
-	else
-	{
-		OpenInventoryMenu();
-	}
-}
 
 void UWitchPTInventoryManagerComponent::ConstructInventory()
 {
-	OwningController = Cast<APlayerController>(GetOwner());
-	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
-	if (!OwningController->IsLocalController()) return;
-	InventoryMenu = CreateWidget<UInventoryUserWidget>(OwningController.Get(), InventoryMenuClass);
-	InventoryMenu->AddToViewport();
-	CloseInventoryMenu();
-}
-
-void UWitchPTInventoryManagerComponent::OpenInventoryMenu()
-{
-	if (!IsValid(InventoryMenu)) return;
-
-	InventoryMenu->SetVisibility(ESlateVisibility::Visible);
-	bInventoryMenuOpen = true;
-
-	if (!OwningController.IsValid()) return;
-
-	FInputModeGameAndUI InputMode;
+	// Ensure we have a valid owning controller
+	if (!OwningController.IsValid())
+	{
+		OwningController = Cast<APlayerController>(GetOwner());
+	}
 	
-	OwningController->SetInputMode(InputMode);
-	OwningController->SetShowMouseCursor(true);
-}
-
-void UWitchPTInventoryManagerComponent::CloseInventoryMenu()
-{
-	if (!IsValid(InventoryMenu)) return;
-
+	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
+	if (!OwningController->IsLocalController()) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ConstructInventory called on non-local controller, skipping widget creation"));
+		return;
+	}
+	
+	// Check if widget already exists
+	if (IsValid(InventoryMenu))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InventoryMenu already exists, skipping recreation"));
+		return;
+	}
+	
+	// Check if InventoryMenuClass is set
+	if (!InventoryMenuClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("InventoryMenuClass is not set! Please assign it in the Blueprint."));
+		return;
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("Creating InventoryMenu widget on-demand..."));
+	InventoryMenu = CreateWidget<UInventoryUserWidget>(OwningController.Get(), InventoryMenuClass);
+	
+	InventoryMenu->AddToViewport(1);
 	InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
-	bInventoryMenuOpen = false;
-
-	if (!OwningController.IsValid()) return;
-
-	FInputModeGameOnly InputMode;
-	OwningController->SetInputMode(InputMode);
-	OwningController->SetShowMouseCursor(false);
+	
 }
 </file>
 
@@ -7988,6 +7980,7 @@ void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
 #include "UI/Widgets/CauldronUserWidget.h"
+#include "UI/Widgets/Inventory/InventoryUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
 #include "WitchPT/WitchPT.h"
 
@@ -8035,6 +8028,44 @@ void AWitchPTPlayerController::LocalToggleCauldronMenu()
 	{
 		OpenCauldronMenu();
 	}
+}
+void AWitchPTPlayerController::OpenInventoryMenu()
+{
+	
+	if (!IsValid(InventoryManager->InventoryMenu)) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
+		return;
+	}
+	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Visible);
+	InventoryManager->bInventoryMenuOpen = true;
+	
+	
+
+	FInputModeGameAndUI InputMode;
+	
+	SetInputMode(InputMode);
+	SetShowMouseCursor(true);
+}
+
+void AWitchPTPlayerController::CloseInventoryMenu()
+{
+	if (!IsValid(InventoryManager->InventoryMenu)) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
+		return;
+	}
+
+	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
+	InventoryManager->bInventoryMenuOpen = false;
+	
+	UE_LOG(LogTemp, Log, TEXT("Inventory menu closed - Visibility set to Collapsed"));
+
+	
+
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+	SetShowMouseCursor(false);
 }
 
 void AWitchPTPlayerController::LocalInitializeRitualUserWidget(ABaseInteractableAltar* Altar)
@@ -8140,6 +8171,10 @@ void AWitchPTPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
 	CreateHUDWidget();
+	if (IsValid(InventoryManager))
+	{
+		InventoryManager->ConstructInventory();
+	}
 	ConstructCauldronWidget();
 }
 
@@ -8281,6 +8316,8 @@ UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 
 #include "UI/HUD/WitchPTHUD.h"
 
+#include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Player/WitchPTPlayerController.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
@@ -11593,7 +11630,11 @@ public:
 	 */
 	virtual void ReadyForReplication() override;
 	//~End of UObject interface
+	void ConstructInventory();
 
+	UPROPERTY()
+	TObjectPtr<UInventoryUserWidget> InventoryMenu;
+	bool bInventoryMenuOpen;
 private:
 	/**
 	 * The replicated list of inventory items
@@ -11601,22 +11642,14 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	FWitchPTInventoryList InventoryList;
-	UPROPERTY()
-	TObjectPtr<UInventoryUserWidget> InventoryMenu;
 
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInventoryUserWidget> InventoryMenuClass;
 
 	TWeakObjectPtr<APlayerController> OwningController;
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void ToggleInventoryMenu();
-	void ConstructInventory();
-	bool bInventoryMenuOpen;
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void OpenInventoryMenu();
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void CloseInventoryMenu();
+	
+
 };
 </file>
 
@@ -13124,6 +13157,11 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void Client_ToggleCauldronMenu();
+
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
+	void OpenInventoryMenu();
+	UFUNCTION(BlueprintCallable, Category= "Inventory")
+	void CloseInventoryMenu();
 
 
 	UPROPERTY(Replicated, VisibleAnywhere)
