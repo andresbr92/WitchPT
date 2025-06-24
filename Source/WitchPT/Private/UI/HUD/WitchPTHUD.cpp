@@ -244,7 +244,6 @@ void AWitchPTHUD::ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar)
         
 		// Show both widgets
 		CauldronWidget->SetVisibility(ESlateVisibility::Visible);
-		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
         
 		bCauldronWidgetVisible = true;
         
@@ -272,6 +271,7 @@ void AWitchPTHUD::HideCauldronWithInventory()
 		if (CauldronWidgetController)
 		{
 			CauldronWidgetController->SetCauldronAltar(nullptr);
+			CauldronWidgetController->UnbindCallbacksFromDependencies();
 		}
         
 		// Restore game input mode

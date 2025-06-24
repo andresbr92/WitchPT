@@ -6,15 +6,8 @@
 void UCauldronUserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	FInputModeGameAndUI InputMode;
-	// set the input mode to the player controller
-	
-	if (APlayerController* OwningController = GetOwningPlayer())
-	{
-		OwningController->SetInputMode(InputMode);
-		OwningController->SetShowMouseCursor(true);
-	}
-	
+	// Input mode is now managed by HUD's ShowCauldronWithInventory/HideCauldronWithInventory methods
+	// Don't set input mode here as this is called during widget creation, not visibility changes
 }
 
 FReply UCauldronUserWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

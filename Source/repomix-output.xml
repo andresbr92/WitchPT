@@ -3619,13 +3619,11 @@ const UWitchPTInventoryItemFragment* UWitchPTInventoryItemInstance::FindFragment
 void UWitchPTInventoryManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	// Inventory widget is now constructed by HUD system for proper timing
-	// Don't construct here - will be called by HUD::InitInventoryWidget
+
 }
 
 UWitchPTInventoryManagerComponent::UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
-	, bInventoryMenuOpen(false)
 	, InventoryList(this)
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -3878,44 +3876,6 @@ void UWitchPTInventoryManagerComponent::ReadyForReplication()
 			}
 		}
 	}
-}
-
-
-void UWitchPTInventoryManagerComponent::ConstructInventory()
-{
-	// Ensure we have a valid owning controller
-	if (!OwningController.IsValid())
-	{
-		OwningController = Cast<APlayerController>(GetOwner());
-	}
-	
-	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
-	if (!OwningController->IsLocalController()) 
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ConstructInventory called on non-local controller, skipping widget creation"));
-		return;
-	}
-	
-	// Check if widget already exists
-	if (IsValid(InventoryMenu))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InventoryMenu already exists, skipping recreation"));
-		return;
-	}
-	
-	// Check if InventoryMenuClass is set
-	if (!InventoryMenuClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("InventoryMenuClass is not set! Please assign it in the Blueprint."));
-		return;
-	}
-	
-	UE_LOG(LogTemp, Log, TEXT("Creating InventoryMenu widget on-demand..."));
-	InventoryMenu = CreateWidget<UInventoryUserWidget>(OwningController.Get(), InventoryMenuClass);
-	
-	InventoryMenu->AddToViewport(1);
-	InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
-	
 }
 </file>
 
@@ -8130,41 +8090,18 @@ void AWitchPTPlayerController::LocalToggleCauldronMenu()
 }
 void AWitchPTPlayerController::OpenInventoryMenu()
 {
-	
-	if (!IsValid(InventoryManager->InventoryMenu)) 
+	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
-		return;
+		WitchPTHUD->ShowInventoryWidget();
 	}
-	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Visible);
-	InventoryManager->bInventoryMenuOpen = true;
-	
-	
-
-	FInputModeGameAndUI InputMode;
-	
-	SetInputMode(InputMode);
-	SetShowMouseCursor(true);
 }
 
 void AWitchPTPlayerController::CloseInventoryMenu()
 {
-	if (!IsValid(InventoryManager->InventoryMenu)) 
+	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("CloseInventoryMenu: InventoryMenu is not valid!"));
-		return;
+		WitchPTHUD->HideInventoryWidget();
 	}
-
-	InventoryManager->InventoryMenu->SetVisibility(ESlateVisibility::Collapsed);
-	InventoryManager->bInventoryMenuOpen = false;
-	
-	UE_LOG(LogTemp, Log, TEXT("Inventory menu closed - Visibility set to Collapsed"));
-
-	
-
-	FInputModeGameOnly InputMode;
-	SetInputMode(InputMode);
-	SetShowMouseCursor(false);
 }
 
 void AWitchPTPlayerController::LocalShowRitualWidget(ABaseInteractableAltar* Altar)
@@ -8224,29 +8161,30 @@ bool AWitchPTPlayerController::IsRitualWidgetVisible()
 
 void AWitchPTPlayerController::OpenCauldronMenu()
 {
-	if (!IsValid(CauldronAltarMenu)) return;
-
-	CauldronAltarMenu->SetVisibility(ESlateVisibility::Visible);
-	bCauldronMenuOpen = true;
-	
-	FInputModeGameAndUI InputMode;
-	
-	SetInputMode(InputMode);
-	SetShowMouseCursor(true);
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		// Find cauldron altar in level (or pass as parameter if available)
+		ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(
+			UGameplayStatics::GetActorOfClass(this, ACauldronAltar::StaticClass())
+		);
+        
+		if (CauldronAltar)
+		{
+			WitchPTHUD->ShowCauldronWithInventory(CauldronAltar);
+			bCauldronMenuOpen = true;
+		}
+	}
 }
 
 void AWitchPTPlayerController::CloseCauldronMenu()
 {
-	if (!IsValid(CauldronAltarMenu)) return;
-
-	CauldronAltarMenu->SetVisibility(ESlateVisibility::Collapsed);
-	bCauldronMenuOpen = false;
-
-	
-
-	FInputModeGameOnly InputMode;
-	SetInputMode(InputMode);
-	SetShowMouseCursor(false);
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->HideCauldronWithInventory();
+		bCauldronMenuOpen = false;
+	}
 }
 
 void AWitchPTPlayerController::Client_ShowRitualWidget_Implementation(ABaseInteractableAltar* Altar)
@@ -8275,11 +8213,6 @@ void AWitchPTPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
 	CreateHUDWidget();
-	if (IsValid(InventoryManager))
-	{
-		InventoryManager->ConstructInventory();
-	}
-	ConstructCauldronWidget();
 }
 
 void AWitchPTPlayerController::SetupInputComponent()
@@ -8344,23 +8277,6 @@ void AWitchPTPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	{
 		GetASC()->AbilityInputTagHeld(InputTag);
 	}
-}
-
-void AWitchPTPlayerController::ConstructCauldronWidget()
-{
-	if (!this->IsLocalController()) return;
-	CauldronAltarMenu = CreateWidget<UCauldronUserWidget>(this, CauldronAltarWidgetClass);
-	UCauldronWidgetController* CauldronWidgetController = URitualFunctionLibrary::SetCauldronWidgetController(this);
-	CauldronAltarMenu->SetWidgetController(CauldronWidgetController);
-	// Find ACauldronAltar in the level
-	ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(UGameplayStatics::GetActorOfClass(this, ACauldronAltar::StaticClass()));
-	if (CauldronAltar)
-	{
-		CauldronWidgetController->SetCauldronAltar(CauldronAltar);
-	}
-	CauldronWidgetController->BindCallbacksToDependencies();
-	CauldronAltarMenu->AddToViewport();
-	CloseCauldronMenu();
 }
 
 void AWitchPTPlayerController::CreateHUDWidget()
@@ -8523,13 +8439,26 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 	Widget->AddToViewport();
 
 	// Initialize Ritual Widget (but keep it hidden)
+	InitRitualWidget(PC, PS, ASC, AS);
+	// Initialize Inventory Widget (but keep it hidden)
+	InitInventoryWidget(PC, PS, ASC, AS);
+	// Initialize Cauldron Widget (but keep it hidden)
+	InitCauldronWidget(PC, PS, ASC, AS);
+	
+}
+
+void AWitchPTHUD::InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+	UAttributeSet* AS)
+{
 	if (RitualWidgetClass)
 	{
+		
 		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
 		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
 		
 		if (RitualWidget)
 		{
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			// Create and set the ritual widget controller
 			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
 			RitualWidget->SetWidgetController(RitualController);
@@ -8537,6 +8466,43 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 			// Add to viewport but set visibility to collapsed
 			RitualWidgetInstance->AddToViewport();
 			RitualWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+	UAttributeSet* AS)
+{
+	if (InventoryWidgetClass && !InventoryWidget)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+		InventoryWidget = Cast<UWitchPTUserWidget>(Widget);
+        
+		if (InventoryWidget)
+		{
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
+			InventoryWidget->SetWidgetController(Controller);
+			Widget->AddToViewport();
+			Widget->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+{
+	if (CauldronWidgetClass && !CauldronWidget)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
+		CauldronWidget = Cast<UWitchPTUserWidget>(Widget);
+        
+		if (CauldronWidget)
+		{
+			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
+			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
+			CauldronWidget->SetWidgetController(Controller);
+			Widget->AddToViewport();
+			Widget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }
@@ -8598,6 +8564,89 @@ void AWitchPTHUD::HideRitualWidget()
 		{
 			PC->SetInputMode(FInputModeGameOnly());
 			PC->bShowMouseCursor = false;
+		}
+	}
+}
+
+void AWitchPTHUD::ShowInventoryWidget()
+{
+	if (InventoryWidget)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+        
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			FInputModeGameAndUI InputMode;
+			PC->SetInputMode(InputMode);
+			PC->SetShowMouseCursor(true);
+		}
+	}
+	
+}
+
+void AWitchPTHUD::HideInventoryWidget()
+{
+	if (InventoryWidget)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+        
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeGameOnly());
+			PC->SetShowMouseCursor(false);
+		}
+	}
+}
+
+void AWitchPTHUD::ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar)
+{
+	if (CauldronWidget && InventoryWidget && CauldronWidgetController)
+	{
+		// Set up cauldron altar reference
+		CauldronWidgetController->SetCauldronAltar(CauldronAltar);
+		CauldronWidgetController->BindCallbacksToDependencies();
+		CauldronWidgetController->BroadcastInitialValues();
+        
+		// Show both widgets
+		CauldronWidget->SetVisibility(ESlateVisibility::Visible);
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+        
+		bCauldronWidgetVisible = true;
+        
+		// Set input mode
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			FInputModeGameAndUI InputMode;
+			PC->SetInputMode(InputMode);
+			PC->SetShowMouseCursor(true);
+		}
+	}
+}
+
+void AWitchPTHUD::HideCauldronWithInventory()
+{
+	if (CauldronWidget && InventoryWidget)
+	{
+		CauldronWidget->SetVisibility(ESlateVisibility::Collapsed);
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+        
+		bCauldronWidgetVisible = false;
+        
+		// Clear cauldron altar reference
+		if (CauldronWidgetController)
+		{
+			CauldronWidgetController->SetCauldronAltar(nullptr);
+		}
+        
+		// Restore game input mode
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeGameOnly());
+			PC->SetShowMouseCursor(false);
 		}
 	}
 }
@@ -11888,8 +11937,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	UInventoryUserWidget* GetInventoryMenuWidget() const { return InventoryMenu; }
 	
 	UWitchPTInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
@@ -11954,12 +12001,10 @@ public:
 	 * Registers all existing inventory items for replication
 	 */
 	virtual void ReadyForReplication() override;
-	//~End of UObject interface
-	void ConstructInventory();
 
-	UPROPERTY()
-	TObjectPtr<UInventoryUserWidget> InventoryMenu;
-	bool bInventoryMenuOpen;
+
+
+
 private:
 	/**
 	 * The replicated list of inventory items
@@ -11967,10 +12012,7 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	FWitchPTInventoryList InventoryList;
-
-
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	TSubclassOf<UInventoryUserWidget> InventoryMenuClass;
+	
 
 	TWeakObjectPtr<APlayerController> OwningController;
 	
@@ -13551,8 +13593,7 @@ private:
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
-
-	void ConstructCauldronWidget();
+	
 
 	void CreateHUDWidget();
 	void OpenCauldronMenu();
@@ -13562,8 +13603,6 @@ private:
 	// Track ritual widget visibility state
 	bool bRitualWidgetVisible = false;
 	
-	UPROPERTY()
-	TObjectPtr<UCauldronUserWidget> CauldronAltarMenu;
 	
 };
 </file>
@@ -13849,9 +13888,16 @@ public:
 	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
 	void ShowRitualWidget(class ARitualAltar* RitualAltar);
 	void HideRitualWidget();
+	void ShowInventoryWidget();
+	void HideInventoryWidget();
+	void ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar);
+	void HideCauldronWithInventory();
 
 
 
@@ -13860,6 +13906,17 @@ private:
 	TObjectPtr<UWitchPTUserWidget> OverlayWidget;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> OverlayWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> InventoryWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> InventoryWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> CauldronWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> CauldronWidgetClass;
+	bool bCauldronWidgetVisible = false;
 
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> RitualWidget;

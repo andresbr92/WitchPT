@@ -26,6 +26,7 @@ public:
 	UCauldronWidgetController();
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
+	void UnbindCallbacksFromDependencies();
 
 	// Delegates for widgets to subscribe to
 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")

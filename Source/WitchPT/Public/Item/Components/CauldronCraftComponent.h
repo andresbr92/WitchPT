@@ -294,6 +294,9 @@ public:
 	UWitchPTInventoryItemInstance* GetBaseIngredient() const;
 	UWitchPTInventoryItemInstance* GetPrincipalIngredient() const;
 	UWitchPTInventoryItemInstance* GetModifierIngredient() const;
+	TSubclassOf<UUserWidget> GetBaseIngredientIcon() const;
+	TSubclassOf<UUserWidget> GetPrincipalIngredientIcon() const;
+	TSubclassOf<UUserWidget> GetModifierIngredientIcon() const;
 
 protected:
 	// Broadcast Helper Functions

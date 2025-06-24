@@ -561,6 +561,22 @@ UWitchPTInventoryItemInstance* UCauldronCraftComponent::GetModifierIngredient() 
     return ModifierIngredient;
 }
 
+TSubclassOf<UUserWidget> UCauldronCraftComponent::GetBaseIngredientIcon() const
+{
+    return BaseIngredientIcon;
+}
+
+TSubclassOf<UUserWidget> UCauldronCraftComponent::GetPrincipalIngredientIcon() const
+{
+    return PrincipalIngredientIcon;
+}
+
+TSubclassOf<UUserWidget> UCauldronCraftComponent::GetModifierIngredientIcon() const
+{
+    return ModifierIngredientIcon;
+}
+
+
 // ----------------------------------- INGREDIENT DATA EXTRACTION FUNCTIONS ---------------------------------------------- //
 
 FExtractedBaseIngredientData UCauldronCraftComponent::ExtractBaseIngredientProperties() const
