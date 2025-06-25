@@ -2,8 +2,9 @@
   "bundles": {
     "Interaction-432": {
       "name": "Interaction",
+      "configPath": "repomix.config.json",
       "created": "2025-06-10T15:49:17.721Z",
-      "lastUsed": "2025-06-10T15:49:17.721Z",
+      "lastUsed": "2025-06-24T18:38:32.813Z",
       "tags": [],
       "files": [
         "Source/WitchPT/Public/AbilitySystem/Interaction",
@@ -18,8 +19,197 @@
       "files": [
         "Source/WitchPT/Private/UI",
         "Source/WitchPT/Public/UI"
+      ]
+    },
+    "Core": {
+      "name": "Core",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "core",
+        "setup"
       ],
-      "outputPath": "UI"
+      "files": [
+        "WitchPT.Target.cs",
+        "WitchPTEditor.Target.cs",
+        "WitchPT/WitchPT.Build.cs",
+        "WitchPT/WitchPT.cpp",
+        "WitchPT/WitchPT.h",
+        "WitchPT/Private/Game",
+        "WitchPT/Public/Game",
+        "WitchPT/Private/WitchPTAssetManager.cpp",
+        "WitchPT/Public/WitchPTAssetManager.h",
+        "WitchPT/Public/FWitchPTGameplayTags.cpp",
+        "WitchPT/Public/FWitchPTGameplayTags.h",
+        "WitchPT/Public/Systems"
+      ]
+    },
+    "GameplayAbilitySystem": {
+      "name": "GameplayAbilitySystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "gas",
+        "abilities"
+      ],
+      "files": [
+        "WitchPT/Private/AbilitySystem/GameplayAbilities",
+        "WitchPT/Public/AbilitySystem/GameplayAbilities",
+        "WitchPT/Private/AbilitySystem/WitchPTAbilitySystemComponent.cpp",
+        "WitchPT/Public/AbilitySystem/WitchPTAbilitySystemComponent.h",
+        "WitchPT/Private/AbilitySystem/WitchPTAbilitySystemGlobals.cpp",
+        "WitchPT/Public/AbilitySystem/WitchPTAbilitySystemGlobals.h",
+        "WitchPT/Private/AbilitySystem/WitchPTAbilitySystemLibrary.cpp",
+        "WitchPT/Public/AbilitySystem/WitchPTAbilitySystemLibrary.h",
+        "WitchPT/Private/AbilitySystem/WitchPTAttributeSet.cpp",
+        "WitchPT/Public/AbilitySystem/WitchPTAttributeSet.h"
+      ]
+    },
+    "InteractionSystem": {
+      "name": "InteractionSystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "gas",
+        "interaction"
+      ],
+      "files": [
+        "WitchPT/Private/AbilitySystem/Interaction",
+        "WitchPT/Public/AbilitySystem/Interaction"
+      ]
+    },
+    "InventorySystem": {
+      "name": "InventorySystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "inventory",
+        "items"
+      ],
+      "files": [
+        "WitchPT/Private/Inventory",
+        "WitchPT/Public/Inventory"
+      ]
+    },
+    "EquipmentSystem": {
+      "name": "EquipmentSystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "equipment",
+        "character"
+      ],
+      "files": [
+        "WitchPT/Private/Equipment",
+        "WitchPT/Public/Equipment"
+      ]
+    },
+    "CharacterSystem": {
+      "name": "CharacterSystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "character",
+        "player",
+        "enemy"
+      ],
+      "files": [
+        "WitchPT/Private/Character",
+        "WitchPT/Public/Character"
+      ]
+    },
+    "PlayerSystem": {
+      "name": "PlayerSystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "player",
+        "controller",
+        "state"
+      ],
+      "files": [
+        "WitchPT/Private/Player",
+        "WitchPT/Public/Player"
+      ]
+    },
+    "ItemSystem": {
+      "name": "ItemSystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "items",
+        "world"
+      ],
+      "files": [
+        "WitchPT/Private/Item",
+        "WitchPT/Public/Item"
+      ]
+    },
+    "CauldronMechanic": {
+      "name": "CauldronMechanic",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "mechanic",
+        "crafting",
+        "cauldron",
+        "item"
+      ],
+      "files": [
+        "WitchPT/Private/AbilitySystem/Cauldron",
+        "WitchPT/Public/AbilitySystem/Cauldron",
+        "WitchPT/Private/Item/CauldronAltar.cpp",
+        "WitchPT/Public/Item/CauldronAltar.h",
+        "WitchPT/Private/Item/CauldronPosition.cpp",
+        "WitchPT/Public/Item/CauldronPosition.h",
+        "WitchPT/Private/Item/Components/CauldronCraftComponent.cpp",
+        "WitchPT/Public/Item/Components/CauldronCraftComponent.h"
+      ]
+    },
+    "RitualMechanic": {
+      "name": "RitualMechanic",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "mechanic",
+        "ritual",
+        "item"
+      ],
+      "files": [
+        "WitchPT/Private/Item/Ritual",
+        "WitchPT/Public/Item/Ritual",
+        "WitchPT/Private/Item/RitualAltar.cpp",
+        "WitchPT/Public/Item/RitualAltar.h",
+        "WitchPT/Private/Item/RitualPosition.cpp",
+        "WitchPT/Public/Item/RitualPosition.h"
+      ]
+    },
+    "UISystem": {
+      "name": "UISystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "ui",
+        "hud",
+        "widget"
+      ],
+      "files": [
+        "WitchPT/Private/UI",
+        "WitchPT/Public/UI"
+      ]
+    },
+    "InputSystem": {
+      "name": "InputSystem",
+      "created": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "tags": [
+        "input",
+        "control"
+      ],
+      "files": [
+        "WitchPT/Private/Input",
+        "WitchPT/Public/Input"
+      ]
     }
   }
 }

@@ -5699,6 +5699,22 @@ UWitchPTInventoryItemInstance* UCauldronCraftComponent::GetModifierIngredient() 
     return ModifierIngredient;
 }
 
+TSubclassOf<UUserWidget> UCauldronCraftComponent::GetBaseIngredientIcon() const
+{
+    return BaseIngredientIcon;
+}
+
+TSubclassOf<UUserWidget> UCauldronCraftComponent::GetPrincipalIngredientIcon() const
+{
+    return PrincipalIngredientIcon;
+}
+
+TSubclassOf<UUserWidget> UCauldronCraftComponent::GetModifierIngredientIcon() const
+{
+    return ModifierIngredientIcon;
+}
+
+
 // ----------------------------------- INGREDIENT DATA EXTRACTION FUNCTIONS ---------------------------------------------- //
 
 FExtractedBaseIngredientData UCauldronCraftComponent::ExtractBaseIngredientProperties() const
@@ -8611,7 +8627,6 @@ void AWitchPTHUD::ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar)
         
 		// Show both widgets
 		CauldronWidget->SetVisibility(ESlateVisibility::Visible);
-		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
         
 		bCauldronWidgetVisible = true;
         
@@ -8639,6 +8654,7 @@ void AWitchPTHUD::HideCauldronWithInventory()
 		if (CauldronWidgetController)
 		{
 			CauldronWidgetController->SetCauldronAltar(nullptr);
+			CauldronWidgetController->UnbindCallbacksFromDependencies();
 		}
         
 		// Restore game input mode
@@ -8670,11 +8686,11 @@ void UCauldronWidgetController::BroadcastInitialValues()
 	if(CauldronAltar)
 	{
 		OnBaseIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredient());
-		// OnBaseIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredientIcon());
+		OnBaseIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredientIcon());
 		OnPrincipalIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredient());
-		// OnPrincipalIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredientIcon());
+		OnPrincipalIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredientIcon());
 		OnModifierIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetModifierIngredient());
-		// OnModifierIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetModifierIngredientIcon());
+		OnModifierIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetModifierIngredientIcon());
 	}
 	
 }
@@ -8693,6 +8709,18 @@ void UCauldronWidgetController::BindCallbacksToDependencies()
 	}
 }
 
+void UCauldronWidgetController::UnbindCallbacksFromDependencies()
+{
+	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
+	{
+		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
+		CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
+		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientSet);
+		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientIconSet);
+		CauldronAltar->CauldronCraftComponent->OnModifierIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleModifierIngredientSet);
+		CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleModifierIngredientIconSet);
+	}
+}
 void UCauldronWidgetController::SetCauldronAltar(ACauldronAltar* InCauldronAltar)
 {
 	if (InCauldronAltar != nullptr)
@@ -9165,15 +9193,8 @@ void UWitchPTWidgetController::BindCallbacksToDependencies()
 void UCauldronUserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	FInputModeGameAndUI InputMode;
-	// set the input mode to the player controller
-	
-	if (APlayerController* OwningController = GetOwningPlayer())
-	{
-		OwningController->SetInputMode(InputMode);
-		OwningController->SetShowMouseCursor(true);
-	}
-	
+	// Input mode is now managed by HUD's ShowCauldronWithInventory/HideCauldronWithInventory methods
+	// Don't set input mode here as this is called during widget creation, not visibility changes
 }
 
 FReply UCauldronUserWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -12860,6 +12881,9 @@ public:
 	UWitchPTInventoryItemInstance* GetBaseIngredient() const;
 	UWitchPTInventoryItemInstance* GetPrincipalIngredient() const;
 	UWitchPTInventoryItemInstance* GetModifierIngredient() const;
+	TSubclassOf<UUserWidget> GetBaseIngredientIcon() const;
+	TSubclassOf<UUserWidget> GetPrincipalIngredientIcon() const;
+	TSubclassOf<UUserWidget> GetModifierIngredientIcon() const;
 
 protected:
 	// Broadcast Helper Functions
@@ -13974,6 +13998,7 @@ public:
 	UCauldronWidgetController();
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
+	void UnbindCallbacksFromDependencies();
 
 	// Delegates for widgets to subscribe to
 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")

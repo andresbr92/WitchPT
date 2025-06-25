@@ -1,0 +1,1634 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+The content has been processed where comments have been removed, line numbers have been added.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: Source/WitchPT/Private/UI, Source/WitchPT/Public/UI
+- Files matching these patterns are excluded: *.test.ts, docs/**
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Line numbers have been added to the beginning of each line
+- Files are sorted by Git change count (files with more changes are at the bottom)
+
+
+================================================================
+Directory Structure
+================================================================
+Source/WitchPT/Private/UI/HUD/WitchPTHUD.cpp
+Source/WitchPT/Private/UI/WidgetControllers/CauldronWidgetController.cpp
+Source/WitchPT/Private/UI/WidgetControllers/InventoryWidgetController.cpp
+Source/WitchPT/Private/UI/WidgetControllers/OverlayWidgetController.cpp
+Source/WitchPT/Private/UI/WidgetControllers/RitualWidgetController.cpp
+Source/WitchPT/Private/UI/WidgetControllers/WitchPTWidgetController.cpp
+Source/WitchPT/Private/UI/Widgets/CauldronUserWidget.cpp
+Source/WitchPT/Private/UI/Widgets/Inventory/InventoryUserWidget.cpp
+Source/WitchPT/Private/UI/Widgets/Inventory/RitualUserWidget.cpp
+Source/WitchPT/Private/UI/Widgets/PointerWidget.cpp
+Source/WitchPT/Private/UI/Widgets/WitchPTUserWidget.cpp
+Source/WitchPT/Public/UI/HUD/WitchPTHUD.h
+Source/WitchPT/Public/UI/WidgetControllers/CauldronWidgetController.h
+Source/WitchPT/Public/UI/WidgetControllers/InventoryWidgetController.h
+Source/WitchPT/Public/UI/WidgetControllers/OverlayWidgetController.h
+Source/WitchPT/Public/UI/WidgetControllers/RitualWidgetController.h
+Source/WitchPT/Public/UI/WidgetControllers/WitchPTWidgetController.h
+Source/WitchPT/Public/UI/Widgets/CauldronUserWidget.h
+Source/WitchPT/Public/UI/Widgets/Inventory/InventoryUserWidget.h
+Source/WitchPT/Public/UI/Widgets/Inventory/RitualUserWidget.h
+Source/WitchPT/Public/UI/Widgets/PointerWidget.h
+Source/WitchPT/Public/UI/Widgets/WitchPTUserWidget.h
+
+================================================================
+Files
+================================================================
+
+================
+File: Source/WitchPT/Private/UI/WidgetControllers/OverlayWidgetController.cpp
+================
+ 1: #include "UI/WidgetControllers/OverlayWidgetController.h"
+ 2: 
+ 3: #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
+ 4: #include "AbilitySystem/WitchPTAttributeSet.h"
+ 5: 
+ 6: void UOverlayWidgetController::BroadcastInitialValues()
+ 7: {
+ 8: 	const UWitchPTAttributeSet* WitchPT_AS = Cast<UWitchPTAttributeSet>(AttributeSet);
+ 9: 
+10: 	OnHealthChanged.Broadcast(WitchPT_AS->GetHealth());
+11: 	OnMaxHealthChanged.Broadcast(WitchPT_AS->GetMaxHealth());
+12: 	OnStaminaChanged.Broadcast(WitchPT_AS->GetStamina());
+13: 	OnMaxStaminaChanged.Broadcast(WitchPT_AS->GetMaxStamina());
+14: 	OnAgeChanged.Broadcast(WitchPT_AS->GetAge());
+15: 	OnMaxAgeChanged.Broadcast(WitchPT_AS->GetMaxAge());
+16: }
+17: 
+18: void UOverlayWidgetController::BindCallbacksToDependencies()
+19: {
+20: 	const UWitchPTAttributeSet* WitchPT_AS = Cast<UWitchPTAttributeSet>(AttributeSet);
+21: 
+22: 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+23: 	{
+24: 		OnHealthChanged.Broadcast(Data.NewValue);
+25: 	});
+26: 
+27: 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetMaxHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+28: 	{
+29: 		OnMaxHealthChanged.Broadcast(Data.NewValue);
+30: 	});
+31: 
+32: 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetStaminaAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+33: 	{
+34: 		OnStaminaChanged.Broadcast(Data.NewValue);
+35: 	});
+36: 
+37: 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetMaxStaminaAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+38: 	{
+39: 		OnMaxStaminaChanged.Broadcast(Data.NewValue);
+40: 	});
+41: 
+42: 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetAgeAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+43: 	{
+44: 		OnAgeChanged.Broadcast(Data.NewValue);
+45: 	});
+46: 
+47: 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetMaxAgeAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+48: 	{
+49: 		OnMaxAgeChanged.Broadcast(Data.NewValue);
+50: 	});
+51: 
+52: 	UWitchPTAbilitySystemComponent* WitchPTAbilitySystemComponent = Cast<UWitchPTAbilitySystemComponent>(AbilitySystemComponent);
+53: 
+54: 	WitchPTAbilitySystemComponent->OnEffectAssetTags.AddUObject(this, &UOverlayWidgetController::OnAssetTagReceivedFromGE);
+55: 
+56: 
+57: 	WitchPTAbilitySystemComponent->OnEffectAssetTags.AddLambda(
+58: 
+59: 		[this](const FGameplayTagContainer& AssetTags)
+60: 	{
+61: 		for (const auto& Tag : AssetTags)
+62: 		{
+63: 
+64: 			FGameplayTag ParentMessageGameplayTag = FGameplayTag::RequestGameplayTag(FName("Communication.Message"));
+65: 			if (Tag.MatchesTag(ParentMessageGameplayTag))
+66: 			{
+67: 
+68: 
+69: 				const FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable, Tag);
+70: 				OnMessageWidgetRow.Broadcast(*Row);
+71: 
+72: 			}
+73: 
+74: 		}
+75: 	});
+76: 
+77: 
+78: 
+79: }
+80: void UOverlayWidgetController::OnAssetTagReceivedFromGE(const FGameplayTagContainer& TagContainer) const
+81: {
+82: 
+83: }
+
+================
+File: Source/WitchPT/Private/UI/WidgetControllers/WitchPTWidgetController.cpp
+================
+ 1: #include "UI/WidgetControllers/WitchPTWidgetController.h"
+ 2: 
+ 3: void UWitchPTWidgetController::SetWidgetControllerParams(const FWidgetControllerParams& WCParams)
+ 4: {
+ 5: 	PlayerController = WCParams.PlayerController;
+ 6: 	PlayerState = WCParams.PlayerState;
+ 7: 	AbilitySystemComponent = WCParams.AbilitySystemComponent;
+ 8: 	AttributeSet = WCParams.AttributeSet;
+ 9: }
+10: 
+11: void UWitchPTWidgetController::BroadcastInitialValues()
+12: {
+13: }
+14: 
+15: void UWitchPTWidgetController::BindCallbacksToDependencies()
+16: {
+17: }
+
+================
+File: Source/WitchPT/Private/UI/Widgets/PointerWidget.cpp
+================
+1: #include "UI/Widgets/PointerWidget.h"
+
+================
+File: Source/WitchPT/Private/UI/Widgets/WitchPTUserWidget.cpp
+================
+1: #include "UI/Widgets/WitchPTUserWidget.h"
+2: 
+3: void UWitchPTUserWidget::SetWidgetController(UObject* InWidgetController)
+4: {
+5: 	WidgetController = InWidgetController;
+6: 	OnWidgetControllerSet();
+7: }
+
+================
+File: Source/WitchPT/Public/UI/WidgetControllers/OverlayWidgetController.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "GameplayTagContainer.h"
+ 5: #include "WitchPTWidgetController.h"
+ 6: #include "OverlayWidgetController.generated.h"
+ 7: class UWitchPTUserWidget;
+ 8: 
+ 9: USTRUCT()
+10: struct FUIWidgetRow: public FTableRowBase
+11: {
+12: 	GENERATED_BODY()
+13: 
+14: 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+15: 	FGameplayTag MessageGameplayTag = FGameplayTag();
+16: 
+17: 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+18: 	FText Message = FText();
+19: 
+20: 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+21: 	TSubclassOf<UWitchPTUserWidget> MessageWidget;
+22: 
+23: 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+24: 	UTexture2D* Image = nullptr;
+25: 
+26: };
+27: 
+28: 
+29: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewHealth);
+30: 
+31: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageWidgetRowSignature, FUIWidgetRow, Row);
+32: 
+33: UCLASS(BlueprintType, Blueprintable)
+34: class WITCHPT_API UOverlayWidgetController : public UWitchPTWidgetController
+35: {
+36: 	GENERATED_BODY()
+37: public:
+38: 
+39: 
+40: 
+41: 
+42: 
+43: 
+44: 
+45: 
+46: 
+47: 	void OnAssetTagReceivedFromGE(const FGameplayTagContainer& TagContainer) const;
+48: 	virtual void BroadcastInitialValues() override;
+49: 
+50: 	virtual void BindCallbacksToDependencies() override;
+51: 
+52: 
+53: 
+54: 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+55: 	FOnAttributeChangedSignature OnHealthChanged;
+56: 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+57: 	FOnAttributeChangedSignature OnMaxHealthChanged;
+58: 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+59: 	FOnAttributeChangedSignature OnStaminaChanged;
+60: 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+61: 	FOnAttributeChangedSignature OnMaxStaminaChanged;
+62: 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+63: 	FOnAttributeChangedSignature OnAgeChanged;
+64: 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+65: 	FOnAttributeChangedSignature OnMaxAgeChanged;
+66: 
+67: 	UPROPERTY(BlueprintAssignable, Category="Widget Data")
+68: 	FOnMessageWidgetRowSignature OnMessageWidgetRow;
+69: protected:
+70: 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Widget Data")
+71: 	TObjectPtr<UDataTable> MessageWidgetDataTable;
+72: 
+73: 	template<typename T>
+74: T* GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& GameplayTag);
+75: };
+76: 
+77: template <typename T>
+78: T* UOverlayWidgetController::GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& GameplayTag)
+79: {
+80: 	return  DataTable->FindRow<T>(GameplayTag.GetTagName(), TEXT(""));
+81: 
+82: }
+
+================
+File: Source/WitchPT/Public/UI/WidgetControllers/WitchPTWidgetController.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "UObject/Object.h"
+ 5: #include "WitchPTWidgetController.generated.h"
+ 6: 
+ 7: class UAbilitySystemComponent;
+ 8: class UAttributeSet;
+ 9: 
+10: 
+11: 
+12: 
+13: 
+14: 
+15: 
+16: 
+17: 
+18: 
+19: 
+20: 
+21: 
+22: 
+23: USTRUCT(BlueprintType)
+24: struct FWidgetControllerParams
+25: {
+26: 	GENERATED_BODY()
+27: 	FWidgetControllerParams() {};
+28: 	FWidgetControllerParams(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+29: 	:
+30: 	PlayerController(PC),
+31: 	PlayerState(PS),
+32: 	AbilitySystemComponent(ASC),
+33: 	AttributeSet(AS)
+34: 	{}
+35: 
+36: 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+37: 	TObjectPtr<APlayerController> PlayerController = nullptr;
+38: 
+39: 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+40: 	TObjectPtr<APlayerState> PlayerState = nullptr;
+41: 
+42: 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+43: 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
+44: 
+45: 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+46: 	TObjectPtr<UAttributeSet> AttributeSet = nullptr;
+47: 
+48: };
+49: UCLASS()
+50: class WITCHPT_API UWitchPTWidgetController : public UObject
+51: {
+52: 	GENERATED_BODY()
+53: public:
+54: 	UFUNCTION(BlueprintCallable)
+55: 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
+56: 
+57: 	UFUNCTION(BlueprintCallable)
+58: 	virtual void BroadcastInitialValues();
+59: 	virtual void BindCallbacksToDependencies();
+60: protected:
+61: 	UPROPERTY(BlueprintReadOnly, Category= "WidgetController")
+62: 	TObjectPtr<APlayerController> PlayerController;
+63: 
+64: 	UPROPERTY(BlueprintReadOnly, Category= "WidgetController")
+65: 	TObjectPtr<APlayerState> PlayerState;
+66: 
+67: 	UPROPERTY(BlueprintReadOnly, Category= "WidgetController")
+68: 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+69: 
+70: 	UPROPERTY(BlueprintReadOnly, Category= "WidgetController")
+71: 	TObjectPtr<UAttributeSet> AttributeSet;
+72: };
+
+================
+File: Source/WitchPT/Public/UI/Widgets/PointerWidget.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "Blueprint/UserWidget.h"
+ 5: #include "PointerWidget.generated.h"
+ 6: 
+ 7: 
+ 8: 
+ 9: 
+10: UCLASS()
+11: class WITCHPT_API UPointerWidget : public UUserWidget
+12: {
+13: 	GENERATED_BODY()
+14: public:
+15: 
+16: 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+17: 	void ShowPickupMessage(const FString& Message);
+18: 
+19: 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+20: 	void HidePickupMessage();
+21: };
+
+================
+File: Source/WitchPT/Public/UI/Widgets/WitchPTUserWidget.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "Blueprint/UserWidget.h"
+ 5: #include "WitchPTUserWidget.generated.h"
+ 6: 
+ 7: 
+ 8: 
+ 9: 
+10: UCLASS()
+11: class WITCHPT_API UWitchPTUserWidget : public UUserWidget
+12: {
+13: 	GENERATED_BODY()
+14: public:
+15: 	UFUNCTION(BlueprintCallable)
+16: 	void SetWidgetController(UObject* InWidgetController);
+17: 	UPROPERTY(BlueprintReadOnly)
+18: 	TObjectPtr<UObject> WidgetController;
+19: 
+20: 	UFUNCTION(BlueprintImplementableEvent)
+21: 	void OnWidgetControllerSet();
+22: };
+
+================
+File: Source/WitchPT/Private/UI/Widgets/CauldronUserWidget.cpp
+================
+ 1: #include "UI/Widgets/CauldronUserWidget.h"
+ 2: 
+ 3: void UCauldronUserWidget::NativeConstruct()
+ 4: {
+ 5: 	Super::NativeConstruct();
+ 6: 
+ 7: 
+ 8: }
+ 9: 
+10: FReply UCauldronUserWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+11: {
+12: 	return FReply::Handled();
+13: }
+
+================
+File: Source/WitchPT/Private/UI/Widgets/Inventory/InventoryUserWidget.cpp
+================
+1: #include "UI/Widgets/Inventory/InventoryUserWidget.h"
+2: 
+3: FReply UInventoryUserWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+4: {
+5: 
+6: 	return FReply::Handled();
+7: }
+
+================
+File: Source/WitchPT/Private/UI/Widgets/Inventory/RitualUserWidget.cpp
+================
+ 1: #include "UI/Widgets/Inventory/RitualUserWidget.h"
+ 2: #include "Item/RitualAltar.h"
+ 3: #include "Components/Widget.h"
+ 4: 
+ 5: URitualUserWidget::URitualUserWidget(const FObjectInitializer& ObjectInitializer)
+ 6:     : Super(ObjectInitializer)
+ 7:     , bIsActiveForRitual(false)
+ 8:     , CurrentRitualAltar(nullptr)
+ 9: {
+10: 
+11: }
+12: 
+13: void URitualUserWidget::NativeOnInitialized()
+14: {
+15:     Super::NativeOnInitialized();
+16: 
+17: 
+18:     ResetWidgetState();
+19: }
+20: 
+21: void URitualUserWidget::NativeDestruct()
+22: {
+23: 
+24:     HideFromRitual();
+25: 
+26:     Super::NativeDestruct();
+27: }
+28: 
+29: void URitualUserWidget::ShowForRitual(ARitualAltar* Altar)
+30: {
+31:     if (!Altar)
+32:     {
+33:         UE_LOG(LogTemp, Warning, TEXT("[RitualUserWidget] ShowForRitual called with null altar"));
+34:         return;
+35:     }
+36: 
+37: 
+38:     if (bIsActiveForRitual && CurrentRitualAltar != Altar)
+39:     {
+40:         ResetWidgetState();
+41:     }
+42: 
+43: 
+44:     CurrentRitualAltar = Altar;
+45:     bIsActiveForRitual = true;
+46: 
+47: 
+48:     OnShownForRitual(Altar);
+49: 
+50:     UE_LOG(LogTemp, Log, TEXT("[RitualUserWidget] Shown for ritual altar"));
+51: }
+52: 
+53: void URitualUserWidget::HideFromRitual()
+54: {
+55:     if (!bIsActiveForRitual)
+56:     {
+57:         return;
+58:     }
+59: 
+60: 
+61:     bIsActiveForRitual = false;
+62:     ARitualAltar* PreviousAltar = CurrentRitualAltar;
+63:     CurrentRitualAltar = nullptr;
+64: 
+65: 
+66:     OnHiddenFromRitual();
+67: 
+68: 
+69:     ResetWidgetState();
+70: 
+71:     UE_LOG(LogTemp, Log, TEXT("[RitualUserWidget] Hidden from ritual"));
+72: }
+73: 
+74: void URitualUserWidget::ResetWidgetState()
+75: {
+76: 
+77: 
+78: 
+79: 
+80: 
+81: 
+82:     UE_LOG(LogTemp, Log, TEXT("[RitualUserWidget] Widget state reset"));
+83: }
+
+================
+File: Source/WitchPT/Public/UI/Widgets/CauldronUserWidget.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "WitchPTUserWidget.h"
+ 5: #include "CauldronUserWidget.generated.h"
+ 6: 
+ 7: 
+ 8: 
+ 9: 
+10: UCLASS()
+11: class WITCHPT_API UCauldronUserWidget : public UWitchPTUserWidget
+12: {
+13: 	GENERATED_BODY()
+14: private:
+15: 	virtual void NativeConstruct() override;
+16: 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+17: };
+
+================
+File: Source/WitchPT/Public/UI/Widgets/Inventory/InventoryUserWidget.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "UI/Widgets/WitchPTUserWidget.h"
+ 5: #include "InventoryUserWidget.generated.h"
+ 6: 
+ 7: 
+ 8: 
+ 9: 
+10: UCLASS()
+11: class WITCHPT_API UInventoryUserWidget : public UWitchPTUserWidget
+12: {
+13: 	GENERATED_BODY()
+14: 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+15: 
+16: };
+
+================
+File: Source/WitchPT/Public/UI/Widgets/Inventory/RitualUserWidget.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "UI/Widgets/WitchPTUserWidget.h"
+ 5: #include "RitualUserWidget.generated.h"
+ 6: 
+ 7: class ARitualAltar;
+ 8: 
+ 9: 
+10: 
+11: 
+12: UCLASS()
+13: class WITCHPT_API URitualUserWidget : public UWitchPTUserWidget
+14: {
+15: 	GENERATED_BODY()
+16: 
+17: public:
+18: 	URitualUserWidget(const FObjectInitializer& ObjectInitializer);
+19: 
+20: 
+21: 	UFUNCTION(BlueprintCallable, Category = "Ritual Widget")
+22: 	void ShowForRitual(ARitualAltar* Altar);
+23: 
+24: 	UFUNCTION(BlueprintCallable, Category = "Ritual Widget")
+25: 	void HideFromRitual();
+26: 
+27: 
+28: 	UFUNCTION(BlueprintPure, Category = "Ritual Widget")
+29: 	bool IsActiveForRitual() const { return bIsActiveForRitual; }
+30: 
+31: 
+32: 	UFUNCTION(BlueprintPure, Category = "Ritual Widget")
+33: 	ARitualAltar* GetCurrentRitualAltar() const { return CurrentRitualAltar; }
+34: 
+35: protected:
+36: 
+37: 	virtual void NativeOnInitialized() override;
+38: 	virtual void NativeDestruct() override;
+39: 
+40: 
+41: 	UFUNCTION(BlueprintImplementableEvent, Category = "Ritual Widget")
+42: 	void OnShownForRitual(ARitualAltar* Altar);
+43: 
+44: 
+45: 	UFUNCTION(BlueprintImplementableEvent, Category = "Ritual Widget")
+46: 	void OnHiddenFromRitual();
+47: 
+48: 
+49: 	UFUNCTION(BlueprintCallable, Category = "Ritual Widget")
+50: 	void ResetWidgetState();
+51: 
+52: private:
+53: 
+54: 	UPROPERTY()
+55: 	bool bIsActiveForRitual = false;
+56: 
+57: 
+58: 	UPROPERTY()
+59: 	TObjectPtr<ARitualAltar> CurrentRitualAltar;
+60: };
+
+================
+File: Source/WitchPT/Public/UI/HUD/WitchPTHUD.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "GameFramework/HUD.h"
+ 5: #include "WitchPTHUD.generated.h"
+ 6: 
+ 7: class UCauldronWidgetController;
+ 8: class UWitchPTWidgetController;
+ 9: class URitualWidgetController;
+10: class UAbilitySystemComponent;
+11: class UAttributeSet;
+12: class UWitchPTUserWidget;
+13: class UInventoryWidgetController;
+14: struct FWidgetControllerParams;
+15: class UOverlayWidgetController;
+16: 
+17: 
+18: 
+19: UCLASS()
+20: class WITCHPT_API AWitchPTHUD : public AHUD
+21: {
+22: 	GENERATED_BODY()
+23: public:
+24: 	UOverlayWidgetController* SetOverlayWidgetController(const FWidgetControllerParams& WCParams);
+25: 	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
+26: 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
+27: 	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
+28: 
+29: 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+30: 	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+31: 	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+32: 	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+33: 
+34: 	void ShowRitualWidget(class ARitualAltar* RitualAltar);
+35: 	void HideRitualWidget();
+36: 	void ShowInventoryWidget();
+37: 	void HideInventoryWidget();
+38: 	void ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar);
+39: 	void HideCauldronWithInventory();
+40: 
+41: 
+42: 
+43: private:
+44: 	UPROPERTY()
+45: 	TObjectPtr<UWitchPTUserWidget> OverlayWidget;
+46: 	UPROPERTY(EditAnywhere)
+47: 	TSubclassOf<UWitchPTUserWidget> OverlayWidgetClass;
+48: 
+49: 	UPROPERTY()
+50: 	TObjectPtr<UWitchPTUserWidget> InventoryWidget;
+51: 	UPROPERTY(EditAnywhere)
+52: 	TSubclassOf<UWitchPTUserWidget> InventoryWidgetClass;
+53: 
+54: 	UPROPERTY()
+55: 	TObjectPtr<UWitchPTUserWidget> CauldronWidget;
+56: 	UPROPERTY(EditAnywhere)
+57: 	TSubclassOf<UWitchPTUserWidget> CauldronWidgetClass;
+58: 	bool bCauldronWidgetVisible = false;
+59: 
+60: 	UPROPERTY()
+61: 	TObjectPtr<UWitchPTUserWidget> RitualWidget;
+62: 	UPROPERTY(EditAnywhere)
+63: 	TSubclassOf<UWitchPTUserWidget> RitualWidgetClass;
+64: 
+65: 	UPROPERTY()
+66: 	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
+67: 	UPROPERTY(EditAnywhere)
+68: 	TSubclassOf<UOverlayWidgetController> OverlayWidgetControllerClass;
+69: 
+70: 	UPROPERTY()
+71: 	TObjectPtr<UInventoryWidgetController> InventoryWidgetController;
+72: 	UPROPERTY(EditAnywhere)
+73: 	TSubclassOf<UInventoryWidgetController> InventoryWidgetControllerClass;
+74: 
+75: 	UPROPERTY()
+76: 	TObjectPtr<URitualWidgetController> RitualWidgetController;
+77: 	UPROPERTY(EditAnywhere)
+78: 	TSubclassOf<URitualWidgetController> RitualWidgetControllerClass;
+79: 
+80: 	UPROPERTY()
+81: 	TObjectPtr<UCauldronWidgetController> CauldronWidgetController;
+82: 	UPROPERTY(EditAnywhere)
+83: 	TSubclassOf<UCauldronWidgetController> CauldronWidgetControllerClass;
+84: };
+
+================
+File: Source/WitchPT/Public/UI/WidgetControllers/CauldronWidgetController.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "WitchPTWidgetController.h"
+ 5: #include "CauldronWidgetController.generated.h"
+ 6: 
+ 7: class ACauldronAltar;
+ 8: class UWitchPTInventoryItemInstance;
+ 9: 
+10: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientSetSignature_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+11: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientIconSetSignature_WC, TSubclassOf<UUserWidget>, BaseIngredientIcon);
+12: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPrincipalIngredientSetSignature_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+13: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPrincipalIngredientIconSetSignature_WC, TSubclassOf<UUserWidget>, PrincipalIngredientIcon);
+14: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModifierIngredientSetSignature_WC, UWitchPTInventoryItemInstance*, IngredientInstance);
+15: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModifierIngredientIconSetSignature_WC, TSubclassOf<UUserWidget>, ModifierIngredientIcon);
+16: 
+17: 
+18: 
+19: UCLASS(BlueprintType, Blueprintable)
+20: class WITCHPT_API UCauldronWidgetController : public UWitchPTWidgetController
+21: {
+22: 	GENERATED_BODY()
+23: public:
+24: 	UCauldronWidgetController();
+25: 	virtual void BroadcastInitialValues() override;
+26: 	virtual void BindCallbacksToDependencies() override;
+27: 
+28: 
+29: 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+30: 	FOnBaseIngredientSetSignature_WC OnBaseIngredientSet;
+31: 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+32: 	FOnBaseIngredientIconSetSignature_WC OnBaseIngredientIconSet;
+33: 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+34: 	FOnPrincipalIngredientSetSignature_WC OnPrincipalIngredientSet;
+35: 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+36: 	FOnPrincipalIngredientIconSetSignature_WC OnPrincipalIngredientIconSet;
+37: 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+38: 	FOnModifierIngredientSetSignature_WC OnModifierIngredientSet;
+39: 	UPROPERTY(BlueprintAssignable, Category = "Cauldron")
+40: 	FOnModifierIngredientIconSetSignature_WC OnModifierIngredientIconSet;
+41: 
+42: 	UFUNCTION(Category = "Cauldron")
+43: 	void SetCauldronAltar(ACauldronAltar* InCauldronAltar);
+44: 
+45: 
+46: 	UFUNCTION(BlueprintPure, Category = "Cauldron")
+47: 	ACauldronAltar* GetCauldronAltar() const { return CauldronAltar; }
+48: 
+49: 
+50: protected:
+51: 
+52: 	UPROPERTY(BlueprintReadOnly, Category = "Cauldron")
+53: 	TObjectPtr<ACauldronAltar> CauldronAltar;
+54: 
+55: 	UFUNCTION(Category = "Cauldron")
+56: 	void HandleBaseIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance);
+57: 	UFUNCTION(Category = "Cauldron")
+58: 	void HandleBaseIngredientIconSet(TSubclassOf<UUserWidget> BaseIngredientIcon);
+59: 	UFUNCTION(Category = "Cauldron")
+60: 	void HandlePrincipalIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance);
+61: 	UFUNCTION(Category = "Cauldron")
+62: 	void HandlePrincipalIngredientIconSet(TSubclassOf<UUserWidget> PrincipalIngredientIcon);
+63: 	UFUNCTION(Category = "Cauldron")
+64: 	void HandleModifierIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance);
+65: 	UFUNCTION(Category = "Cauldron")
+66: 	void HandleModifierIngredientIconSet(TSubclassOf<UUserWidget> ModifierIngredientIcon);
+67: };
+
+================
+File: Source/WitchPT/Private/UI/WidgetControllers/InventoryWidgetController.cpp
+================
+ 1: #include "UI/WidgetControllers/InventoryWidgetController.h"
+ 2: 
+ 3: #include "Equipment/WitchPTEquipmentManagerComponent.h"
+ 4: #include "GameFramework/Character.h"
+ 5: #include "Inventory/WitchPTInventoryItemInstance.h"
+ 6: #include "Inventory/WitchPTInventoryManagerComponent.h"
+ 7: #include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+ 8: #include "Player/WitchPTPlayerController.h"
+ 9: 
+10: class UWitchPTEquipmentInstance;
+11: class UWitchPTEquipmentManagerComponent;
+12: 
+13: void UInventoryWidgetController::BindCallbacksToDependencies()
+14: {
+15: 	AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController);
+16: 	if (WitchPtPlayerController)
+17: 	{
+18: 		UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager();
+19: 		if (InventoryManager)
+20: 		{
+21: 			InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+22: 			{
+23: 				OnItemAddedDelegate.Broadcast(ItemAdded);
+24: 			});
+25: 			InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+26: 			{
+27: 				OnItemStackChangedDelegate.Broadcast(ItemAdded);
+28: 			});
+29: 			InventoryManager->OnItemRemoved.AddLambda([this](UWitchPTInventoryItemInstance* ItemRemoved)
+30: 			{
+31: 				OnItemRemovedDelegate.Broadcast(ItemRemoved);
+32: 			});
+33: 		}
+34: 	}
+35: }
+36: 
+37: void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)
+38: {
+39: 	if (!ItemInstance)
+40: 	{
+41: 		return;
+42: 	}
+43: 
+44: 	AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController);
+45: 	if (!WitchPtPlayerController)
+46: 	{
+47: 		return;
+48: 	}
+49: 
+50: 	UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager();
+51: 	if (!InventoryManager)
+52: 	{
+53: 		return;
+54: 	}
+55: 
+56: 	const int32 CurrentStackCount = ItemInstance->GetTotalStackCount();
+57: 
+58: 
+59: 	if (CurrentStackCount <= 1 && AmountToRemove >= 1)
+60: 	{
+61: 		InventoryManager->Server_RemoveItemInstance(ItemInstance);
+62: 	}
+63: 	else
+64: 	{
+65: 
+66: 		InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
+67: 	}
+68: }
+69: 
+70: void UInventoryWidgetController::EquipItem(UWitchPTInventoryItemInstance* ItemInstance)
+71: {
+72: 	if (ItemInstance)
+73: 	{
+74: 		ACharacter* OwningCharacter = Cast<ACharacter>(PlayerController->GetPawn());
+75: 		if (OwningCharacter)
+76: 		{
+77: 			UWitchPTEquipmentManagerComponent* EquipmentManager = OwningCharacter->FindComponentByClass<UWitchPTEquipmentManagerComponent>();
+78: 			if (EquipmentManager)
+79: 			{
+80: 				UWitchPTEquipmentInstance* EquipmentInstance = EquipmentManager->FindEquipmentByInventoryItem(ItemInstance);
+81: 				if (EquipmentInstance)
+82: 				{
+83: 					EquipmentManager->UnequipItem(EquipmentInstance);
+84: 				}
+85: 				else
+86: 				{
+87: 					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass());
+88: 					const UWitchPTInventoryItemFragment_EquippableItem* EquippableFragment = Cast<const UWitchPTInventoryItemFragment_EquippableItem>(BaseFragment);
+89: 					EquipmentManager->EquipItem(EquippableFragment->EquipmentDefinition);
+90: 				}
+91: 			}
+92: 		}
+93: 		else
+94: 		{
+95: 			UE_LOG(LogTemp, Warning, TEXT("Owning character is not a valid ACharacter instance."));
+96: 		}
+97: 	}
+98: }
+
+================
+File: Source/WitchPT/Public/UI/WidgetControllers/InventoryWidgetController.h
+================
+ 1: #pragma once
+ 2: 
+ 3: #include "CoreMinimal.h"
+ 4: #include "WitchPTWidgetController.h"
+ 5: #include "InventoryWidgetController.generated.h"
+ 6: 
+ 7: class UWitchPTInventoryItemInstance;
+ 8: 
+ 9: 
+10: 
+11: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemAddedSignature, UWitchPTInventoryItemInstance*, ItemAdded);
+12: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRemovedSignature, UWitchPTInventoryItemInstance*, ItemRemoved);
+13: 
+14: UCLASS(BlueprintType, Blueprintable)
+15: class WITCHPT_API UInventoryWidgetController : public UWitchPTWidgetController
+16: {
+17: 	GENERATED_BODY()
+18: 
+19: public:
+20: 	UFUNCTION(BlueprintCallable)
+21: 	virtual void BindCallbacksToDependencies() override;
+22: 
+23: 
+24: 
+25: 
+26: 
+27: 
+28: 
+29: 	UFUNCTION(BlueprintCallable, Category = "Inventory")
+30: 	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
+31: 
+32: 	UFUNCTION(BlueprintCallable, Category = "Equipment")
+33: 	void EquipItem(UWitchPTInventoryItemInstance* ItemInstance);
+34: 
+35: 	UPROPERTY(BlueprintAssignable, Category="Inventory")
+36: 	FOnItemAddedSignature OnItemAddedDelegate;
+37: 	UPROPERTY(BlueprintAssignable, Category="Inventory")
+38: 	FOnItemAddedSignature OnItemStackChangedDelegate;
+39: 	UPROPERTY(BlueprintAssignable, Category="Inventory")
+40: 	FOnItemRemovedSignature OnItemRemovedDelegate;
+41: };
+
+================
+File: Source/WitchPT/Private/UI/HUD/WitchPTHUD.cpp
+================
+  1: #include "UI/HUD/WitchPTHUD.h"
+  2: 
+  3: #include "Inventory/WitchPTInventoryManagerComponent.h"
+  4: #include "Player/WitchPTPlayerController.h"
+  5: #include "UI/WidgetControllers/CauldronWidgetController.h"
+  6: #include "UI/WidgetControllers/InventoryWidgetController.h"
+  7: #include "UI/WidgetControllers/OverlayWidgetController.h"
+  8: #include "UI/WidgetControllers/RitualWidgetController.h"
+  9: #include "UI/Widgets/WitchPTUserWidget.h"
+ 10: #include "UI/Widgets/Inventory/RitualUserWidget.h"
+ 11: 
+ 12: UOverlayWidgetController* AWitchPTHUD::SetOverlayWidgetController(const FWidgetControllerParams& WCParams)
+ 13: {
+ 14: 	if (OverlayWidgetController == nullptr)
+ 15: 	{
+ 16: 		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
+ 17: 		OverlayWidgetController->SetWidgetControllerParams(WCParams);
+ 18: 		OverlayWidgetController->BindCallbacksToDependencies();
+ 19: 	}
+ 20: 	return OverlayWidgetController;
+ 21: }
+ 22: 
+ 23: UCauldronWidgetController* AWitchPTHUD::SetCauldronWidgetController(const FWidgetControllerParams& WCParams)
+ 24: {
+ 25: 	if (CauldronWidgetController == nullptr)
+ 26: 	{
+ 27: 		CauldronWidgetController = NewObject<UCauldronWidgetController>(this, CauldronWidgetControllerClass);
+ 28: 		CauldronWidgetController->SetWidgetControllerParams(WCParams);
+ 29: 
+ 30: 	}
+ 31: 	return CauldronWidgetController;
+ 32: }
+ 33: 
+ 34: UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWidgetControllerParams& WCParams)
+ 35: {
+ 36: 	if (InventoryWidgetController == nullptr)
+ 37: 	{
+ 38: 		InventoryWidgetController = NewObject<UInventoryWidgetController>(this, InventoryWidgetControllerClass);
+ 39: 		InventoryWidgetController->SetWidgetControllerParams(WCParams);
+ 40: 		InventoryWidgetController->BindCallbacksToDependencies();
+ 41: 	}
+ 42: 	return InventoryWidgetController;
+ 43: }
+ 44: 
+ 45: URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetControllerParams& WCParams)
+ 46: {
+ 47: 	if (RitualWidgetController == nullptr)
+ 48: 	{
+ 49: 		RitualWidgetController = NewObject<URitualWidgetController>(this, RitualWidgetControllerClass);
+ 50: 		RitualWidgetController->SetWidgetControllerParams(WCParams);
+ 51: 	}
+ 52: 	return RitualWidgetController;
+ 53: }
+ 54: 
+ 55: void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+ 56: {
+ 57: 	checkf(OverlayWidgetClass, TEXT("Overlay Widget Class uninitialized, please fill out BP_WitchPTHUD"));
+ 58: 	checkf(OverlayWidgetControllerClass, TEXT("Overlay Widget Controller Class uninitialized, please fill out BP_WitchPTHUD"));
+ 59: 
+ 60: 
+ 61: 	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
+ 62: 	OverlayWidget = Cast<UWitchPTUserWidget>(Widget);
+ 63: 
+ 64: 	const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+ 65: 	UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
+ 66: 
+ 67: 	OverlayWidget->SetWidgetController(WidgetController);
+ 68: 	WidgetController->BroadcastInitialValues();
+ 69: 	Widget->AddToViewport();
+ 70: 
+ 71: 
+ 72: 	InitRitualWidget(PC, PS, ASC, AS);
+ 73: 
+ 74: 	InitInventoryWidget(PC, PS, ASC, AS);
+ 75: 
+ 76: 	InitCauldronWidget(PC, PS, ASC, AS);
+ 77: 
+ 78: }
+ 79: 
+ 80: void AWitchPTHUD::InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+ 81: 	UAttributeSet* AS)
+ 82: {
+ 83: 	if (RitualWidgetClass)
+ 84: 	{
+ 85: 
+ 86: 		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
+ 87: 		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
+ 88: 
+ 89: 		if (RitualWidget)
+ 90: 		{
+ 91: 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+ 92: 
+ 93: 			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
+ 94: 			RitualWidget->SetWidgetController(RitualController);
+ 95: 
+ 96: 
+ 97: 			RitualWidgetInstance->AddToViewport();
+ 98: 			RitualWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+ 99: 		}
+100: 	}
+101: }
+102: 
+103: void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+104: 	UAttributeSet* AS)
+105: {
+106: 	if (InventoryWidgetClass && !InventoryWidget)
+107: 	{
+108: 		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+109: 		InventoryWidget = Cast<UWitchPTUserWidget>(Widget);
+110: 
+111: 		if (InventoryWidget)
+112: 		{
+113: 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+114: 			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
+115: 			InventoryWidget->SetWidgetController(Controller);
+116: 			Widget->AddToViewport();
+117: 			Widget->SetVisibility(ESlateVisibility::Collapsed);
+118: 		}
+119: 	}
+120: }
+121: 
+122: void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+123: {
+124: 	if (CauldronWidgetClass && !CauldronWidget)
+125: 	{
+126: 		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
+127: 		CauldronWidget = Cast<UWitchPTUserWidget>(Widget);
+128: 
+129: 		if (CauldronWidget)
+130: 		{
+131: 			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
+132: 			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
+133: 			CauldronWidget->SetWidgetController(Controller);
+134: 			Widget->AddToViewport();
+135: 			Widget->SetVisibility(ESlateVisibility::Collapsed);
+136: 		}
+137: 	}
+138: }
+139: 
+140: void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)
+141: {
+142: 	if (RitualWidget && RitualWidgetController)
+143: 	{
+144: 
+145: 
+146: 		RitualWidgetController->SetRitualAltar(RitualAltar);
+147: 
+148: 
+149: 		URitualUserWidget* RitualUserWidget = Cast<URitualUserWidget>(RitualWidget);
+150: 		if (RitualUserWidget)
+151: 		{
+152: 			RitualUserWidget->ShowForRitual(RitualAltar);
+153: 		}
+154: 
+155: 
+156: 		RitualWidget->SetVisibility(ESlateVisibility::Visible);
+157: 
+158: 
+159: 		APlayerController* PC = GetOwningPlayerController();
+160: 		if (PC)
+161: 		{
+162: 			FInputModeGameAndUI InputMode;
+163: 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+164: 			InputMode.SetHideCursorDuringCapture(false);
+165: 			PC->SetInputMode(InputMode);
+166: 			PC->bShowMouseCursor = true;
+167: 		}
+168: 	}
+169: }
+170: 
+171: void AWitchPTHUD::HideRitualWidget()
+172: {
+173: 	if (RitualWidget)
+174: 	{
+175: 
+176: 		URitualUserWidget* RitualUserWidget = Cast<URitualUserWidget>(RitualWidget);
+177: 		if (RitualUserWidget)
+178: 		{
+179: 			RitualUserWidget->HideFromRitual();
+180: 		}
+181: 
+182: 
+183: 		RitualWidget->SetVisibility(ESlateVisibility::Collapsed);
+184: 
+185: 
+186: 		if (RitualWidgetController)
+187: 		{
+188: 			RitualWidgetController->SetRitualAltar(nullptr);
+189: 		}
+190: 
+191: 
+192: 		APlayerController* PC = GetOwningPlayerController();
+193: 		if (PC)
+194: 		{
+195: 			PC->SetInputMode(FInputModeGameOnly());
+196: 			PC->bShowMouseCursor = false;
+197: 		}
+198: 	}
+199: }
+200: 
+201: void AWitchPTHUD::ShowInventoryWidget()
+202: {
+203: 	if (InventoryWidget)
+204: 	{
+205: 		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+206: 
+207: 		APlayerController* PC = GetOwningPlayerController();
+208: 		if (PC)
+209: 		{
+210: 			FInputModeGameAndUI InputMode;
+211: 			PC->SetInputMode(InputMode);
+212: 			PC->SetShowMouseCursor(true);
+213: 		}
+214: 	}
+215: 
+216: }
+217: 
+218: void AWitchPTHUD::HideInventoryWidget()
+219: {
+220: 	if (InventoryWidget)
+221: 	{
+222: 		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+223: 
+224: 		APlayerController* PC = GetOwningPlayerController();
+225: 		if (PC)
+226: 		{
+227: 			PC->SetInputMode(FInputModeGameOnly());
+228: 			PC->SetShowMouseCursor(false);
+229: 		}
+230: 	}
+231: }
+232: 
+233: void AWitchPTHUD::ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar)
+234: {
+235: 	if (CauldronWidget && InventoryWidget && CauldronWidgetController)
+236: 	{
+237: 
+238: 		CauldronWidgetController->SetCauldronAltar(CauldronAltar);
+239: 		CauldronWidgetController->BindCallbacksToDependencies();
+240: 		CauldronWidgetController->BroadcastInitialValues();
+241: 
+242: 
+243: 		CauldronWidget->SetVisibility(ESlateVisibility::Visible);
+244: 
+245: 		bCauldronWidgetVisible = true;
+246: 
+247: 
+248: 		APlayerController* PC = GetOwningPlayerController();
+249: 		if (PC)
+250: 		{
+251: 			FInputModeGameAndUI InputMode;
+252: 			PC->SetInputMode(InputMode);
+253: 			PC->SetShowMouseCursor(true);
+254: 		}
+255: 	}
+256: }
+257: 
+258: void AWitchPTHUD::HideCauldronWithInventory()
+259: {
+260: 	if (CauldronWidget && InventoryWidget)
+261: 	{
+262: 		CauldronWidget->SetVisibility(ESlateVisibility::Collapsed);
+263: 		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+264: 
+265: 		bCauldronWidgetVisible = false;
+266: 
+267: 
+268: 		if (CauldronWidgetController)
+269: 		{
+270: 			CauldronWidgetController->SetCauldronAltar(nullptr);
+271: 		}
+272: 
+273: 
+274: 		APlayerController* PC = GetOwningPlayerController();
+275: 		if (PC)
+276: 		{
+277: 			PC->SetInputMode(FInputModeGameOnly());
+278: 			PC->SetShowMouseCursor(false);
+279: 		}
+280: 	}
+281: }
+
+================
+File: Source/WitchPT/Private/UI/WidgetControllers/CauldronWidgetController.cpp
+================
+ 1: #include "UI/WidgetControllers/CauldronWidgetController.h"
+ 2: 
+ 3: #include "Item/CauldronAltar.h"
+ 4: #include "Item/Components/CauldronCraftComponent.h"
+ 5: 
+ 6: UCauldronWidgetController::UCauldronWidgetController()
+ 7: {
+ 8: }
+ 9: 
+10: void UCauldronWidgetController::BroadcastInitialValues()
+11: {
+12: 	if(CauldronAltar)
+13: 	{
+14: 		OnBaseIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredient());
+15: 
+16: 		OnPrincipalIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredient());
+17: 
+18: 		OnModifierIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetModifierIngredient());
+19: 
+20: 	}
+21: 
+22: }
+23: 
+24: void UCauldronWidgetController::BindCallbacksToDependencies()
+25: {
+26: 	Super::BindCallbacksToDependencies();
+27: 	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
+28: 	{
+29: 		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
+30: 		CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
+31: 		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientSet);
+32: 		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientIconSet);
+33: 		CauldronAltar->CauldronCraftComponent->OnModifierIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientSet);
+34: 		CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientIconSet);
+35: 	}
+36: }
+37: 
+38: void UCauldronWidgetController::SetCauldronAltar(ACauldronAltar* InCauldronAltar)
+39: {
+40: 	if (InCauldronAltar != nullptr)
+41: 	{
+42: 		CauldronAltar = InCauldronAltar;
+43: 	}
+44: 
+45: }
+46: 
+47: void UCauldronWidgetController::HandleBaseIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance)
+48: {
+49: 	OnBaseIngredientSet.Broadcast(IngredientInstance);
+50: }
+51: 
+52: void UCauldronWidgetController::HandleBaseIngredientIconSet(TSubclassOf<UUserWidget> BaseIngredientIcon)
+53: {
+54: 	OnBaseIngredientIconSet.Broadcast(BaseIngredientIcon);
+55: }
+56: 
+57: void UCauldronWidgetController::HandlePrincipalIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance)
+58: {
+59: 	OnPrincipalIngredientSet.Broadcast(IngredientInstance);
+60: }
+61: 
+62: void UCauldronWidgetController::HandlePrincipalIngredientIconSet(TSubclassOf<UUserWidget> PrincipalIngredientIcon)
+63: {
+64: 	OnPrincipalIngredientIconSet.Broadcast(PrincipalIngredientIcon);
+65: }
+66: 
+67: void UCauldronWidgetController::HandleModifierIngredientSet(UWitchPTInventoryItemInstance* IngredientInstance)
+68: {
+69: 	OnModifierIngredientSet.Broadcast(IngredientInstance);
+70: }
+71: 
+72: void UCauldronWidgetController::HandleModifierIngredientIconSet(TSubclassOf<UUserWidget> ModifierIngredientIcon)
+73: {
+74: 	OnModifierIngredientIconSet.Broadcast(ModifierIngredientIcon);
+75: }
+
+================
+File: Source/WitchPT/Public/UI/WidgetControllers/RitualWidgetController.h
+================
+  1: #pragma once
+  2: 
+  3: #include "CoreMinimal.h"
+  4: #include "GameplayTagContainer.h"
+  5: #include "WitchPTWidgetController.h"
+  6: #include "Item/RitualAltar.h"
+  7: #include "RitualWidgetController.generated.h"
+  8: 
+  9: enum class ERitualInput : uint8;
+ 10: class ARitualAltar;
+ 11: class ACharacter;
+ 12: enum class EInteractionState : uint8;
+ 13: 
+ 14: 
+ 15: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualExpectedInputChangedSignature_WC, FGameplayTag, ExpectedInput);
+ 16: 
+ 17: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReadyPlayersChangedSignature_WC, FRitualReadyPlayersData, ReadyPlayersData);
+ 18: 
+ 19: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCountdownTickSignature_WC, int32, CountdownValue);
+ 20: 
+ 21: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnDataChangedSignature_WC, FUIRitualData, TurnData);
+ 22: 
+ 23: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualStateChangedSignature_WC, EInteractionState, NewState);
+ 24: 
+ 25: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCorruptionChangedSignature_WC, float, CorruptionPercentage);
+ 26: 
+ 27: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualSequenceProgressChangedSignature_WC, float, ProgressPercentage);
+ 28: 
+ 29: DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRitualCompletedSignature_WC, bool, bWasSuccessful);
+ 30: 
+ 31: 
+ 32: 
+ 33: 
+ 34: UCLASS(BlueprintType, Blueprintable)
+ 35: class WITCHPT_API URitualWidgetController : public UWitchPTWidgetController
+ 36: {
+ 37: 	GENERATED_BODY()
+ 38: 
+ 39: public:
+ 40: 	URitualWidgetController();
+ 41: 
+ 42: 	virtual void BroadcastInitialValues() override;
+ 43: 	virtual void BindCallbacksToDependencies() override;
+ 44: 
+ 45: 
+ 46: 	UFUNCTION(Category = "Ritual")
+ 47: 	void SetRitualAltar(ARitualAltar* InRitualAltar);
+ 48: 
+ 49: 
+ 50: 	UFUNCTION(BlueprintPure, Category = "Ritual")
+ 51: 	ARitualAltar* GetRitualAltar() const { return RitualAltar; }
+ 52: 
+ 53: 
+ 54: 	UFUNCTION(BlueprintPure, Category = "Ritual")
+ 55: 	bool IsLocalPlayerActive() const;
+ 56: 
+ 57: 
+ 58: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 59: 	FOnRitualExpectedInputChangedSignature_WC OnRitualExpectedInputChanged;
+ 60: 
+ 61: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 62: 	FOnReadyPlayersChangedSignature_WC OnReadyPlayersChanged;
+ 63: 
+ 64: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 65: 	FOnRitualCountdownTickSignature_WC OnRitualCountdownTick;
+ 66: 
+ 67: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 68: 	FOnTurnDataChangedSignature_WC OnTurnDataChanged;
+ 69: 
+ 70: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 71: 	FOnRitualStateChangedSignature_WC OnRitualStateChanged;
+ 72: 
+ 73: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 74: 	FOnRitualCorruptionChangedSignature_WC OnRitualCorruptionChanged;
+ 75: 
+ 76: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 77: 	FOnRitualSequenceProgressChangedSignature_WC OnRitualSequenceProgressChanged;
+ 78: 
+ 79: 	UPROPERTY(BlueprintAssignable, Category = "Ritual")
+ 80: 	FOnRitualCompletedSignature_WC OnRitualCompleted;
+ 81: 
+ 82: protected:
+ 83: 
+ 84: 	UPROPERTY(BlueprintReadOnly, Category = "Ritual")
+ 85: 	TObjectPtr<ARitualAltar> RitualAltar;
+ 86: 
+ 87: 
+ 88: 	UFUNCTION()
+ 89: 	void HandleRitualStateChanged(EInteractionState NewState);
+ 90: 
+ 91: 	UFUNCTION()
+ 92: 	void HandleReadyPlayersChanged(FRitualReadyPlayersData ReadyPlayersData);
+ 93: 
+ 94: 	UFUNCTION()
+ 95: 	void HandleCountdownTick(int32 CountdownValue);
+ 96: 
+ 97: 	UFUNCTION()
+ 98: 	void HandleTurnDataChanged(FUIRitualData TurnData);
+ 99: 
+100: 	UFUNCTION()
+101: 	void HandleCorruptionChanged(float CorruptionPercentage);
+102: 
+103: 	UFUNCTION()
+104: 	void HandleSequenceProgressChanged(float ProgressPercentage);
+105: 
+106: 	UFUNCTION()
+107: 	void HandleRitualCompleted(bool bWasSuccessful);
+108: 
+109: private:
+110: 
+111: 	FUIRitualData ProcessTurnDataForLocalPlayer(const FUIRitualData& InTurnData) const;
+112: };
+
+================
+File: Source/WitchPT/Private/UI/WidgetControllers/RitualWidgetController.cpp
+================
+  1: #include "UI/WidgetControllers/RitualWidgetController.h"
+  2: #include "Item/RitualAltar.h"
+  3: #include "GameFramework/Character.h"
+  4: #include "GameFramework/PlayerController.h"
+  5: #include "AbilitySystemComponent.h"
+  6: #include "AbilitySystemBlueprintLibrary.h"
+  7: #include "FWitchPTGameplayTags.h"
+  8: 
+  9: URitualWidgetController::URitualWidgetController()
+ 10: {
+ 11: 
+ 12: }
+ 13: 
+ 14: void URitualWidgetController::BroadcastInitialValues()
+ 15: {
+ 16: 
+ 17:     if (!IsValid(RitualAltar))
+ 18:     {
+ 19:         UE_LOG(LogTemp, Warning, TEXT("[RitualWidgetController] BroadcastInitialValues called with invalid altar"));
+ 20:         return;
+ 21:     }
+ 22: 
+ 23: 
+ 24:     OnRitualStateChanged.Broadcast(RitualAltar->GetCurrentRitualState());
+ 25: 
+ 26: 
+ 27:     FRitualReadyPlayersData ReadyPlayersData;
+ 28:     ReadyPlayersData.TotalPlayers = RitualAltar->GetNumberOfTotalPlayers();
+ 29:     ReadyPlayersData.ReadyPlayers = RitualAltar->GetNumberOfReadyPlayers();
+ 30:     OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
+ 31: 
+ 32: 
+ 33:     FUIRitualData CurrentTurnData = RitualAltar->GetCurrentTurnData();
+ 34:     FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(CurrentTurnData);
+ 35:     OnTurnDataChanged.Broadcast(ProcessedTurnData);
+ 36: 
+ 37: 
+ 38:     OnRitualCorruptionChanged.Broadcast(RitualAltar->GetCorruptionPercentage());
+ 39: 
+ 40: 
+ 41:     OnRitualSequenceProgressChanged.Broadcast(RitualAltar->GetCurrentSequenceProgress());
+ 42: 
+ 43:     UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Initial values broadcasted"));
+ 44: }
+ 45: 
+ 46: void URitualWidgetController::BindCallbacksToDependencies()
+ 47: {
+ 48: 
+ 49:     if (!IsValid(RitualAltar))
+ 50:     {
+ 51:         UE_LOG(LogTemp, Warning, TEXT("[RitualWidgetController] BindCallbacksToDependencies called with invalid altar"));
+ 52:         return;
+ 53:     }
+ 54: 
+ 55: 
+ 56:     RitualAltar->OnRitualStateChangedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualStateChanged);
+ 57:     RitualAltar->OnReadyPlayersChangedEvent.AddDynamic(this, &URitualWidgetController::HandleReadyPlayersChanged);
+ 58:     RitualAltar->OnCountdownTickEvent.AddDynamic(this, &URitualWidgetController::HandleCountdownTick);
+ 59:     RitualAltar->OnTurnDataChangedEvent.AddDynamic(this, &URitualWidgetController::HandleTurnDataChanged);
+ 60:     RitualAltar->OnCorruptionChangedEvent.AddDynamic(this, &URitualWidgetController::HandleCorruptionChanged);
+ 61:     RitualAltar->OnSequenceProgressChangedEvent.AddDynamic(this, &URitualWidgetController::HandleSequenceProgressChanged);
+ 62:     RitualAltar->OnRitualCompletedEvent.AddDynamic(this, &URitualWidgetController::HandleRitualCompleted);
+ 63: 
+ 64:     UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Callbacks bound to dependencies"));
+ 65: }
+ 66: 
+ 67: void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
+ 68: {
+ 69: 
+ 70: 
+ 71: 
+ 72:     if (IsValid(RitualAltar))
+ 73:     {
+ 74:         RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
+ 75:         RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
+ 76:         RitualAltar->OnCountdownTickEvent.RemoveAll(this);
+ 77:         RitualAltar->OnTurnDataChangedEvent.RemoveAll(this);
+ 78:         RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
+ 79:         RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
+ 80:         RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
+ 81: 
+ 82:         UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Unbound callbacks from previous altar"));
+ 83:     }
+ 84: 
+ 85: 
+ 86:     RitualAltar = InRitualAltar;
+ 87: 
+ 88: 
+ 89:     if (IsValid(RitualAltar))
+ 90:     {
+ 91:         BindCallbacksToDependencies();
+ 92:         BroadcastInitialValues();
+ 93:         UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Set new ritual altar and bound callbacks"));
+ 94:     }
+ 95:     else
+ 96:     {
+ 97:         UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Cleared ritual altar reference"));
+ 98:     }
+ 99: }
+100: 
+101: bool URitualWidgetController::IsLocalPlayerActive() const
+102: {
+103: 
+104:     if (!IsValid(RitualAltar) || !IsValid(PlayerController))
+105:     {
+106:         return false;
+107:     }
+108: 
+109: 
+110:     ACharacter* LocalCharacter = Cast<ACharacter>(PlayerController->GetPawn());
+111:     if (!IsValid(LocalCharacter))
+112:     {
+113:         return false;
+114:     }
+115: 
+116: 
+117:     ACharacter* ActivePlayer = RitualAltar->GetCurrentActivePlayer();
+118:     return IsValid(ActivePlayer) && ActivePlayer == LocalCharacter;
+119: }
+120: 
+121: FUIRitualData URitualWidgetController::ProcessTurnDataForLocalPlayer(const FUIRitualData& InTurnData) const
+122: {
+123:     FUIRitualData ProcessedData = InTurnData;
+124: 
+125: 
+126:     ProcessedData.bIsMyTurn = IsLocalPlayerActive();
+127: 
+128: 
+129:     if (!ProcessedData.bIsMyTurn)
+130:     {
+131:         ProcessedData.ExpectedInput = FGameplayTag::EmptyTag;
+132:         ProcessedData.CurrentInputTimeRemaining = 0.0f;
+133:     }
+134: 
+135:     return ProcessedData;
+136: }
+137: 
+138: 
+139: 
+140: void URitualWidgetController::HandleRitualStateChanged(EInteractionState NewState)
+141: {
+142:     OnRitualStateChanged.Broadcast(NewState);
+143: }
+144: 
+145: void URitualWidgetController::HandleReadyPlayersChanged(FRitualReadyPlayersData ReadyPlayersData)
+146: {
+147:     OnReadyPlayersChanged.Broadcast(ReadyPlayersData);
+148: }
+149: 
+150: void URitualWidgetController::HandleCountdownTick(int32 CountdownValue)
+151: {
+152:     OnRitualCountdownTick.Broadcast(CountdownValue);
+153: }
+154: 
+155: void URitualWidgetController::HandleTurnDataChanged(FUIRitualData TurnData)
+156: {
+157: 
+158:     FUIRitualData ProcessedTurnData = ProcessTurnDataForLocalPlayer(TurnData);
+159:     OnTurnDataChanged.Broadcast(ProcessedTurnData);
+160: 
+161: 
+162:     if (ProcessedTurnData.bIsMyTurn)
+163:     {
+164:         OnRitualExpectedInputChanged.Broadcast(ProcessedTurnData.ExpectedInput);
+165:     }
+166:     else
+167:     {
+168:         OnRitualExpectedInputChanged.Broadcast(FGameplayTag::EmptyTag);
+169:     }
+170: }
+171: 
+172: void URitualWidgetController::HandleCorruptionChanged(float CorruptionPercentage)
+173: {
+174:     OnRitualCorruptionChanged.Broadcast(CorruptionPercentage);
+175: }
+176: 
+177: void URitualWidgetController::HandleSequenceProgressChanged(float ProgressPercentage)
+178: {
+179:     OnRitualSequenceProgressChanged.Broadcast(ProgressPercentage);
+180: }
+181: 
+182: void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
+183: {
+184:     OnRitualCompleted.Broadcast(bWasSuccessful);
+185: 
+186: 
+187:     if (IsValid(RitualAltar))
+188:     {
+189:         RitualAltar->OnRitualStateChangedEvent.RemoveAll(this);
+190:         RitualAltar->OnReadyPlayersChangedEvent.RemoveAll(this);
+191:         RitualAltar->OnCountdownTickEvent.RemoveAll(this);
+192:         RitualAltar->OnTurnDataChangedEvent.RemoveAll(this);
+193:         RitualAltar->OnCorruptionChangedEvent.RemoveAll(this);
+194:         RitualAltar->OnSequenceProgressChangedEvent.RemoveAll(this);
+195:         RitualAltar->OnRitualCompletedEvent.RemoveAll(this);
+196: 
+197:         UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Unbound all delegates after ritual completion"));
+198:     }
+199: 
+200: 
+201:     RitualAltar = nullptr;
+202: }
+
+
+
+
+================================================================
+End of Codebase
+================================================================
