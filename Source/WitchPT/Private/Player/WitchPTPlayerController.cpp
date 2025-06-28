@@ -8,6 +8,7 @@
 #include "InputActionValue.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Equipment/WitchPTQuickBarComponent.h"
 #include "Input/WitchPTInputComponent.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Item/CauldronAltar.h"
@@ -28,6 +29,8 @@ AWitchPTPlayerController::AWitchPTPlayerController()
 	bReplicates = true;
 	InventoryManager = CreateDefaultSubobject<UWitchPTInventoryManagerComponent>("InventoryManager");
 	InventoryManager->SetIsReplicated(true);
+	QuickBarComponent = CreateDefaultSubobject<UWitchPTQuickBarComponent>("QuickBarComponent");
+	QuickBarComponent->SetIsReplicated(true);
 	
 	
 }

@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UQuickBarWidgetController;
 class UCauldronWidgetController;
 class UWitchPTWidgetController;
 class URitualWidgetController;
@@ -27,11 +28,13 @@ public:
 	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
 	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
+	UQuickBarWidgetController* SetQuickBarWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
 	void ShowRitualWidget(class ARitualAltar* RitualAltar);
 	void HideRitualWidget();
@@ -43,6 +46,12 @@ public:
 
 
 private:
+	// ----------------------- User Widgets -----------------------
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> QuickBarUserWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> QuickBarUserWidgetClass;
+	
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> OverlayWidget;
 	UPROPERTY(EditAnywhere)
@@ -64,6 +73,13 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> RitualWidgetClass;
 
+
+	// ----------------------- Widget Controllers -----------------------
+	UPROPERTY()
+	TObjectPtr<UQuickBarWidgetController> QuickBarWidgetController;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UQuickBarWidgetController> QuickBarWidgetControllerClass;
+	
 	UPROPERTY()
 	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
 	UPROPERTY(EditAnywhere)

@@ -14,6 +14,10 @@ class UWitchPTInventoryItemInstance;
 class UAbilitySystemComponent;
 class UWitchPTEquipmentDefinition;
 class UWitchPTEquipmentInstance;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemEquipped, UWitchPTEquipmentInstance*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemUnequipped, UWitchPTEquipmentInstance*);
+
 USTRUCT()
 struct FEquipmentAbilityHandles
 {
@@ -86,7 +90,7 @@ class WITCHPT_API UWitchPTEquipmentManagerComponent : public UActorComponent
 
 public:
 	// Sets default values for this component's properties
-	UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UWitchPTEquipmentManagerComponent();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
@@ -98,10 +102,16 @@ public:
 	//~End of UActorComponent interface
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
-	UWitchPTEquipmentInstance* EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
+	void EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void UnequipItem(UWitchPTEquipmentInstance* ItemInstance);
+
+	UFUNCTION(Server, Reliable)
+	void Server_EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
+
+	UFUNCTION(Server, Reliable)
+	void Server_UnequipItem(UWitchPTEquipmentInstance* ItemInstance);
 	
 
 	UFUNCTION(BlueprintPure, Category="Equipment")
@@ -113,6 +123,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void PrintEquippedItems();
+
+	FOnItemEquipped OnItemEquipped;
+	FOnItemUnequipped OnItemUnequipped;
 
 protected:
 	UPROPERTY(Replicated)

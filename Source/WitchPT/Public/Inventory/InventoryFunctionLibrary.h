@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "InventoryFunctionLibrary.generated.h"
 
 class UInventoryWidgetController;
@@ -17,4 +18,7 @@ class WITCHPT_API UInventoryFunctionLibrary : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintPure, Category="Inventory")
 	static UInventoryWidgetController* SetInventoryWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category="QuickBar")
+	static UQuickBarWidgetController* SetQuickBarWidgetController(const UObject* WorldContextObject);
 };

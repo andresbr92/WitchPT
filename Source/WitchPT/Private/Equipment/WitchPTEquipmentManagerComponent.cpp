@@ -11,28 +11,37 @@
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+#include "Net/UnrealNetwork.h"
 
 
 void FWitchPTEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
 {
+	UWitchPTEquipmentManagerComponent* EquipmentManager = Cast<UWitchPTEquipmentManagerComponent>(OwnerComponent);
+	if (!IsValid(EquipmentManager)) return;
+	
 	for (int32 Index : RemovedIndices)
 	{
 		const FWitchPTEquipmentEntry& Entry = Entries[Index];
 		if (Entry.Instance != nullptr)
 		{
 			Entry.Instance->OnUnequipped();
+			EquipmentManager->OnItemUnequipped.Broadcast(Entry.Instance);
 		}
 	}
 }
 
 void FWitchPTEquipmentList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
 {
+	UWitchPTEquipmentManagerComponent* EquipmentManager = Cast<UWitchPTEquipmentManagerComponent>(OwnerComponent);
+	if (!IsValid(EquipmentManager)) return;
+	
 	for (int32 Index : AddedIndices)
 	{
 		const FWitchPTEquipmentEntry& Entry = Entries[Index];
 		if (Entry.Instance != nullptr)
 		{
 			Entry.Instance->OnEquipped();
+			EquipmentManager->OnItemEquipped.Broadcast(Entry.Instance);
 		}
 	}
 }
@@ -118,13 +127,11 @@ UAbilitySystemComponent* FWitchPTEquipmentList::GetAbilitySystemComponent() cons
 
 //-------------------------------      UWitchPTEquipmentManagerComponent           -----------------------//
 // -------------------------------------------------------------------------------------------------------//
-UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-	, EquipmentList(this)
+UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent()
+	: EquipmentList(this)
 {
-	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
-	bWantsInitializeComponent = true;
+	bReplicateUsingRegisteredSubObjectList = true;
 }
 
 void UWitchPTEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -190,49 +197,61 @@ void UWitchPTEquipmentManagerComponent::ReadyForReplication()
 	}
 }
 
-UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::EquipItem(
-	TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+void UWitchPTEquipmentManagerComponent::EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
 {
-	UWitchPTEquipmentInstance* NewInstance = nullptr;
-	if (EquipmentDefinition != nullptr)
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
 	{
-		if (!GetOwner()->HasAuthority()) return nullptr;
-		NewInstance = EquipmentList.AddEntry(EquipmentDefinition);
-		if (NewInstance != nullptr)
+		Server_EquipItem(EquipmentDefinition);
+	}
+	else
+	{
+		if (EquipmentDefinition != nullptr)
 		{
-			NewInstance->OnEquipped();
-			if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
+			UWitchPTEquipmentInstance* NewInstance = EquipmentList.AddEntry(EquipmentDefinition);
+			if (NewInstance != nullptr)
 			{
-				AddReplicatedSubObject(NewInstance);
-				UE_LOG(LogTemp, Warning, TEXT("✅ Registered subobject: %s"), *NewInstance->GetClass()->GetName());
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("❌ Not registered subobject: %s"), *NewInstance->GetClass()->GetName());
+				NewInstance->OnEquipped();
+				OnItemEquipped.Broadcast(NewInstance);
+
+				if (IsUsingRegisteredSubObjectList())
+				{
+					AddReplicatedSubObject(NewInstance);
+				}
 			}
 		}
 	}
+}
 
-
-    
-	return NewInstance;
+void UWitchPTEquipmentManagerComponent::Server_EquipItem_Implementation(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+{
+	EquipItem(EquipmentDefinition);
 }
 
 void UWitchPTEquipmentManagerComponent::UnequipItem(UWitchPTEquipmentInstance* ItemInstance)
 {
-	if (ItemInstance != nullptr)
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
 	{
-		if (!GetOwner()->HasAuthority()) return;
-        
-		if (IsUsingRegisteredSubObjectList())
-		{
-			RemoveReplicatedSubObject(ItemInstance);
-		}
-
-		ItemInstance->OnUnequipped();
-		EquipmentList.RemoveEntry(ItemInstance);
-		UE_LOG(LogTemp, Warning, TEXT("❌ Unequipped item: %s"), *ItemInstance->GetClass()->GetName());
+		Server_UnequipItem(ItemInstance);
 	}
+	else
+	{
+		if (ItemInstance != nullptr)
+		{
+			if (IsUsingRegisteredSubObjectList())
+			{
+				RemoveReplicatedSubObject(ItemInstance);
+			}
+
+			ItemInstance->OnUnequipped();
+			OnItemUnequipped.Broadcast(ItemInstance);
+			EquipmentList.RemoveEntry(ItemInstance);
+		}
+	}
+}
+
+void UWitchPTEquipmentManagerComponent::Server_UnequipItem_Implementation(UWitchPTEquipmentInstance* ItemInstance)
+{
+	UnequipItem(ItemInstance);
 }
 
 

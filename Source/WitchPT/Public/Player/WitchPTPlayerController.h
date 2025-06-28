@@ -7,6 +7,7 @@
 #include "UI/Widgets/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
+class UWitchPTQuickBarComponent;
 class UCauldronUserWidget;
 class ABaseInteractableAltar;
 class ACauldronAltar;
@@ -68,6 +69,8 @@ public:
 	UPROPERTY()
 	TObjectPtr<UPointerWidget> HUDWidget;
 	UWitchPTInventoryManagerComponent* GetInventoryManager() { return InventoryManager; }
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "QuickBar")
+	TObjectPtr<UWitchPTQuickBarComponent> QuickBarComponent;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

@@ -8,6 +8,7 @@
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
+#include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
@@ -32,6 +33,17 @@ UCauldronWidgetController* AWitchPTHUD::SetCauldronWidgetController(const FWidge
 		// CauldronWidgetController->BindCallbacksToDependencies();
 	}
 	return CauldronWidgetController;
+}
+
+UQuickBarWidgetController* AWitchPTHUD::SetQuickBarWidgetController(const FWidgetControllerParams& WCParams)
+{
+	if (QuickBarWidgetController == nullptr)
+	{
+		QuickBarWidgetController = NewObject<UQuickBarWidgetController>(this, QuickBarWidgetControllerClass);
+		QuickBarWidgetController->SetWidgetControllerParams(WCParams);
+		
+	}
+	return QuickBarWidgetController;
 }
 
 UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWidgetControllerParams& WCParams)
@@ -77,6 +89,8 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 	InitInventoryWidget(PC, PS, ASC, AS);
 	// Initialize Cauldron Widget (but keep it hidden)
 	InitCauldronWidget(PC, PS, ASC, AS);
+	// Initialize Quick Bar Widget 
+	// InitQuickBarWidget(PC, PS, ASC, AS);
 	
 }
 
@@ -138,6 +152,25 @@ void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UA
 			Widget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
+}
+
+void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+	UAttributeSet* AS)
+{
+	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
+		QuickBarUserWidget = Cast<UWitchPTUserWidget>(Widget);
+		if (QuickBarUserWidget)
+		{
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
+			QuickBarUserWidget->SetWidgetController(Controller);
+			Widget->AddToViewport();
+		}
+	}
+	
+	
 }
 
 void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)

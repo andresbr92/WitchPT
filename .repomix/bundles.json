@@ -1,6 +1,19 @@
 {
   "bundles": {
-    "Interaction-432": {
+    "WitchPT": {
+      "name": "WitchPT",
+      "created": "2025-06-26T16:12:24.586Z",
+      "lastUsed": "2025-06-26T16:42:26.165Z",
+      "tags": [
+        "gas",
+        "abilities"
+      ],
+      "files": [
+        "Source/WitchPT",
+        "GDD.txt"
+      ]
+    },
+    "Interaction": {
       "name": "Interaction",
       "configPath": "repomix.config.json",
       "created": "2025-06-10T15:49:17.721Z",
@@ -30,18 +43,18 @@
         "setup"
       ],
       "files": [
-        "WitchPT.Target.cs",
-        "WitchPTEditor.Target.cs",
-        "WitchPT/WitchPT.Build.cs",
-        "WitchPT/WitchPT.cpp",
-        "WitchPT/WitchPT.h",
-        "WitchPT/Private/Game",
-        "WitchPT/Public/Game",
-        "WitchPT/Private/WitchPTAssetManager.cpp",
-        "WitchPT/Public/WitchPTAssetManager.h",
-        "WitchPT/Public/FWitchPTGameplayTags.cpp",
-        "WitchPT/Public/FWitchPTGameplayTags.h",
-        "WitchPT/Public/Systems"
+        "Source/WitchPT.Target.cs",
+        "Source/WitchPTEditor.Target.cs",
+        "Source/WitchPT/WitchPT.Build.cs",
+        "Source/WitchPT/WitchPT.cpp",
+        "Source/WitchPT/WitchPT.h",
+        "Source/WitchPT/Private/Game",
+        "Source/WitchPT/Public/Game",
+        "Source/WitchPT/Private/WitchPTAssetManager.cpp",
+        "Source/WitchPT/Public/WitchPTAssetManager.h",
+        "Source/WitchPT/Public/FWitchPTGameplayTags.cpp",
+        "Source/WitchPT/Public/FWitchPTGameplayTags.h",
+        "Source/WitchPT/Public/Systems"
       ]
     },
     "GameplayAbilitySystem": {
@@ -53,16 +66,16 @@
         "abilities"
       ],
       "files": [
-        "WitchPT/Private/AbilitySystem/GameplayAbilities",
-        "WitchPT/Public/AbilitySystem/GameplayAbilities",
-        "WitchPT/Private/AbilitySystem/WitchPTAbilitySystemComponent.cpp",
-        "WitchPT/Public/AbilitySystem/WitchPTAbilitySystemComponent.h",
-        "WitchPT/Private/AbilitySystem/WitchPTAbilitySystemGlobals.cpp",
-        "WitchPT/Public/AbilitySystem/WitchPTAbilitySystemGlobals.h",
-        "WitchPT/Private/AbilitySystem/WitchPTAbilitySystemLibrary.cpp",
-        "WitchPT/Public/AbilitySystem/WitchPTAbilitySystemLibrary.h",
-        "WitchPT/Private/AbilitySystem/WitchPTAttributeSet.cpp",
-        "WitchPT/Public/AbilitySystem/WitchPTAttributeSet.h"
+        "Source/WitchPT/Private/AbilitySystem/GameplayAbilities",
+        "Source/WitchPT/Public/AbilitySystem/GameplayAbilities",
+        "Source/WitchPT/Private/AbilitySystem/WitchPTAbilitySystemComponent.cpp",
+        "Source/WitchPT/Public/AbilitySystem/WitchPTAbilitySystemComponent.h",
+        "Source/WitchPT/Private/AbilitySystem/WitchPTAbilitySystemGlobals.cpp",
+        "Source/WitchPT/Public/AbilitySystem/WitchPTAbilitySystemGlobals.h",
+        "Source/WitchPT/Private/AbilitySystem/WitchPTAbilitySystemLibrary.cpp",
+        "Source/WitchPT/Public/AbilitySystem/WitchPTAbilitySystemLibrary.h",
+        "Source/WitchPT/Private/AbilitySystem/WitchPTAttributeSet.cpp",
+        "Source/WitchPT/Public/AbilitySystem/WitchPTAttributeSet.h"
       ]
     },
     "InteractionSystem": {
@@ -74,21 +87,21 @@
         "interaction"
       ],
       "files": [
-        "WitchPT/Private/AbilitySystem/Interaction",
-        "WitchPT/Public/AbilitySystem/Interaction"
+        "Source/WitchPT/Private/AbilitySystem/Interaction",
+        "Source/WitchPT/Public/AbilitySystem/Interaction"
       ]
     },
     "InventorySystem": {
       "name": "InventorySystem",
       "created": "2025-06-24T18:45:10.123Z",
-      "lastUsed": "2025-06-24T18:45:10.123Z",
+      "lastUsed": "2025-06-26T16:12:24.586Z",
       "tags": [
         "inventory",
         "items"
       ],
       "files": [
-        "WitchPT/Private/Inventory",
-        "WitchPT/Public/Inventory"
+        "Source/WitchPT/Private/Inventory",
+        "Source/WitchPT/Public/Inventory"
       ]
     },
     "EquipmentSystem": {
@@ -100,8 +113,8 @@
         "character"
       ],
       "files": [
-        "WitchPT/Private/Equipment",
-        "WitchPT/Public/Equipment"
+        "Source/WitchPT/Private/Equipment",
+        "Source/WitchPT/Public/Equipment"
       ]
     },
     "CharacterSystem": {
@@ -114,8 +127,8 @@
         "enemy"
       ],
       "files": [
-        "WitchPT/Private/Character",
-        "WitchPT/Public/Character"
+        "Source/WitchPT/Private/Character",
+        "Source/WitchPT/Public/Character"
       ]
     },
     "PlayerSystem": {
@@ -128,8 +141,8 @@
         "state"
       ],
       "files": [
-        "WitchPT/Private/Player",
-        "WitchPT/Public/Player"
+        "Source/WitchPT/Private/Player",
+        "Source/WitchPT/Public/Player"
       ]
     },
     "ItemSystem": {
@@ -141,8 +154,8 @@
         "world"
       ],
       "files": [
-        "WitchPT/Private/Item",
-        "WitchPT/Public/Item"
+        "Source/WitchPT/Private/Item",
+        "Source/WitchPT/Public/Item"
       ]
     },
     "CauldronMechanic": {
@@ -156,14 +169,14 @@
         "item"
       ],
       "files": [
-        "WitchPT/Private/AbilitySystem/Cauldron",
-        "WitchPT/Public/AbilitySystem/Cauldron",
-        "WitchPT/Private/Item/CauldronAltar.cpp",
-        "WitchPT/Public/Item/CauldronAltar.h",
-        "WitchPT/Private/Item/CauldronPosition.cpp",
-        "WitchPT/Public/Item/CauldronPosition.h",
-        "WitchPT/Private/Item/Components/CauldronCraftComponent.cpp",
-        "WitchPT/Public/Item/Components/CauldronCraftComponent.h"
+        "Source/WitchPT/Private/AbilitySystem/Cauldron",
+        "Source/WitchPT/Public/AbilitySystem/Cauldron",
+        "Source/WitchPT/Private/Item/CauldronAltar.cpp",
+        "Source/WitchPT/Public/Item/CauldronAltar.h",
+        "Source/WitchPT/Private/Item/CauldronPosition.cpp",
+        "Source/WitchPT/Public/Item/CauldronPosition.h",
+        "Source/WitchPT/Private/Item/Components/CauldronCraftComponent.cpp",
+        "Source/WitchPT/Public/Item/Components/CauldronCraftComponent.h"
       ]
     },
     "RitualMechanic": {
@@ -176,12 +189,12 @@
         "item"
       ],
       "files": [
-        "WitchPT/Private/Item/Ritual",
-        "WitchPT/Public/Item/Ritual",
-        "WitchPT/Private/Item/RitualAltar.cpp",
-        "WitchPT/Public/Item/RitualAltar.h",
-        "WitchPT/Private/Item/RitualPosition.cpp",
-        "WitchPT/Public/Item/RitualPosition.h"
+        "Source/WitchPT/Private/Item/Ritual",
+        "Source/WitchPT/Public/Item/Ritual",
+        "Source/WitchPT/Private/Item/RitualAltar.cpp",
+        "Source/WitchPT/Public/Item/RitualAltar.h",
+        "Source/WitchPT/Private/Item/RitualPosition.cpp",
+        "Source/WitchPT/Public/Item/RitualPosition.h"
       ]
     },
     "UISystem": {
@@ -194,8 +207,8 @@
         "widget"
       ],
       "files": [
-        "WitchPT/Private/UI",
-        "WitchPT/Public/UI"
+        "Source/WitchPT/Private/UI",
+        "Source/WitchPT/Public/UI"
       ]
     },
     "InputSystem": {
@@ -207,8 +220,8 @@
         "control"
       ],
       "files": [
-        "WitchPT/Private/Input",
-        "WitchPT/Public/Input"
+        "Source/WitchPT/Private/Input",
+        "Source/WitchPT/Public/Input"
       ]
     }
   }
