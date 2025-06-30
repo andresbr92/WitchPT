@@ -44,6 +44,7 @@ WitchPT.Target.cs
 WitchPT/Private/AbilitySystem/Cauldron/AT_WaitForPlacementLocation_SLT.cpp
 WitchPT/Private/AbilitySystem/Cauldron/GA_CauldronPlace.cpp
 WitchPT/Private/AbilitySystem/Cauldron/GA_CauldronPlacementPreview.cpp
+WitchPT/Private/AbilitySystem/GameplayAbilities/GA_QuickBarSlots.cpp
 WitchPT/Private/AbilitySystem/GameplayAbilities/WitchPTGameplayAbility.cpp
 WitchPT/Private/AbilitySystem/Interaction/AbilityTask_GrantNearbyInteraction.cpp
 WitchPT/Private/AbilitySystem/Interaction/AbilityTask_WaitForInteractable.cpp
@@ -62,6 +63,7 @@ WitchPT/Private/Character/WitchPTEnemy.cpp
 WitchPT/Private/Equipment/WitchPTEquipmentDefinition.cpp
 WitchPT/Private/Equipment/WitchPTEquipmentInstance.cpp
 WitchPT/Private/Equipment/WitchPTEquipmentManagerComponent.cpp
+WitchPT/Private/Equipment/WitchPTQuickBarComponent.cpp
 WitchPT/Private/Game/WitchPTGameModeBase.cpp
 WitchPT/Private/Input/WitchPTInputComponent.cpp
 WitchPT/Private/Input/WitchPTInputConfig.cpp
@@ -98,17 +100,20 @@ WitchPT/Private/UI/HUD/WitchPTHUD.cpp
 WitchPT/Private/UI/WidgetControllers/CauldronWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/InventoryWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/OverlayWidgetController.cpp
+WitchPT/Private/UI/WidgetControllers/QuickBarWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/RitualWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/WitchPTWidgetController.cpp
 WitchPT/Private/UI/Widgets/CauldronUserWidget.cpp
 WitchPT/Private/UI/Widgets/Inventory/InventoryUserWidget.cpp
 WitchPT/Private/UI/Widgets/Inventory/RitualUserWidget.cpp
 WitchPT/Private/UI/Widgets/PointerWidget.cpp
+WitchPT/Private/UI/Widgets/QuickBarUserWidget.cpp
 WitchPT/Private/UI/Widgets/WitchPTUserWidget.cpp
 WitchPT/Private/WitchPTAssetManager.cpp
 WitchPT/Public/AbilitySystem/Cauldron/AT_WaitForPlacementLocation_SLT.h
 WitchPT/Public/AbilitySystem/Cauldron/GA_CauldronPlace.h
 WitchPT/Public/AbilitySystem/Cauldron/GA_CauldronPlacementPreview.h
+WitchPT/Public/AbilitySystem/GameplayAbilities/GA_QuickBarSlots.h
 WitchPT/Public/AbilitySystem/GameplayAbilities/WitchPTGameplayAbility.h
 WitchPT/Public/AbilitySystem/Interaction/AbilityTask_GrantNearbyInteraction.h
 WitchPT/Public/AbilitySystem/Interaction/AbilityTask_WaitForInteractable.h
@@ -130,6 +135,7 @@ WitchPT/Public/Character/WitchPTEnemy.h
 WitchPT/Public/Equipment/WitchPTEquipmentDefinition.h
 WitchPT/Public/Equipment/WitchPTEquipmentInstance.h
 WitchPT/Public/Equipment/WitchPTEquipmentManagerComponent.h
+WitchPT/Public/Equipment/WitchPTQuickBarComponent.h
 WitchPT/Public/FWitchPTGameplayTags.cpp
 WitchPT/Public/FWitchPTGameplayTags.h
 WitchPT/Public/Game/WitchPTGameModeBase.h
@@ -170,12 +176,14 @@ WitchPT/Public/UI/HUD/WitchPTHUD.h
 WitchPT/Public/UI/WidgetControllers/CauldronWidgetController.h
 WitchPT/Public/UI/WidgetControllers/InventoryWidgetController.h
 WitchPT/Public/UI/WidgetControllers/OverlayWidgetController.h
+WitchPT/Public/UI/WidgetControllers/QuickBarWidgetController.h
 WitchPT/Public/UI/WidgetControllers/RitualWidgetController.h
 WitchPT/Public/UI/WidgetControllers/WitchPTWidgetController.h
 WitchPT/Public/UI/Widgets/CauldronUserWidget.h
 WitchPT/Public/UI/Widgets/Inventory/InventoryUserWidget.h
 WitchPT/Public/UI/Widgets/Inventory/RitualUserWidget.h
 WitchPT/Public/UI/Widgets/PointerWidget.h
+WitchPT/Public/UI/Widgets/QuickBarUserWidget.h
 WitchPT/Public/UI/Widgets/WitchPTUserWidget.h
 WitchPT/Public/WitchPTAssetManager.h
 WitchPT/WitchPT.Build.cs
@@ -627,6 +635,20 @@ void UGA_CauldronPlacementPreview::OnLocationFound(FVector HitLocation, FVector 
         // Actualizar la posición de previsualización del caldero
         // CauldronAltar->UpdatePlacementPreview(HitLocation, HitNormal);
     }
+}
+</file>
+
+<file path="WitchPT/Private/AbilitySystem/GameplayAbilities/GA_QuickBarSlots.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "AbilitySystem/GameplayAbilities/GA_QuickBarSlots.h"
+
+#include "FWitchPTGameplayTags.h"
+
+UGA_QuickBarSlots::UGA_QuickBarSlots()
+{
+	
 }
 </file>
 
@@ -2838,28 +2860,37 @@ void UWitchPTEquipmentInstance::OnRep_Instigator()
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+#include "Net/UnrealNetwork.h"
 
 
 void FWitchPTEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
 {
+	UWitchPTEquipmentManagerComponent* EquipmentManager = Cast<UWitchPTEquipmentManagerComponent>(OwnerComponent);
+	if (!IsValid(EquipmentManager)) return;
+	
 	for (int32 Index : RemovedIndices)
 	{
 		const FWitchPTEquipmentEntry& Entry = Entries[Index];
 		if (Entry.Instance != nullptr)
 		{
 			Entry.Instance->OnUnequipped();
+			EquipmentManager->OnItemUnequipped.Broadcast(Entry.Instance);
 		}
 	}
 }
 
 void FWitchPTEquipmentList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
 {
+	UWitchPTEquipmentManagerComponent* EquipmentManager = Cast<UWitchPTEquipmentManagerComponent>(OwnerComponent);
+	if (!IsValid(EquipmentManager)) return;
+	
 	for (int32 Index : AddedIndices)
 	{
 		const FWitchPTEquipmentEntry& Entry = Entries[Index];
 		if (Entry.Instance != nullptr)
 		{
 			Entry.Instance->OnEquipped();
+			EquipmentManager->OnItemEquipped.Broadcast(Entry.Instance);
 		}
 	}
 }
@@ -2945,13 +2976,11 @@ UAbilitySystemComponent* FWitchPTEquipmentList::GetAbilitySystemComponent() cons
 
 //-------------------------------      UWitchPTEquipmentManagerComponent           -----------------------//
 // -------------------------------------------------------------------------------------------------------//
-UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-	, EquipmentList(this)
+UWitchPTEquipmentManagerComponent::UWitchPTEquipmentManagerComponent()
+	: EquipmentList(this)
 {
-	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
-	bWantsInitializeComponent = true;
+	bReplicateUsingRegisteredSubObjectList = true;
 }
 
 void UWitchPTEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -3017,49 +3046,61 @@ void UWitchPTEquipmentManagerComponent::ReadyForReplication()
 	}
 }
 
-UWitchPTEquipmentInstance* UWitchPTEquipmentManagerComponent::EquipItem(
-	TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+void UWitchPTEquipmentManagerComponent::EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
 {
-	UWitchPTEquipmentInstance* NewInstance = nullptr;
-	if (EquipmentDefinition != nullptr)
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
 	{
-		if (!GetOwner()->HasAuthority()) return nullptr;
-		NewInstance = EquipmentList.AddEntry(EquipmentDefinition);
-		if (NewInstance != nullptr)
+		Server_EquipItem(EquipmentDefinition);
+	}
+	else
+	{
+		if (EquipmentDefinition != nullptr)
 		{
-			NewInstance->OnEquipped();
-			if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
+			UWitchPTEquipmentInstance* NewInstance = EquipmentList.AddEntry(EquipmentDefinition);
+			if (NewInstance != nullptr)
 			{
-				AddReplicatedSubObject(NewInstance);
-				UE_LOG(LogTemp, Warning, TEXT("✅ Registered subobject: %s"), *NewInstance->GetClass()->GetName());
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("❌ Not registered subobject: %s"), *NewInstance->GetClass()->GetName());
+				NewInstance->OnEquipped();
+				OnItemEquipped.Broadcast(NewInstance);
+
+				if (IsUsingRegisteredSubObjectList())
+				{
+					AddReplicatedSubObject(NewInstance);
+				}
 			}
 		}
 	}
+}
 
-
-    
-	return NewInstance;
+void UWitchPTEquipmentManagerComponent::Server_EquipItem_Implementation(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition)
+{
+	EquipItem(EquipmentDefinition);
 }
 
 void UWitchPTEquipmentManagerComponent::UnequipItem(UWitchPTEquipmentInstance* ItemInstance)
 {
-	if (ItemInstance != nullptr)
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
 	{
-		if (!GetOwner()->HasAuthority()) return;
-        
-		if (IsUsingRegisteredSubObjectList())
-		{
-			RemoveReplicatedSubObject(ItemInstance);
-		}
-
-		ItemInstance->OnUnequipped();
-		EquipmentList.RemoveEntry(ItemInstance);
-		UE_LOG(LogTemp, Warning, TEXT("❌ Unequipped item: %s"), *ItemInstance->GetClass()->GetName());
+		Server_UnequipItem(ItemInstance);
 	}
+	else
+	{
+		if (ItemInstance != nullptr)
+		{
+			if (IsUsingRegisteredSubObjectList())
+			{
+				RemoveReplicatedSubObject(ItemInstance);
+			}
+
+			ItemInstance->OnUnequipped();
+			OnItemUnequipped.Broadcast(ItemInstance);
+			EquipmentList.RemoveEntry(ItemInstance);
+		}
+	}
+}
+
+void UWitchPTEquipmentManagerComponent::Server_UnequipItem_Implementation(UWitchPTEquipmentInstance* ItemInstance)
+{
+	UnequipItem(ItemInstance);
 }
 
 
@@ -3101,6 +3142,49 @@ UAbilitySystemComponent* UWitchPTEquipmentManagerComponent::GetAbilitySystemComp
 		return UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerPawn);
 	}
 	return nullptr;
+}
+</file>
+
+<file path="WitchPT/Private/Equipment/WitchPTQuickBarComponent.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Equipment/WitchPTQuickBarComponent.h"
+
+#include "Net/UnrealNetwork.h"
+
+
+// Sets default values for this component's properties
+UWitchPTQuickBarComponent::UWitchPTQuickBarComponent()
+{
+	SetIsReplicatedByDefault(true);
+}
+
+void UWitchPTQuickBarComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, Slots);
+	DOREPLIFETIME(ThisClass, ActiveSlotIndex);
+}
+
+void UWitchPTQuickBarComponent::EquipItemInSlot()
+{
+}
+
+void UWitchPTQuickBarComponent::UnequipItemInSlot()
+{
+}
+
+void UWitchPTQuickBarComponent::OnRep_Slots()
+{
+}
+
+void UWitchPTQuickBarComponent::OnRep_ActiveSlotIndex()
+{
+}
+
+void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
+{
 }
 </file>
 
@@ -3476,6 +3560,7 @@ bool UWitchPTInventoryItemFragment_WorldDetails::HasValidWorldMesh() const
 #include "Kismet/GameplayStatics.h"
 #include "Player/WitchPTPlayerState.h"
 #include "UI/HUD/WitchPTHUD.h"
+#include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "UI/WidgetControllers/WitchPTWidgetController.h"
 
 UInventoryWidgetController* UInventoryFunctionLibrary::SetInventoryWidgetController(const UObject* WorldContextObject)
@@ -3490,6 +3575,23 @@ UInventoryWidgetController* UInventoryFunctionLibrary::SetInventoryWidgetControl
 			const FWidgetControllerParams WCParams = FWidgetControllerParams(PC, PS,ASC, AS);
 			
 			return WitchPTHUD->SetInventoryWidgetController(WCParams);
+		}
+	}
+	return nullptr;
+}
+
+UQuickBarWidgetController* UInventoryFunctionLibrary::SetQuickBarWidgetController(const UObject* WorldContextObject)
+{
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD()))
+		{
+			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			const FWidgetControllerParams WCParams = FWidgetControllerParams(PC, PS,ASC, AS);
+			
+			return WitchPTHUD->SetQuickBarWidgetController(WCParams);
 		}
 	}
 	return nullptr;
@@ -8044,6 +8146,7 @@ void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 #include "InputActionValue.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Equipment/WitchPTQuickBarComponent.h"
 #include "Input/WitchPTInputComponent.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Item/CauldronAltar.h"
@@ -8064,6 +8167,8 @@ AWitchPTPlayerController::AWitchPTPlayerController()
 	bReplicates = true;
 	InventoryManager = CreateDefaultSubobject<UWitchPTInventoryManagerComponent>("InventoryManager");
 	InventoryManager->SetIsReplicated(true);
+	QuickBarComponent = CreateDefaultSubobject<UWitchPTQuickBarComponent>("QuickBarComponent");
+	QuickBarComponent->SetIsReplicated(true);
 	
 	
 }
@@ -8391,6 +8496,7 @@ UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
+#include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
@@ -8415,6 +8521,17 @@ UCauldronWidgetController* AWitchPTHUD::SetCauldronWidgetController(const FWidge
 		// CauldronWidgetController->BindCallbacksToDependencies();
 	}
 	return CauldronWidgetController;
+}
+
+UQuickBarWidgetController* AWitchPTHUD::SetQuickBarWidgetController(const FWidgetControllerParams& WCParams)
+{
+	if (QuickBarWidgetController == nullptr)
+	{
+		QuickBarWidgetController = NewObject<UQuickBarWidgetController>(this, QuickBarWidgetControllerClass);
+		QuickBarWidgetController->SetWidgetControllerParams(WCParams);
+		
+	}
+	return QuickBarWidgetController;
 }
 
 UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWidgetControllerParams& WCParams)
@@ -8460,6 +8577,8 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 	InitInventoryWidget(PC, PS, ASC, AS);
 	// Initialize Cauldron Widget (but keep it hidden)
 	InitCauldronWidget(PC, PS, ASC, AS);
+	// Initialize Quick Bar Widget 
+	// InitQuickBarWidget(PC, PS, ASC, AS);
 	
 }
 
@@ -8521,6 +8640,25 @@ void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UA
 			Widget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
+}
+
+void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
+	UAttributeSet* AS)
+{
+	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
+		QuickBarUserWidget = Cast<UWitchPTUserWidget>(Widget);
+		if (QuickBarUserWidget)
+		{
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
+			QuickBarUserWidget->SetWidgetController(Controller);
+			Widget->AddToViewport();
+		}
+	}
+	
+	
 }
 
 void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)
@@ -8954,6 +9092,13 @@ void UOverlayWidgetController::OnAssetTagReceivedFromGE(const FGameplayTagContai
 }
 </file>
 
+<file path="WitchPT/Private/UI/WidgetControllers/QuickBarWidgetController.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/WidgetControllers/QuickBarWidgetController.h"
+</file>
+
 <file path="WitchPT/Private/UI/WidgetControllers/RitualWidgetController.cpp">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -9311,6 +9456,13 @@ void URitualUserWidget::ResetWidgetState()
 #include "UI/Widgets/PointerWidget.h"
 </file>
 
+<file path="WitchPT/Private/UI/Widgets/QuickBarUserWidget.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/Widgets/QuickBarUserWidget.h"
+</file>
+
 <file path="WitchPT/Private/UI/Widgets/WitchPTUserWidget.cpp">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -9527,6 +9679,27 @@ private:
     // Referencia al caldero que se está colocando
     UPROPERTY()
     ACauldronAltar* CauldronAltar;
+};
+</file>
+
+<file path="WitchPT/Public/AbilitySystem/GameplayAbilities/GA_QuickBarSlots.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPTGameplayAbility.h"
+#include "GA_QuickBarSlots.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UGA_QuickBarSlots : public UWitchPTGameplayAbility
+{
+	GENERATED_BODY()
+	UGA_QuickBarSlots();
+public:
 };
 </file>
 
@@ -10695,6 +10868,10 @@ class UWitchPTInventoryItemInstance;
 class UAbilitySystemComponent;
 class UWitchPTEquipmentDefinition;
 class UWitchPTEquipmentInstance;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemEquipped, UWitchPTEquipmentInstance*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemUnequipped, UWitchPTEquipmentInstance*);
+
 USTRUCT()
 struct FEquipmentAbilityHandles
 {
@@ -10767,7 +10944,7 @@ class WITCHPT_API UWitchPTEquipmentManagerComponent : public UActorComponent
 
 public:
 	// Sets default values for this component's properties
-	UWitchPTEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UWitchPTEquipmentManagerComponent();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
@@ -10779,10 +10956,16 @@ public:
 	//~End of UActorComponent interface
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
-	UWitchPTEquipmentInstance* EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
+	void EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void UnequipItem(UWitchPTEquipmentInstance* ItemInstance);
+
+	UFUNCTION(Server, Reliable)
+	void Server_EquipItem(TSubclassOf<UWitchPTEquipmentDefinition> EquipmentDefinition);
+
+	UFUNCTION(Server, Reliable)
+	void Server_UnequipItem(UWitchPTEquipmentInstance* ItemInstance);
 	
 
 	UFUNCTION(BlueprintPure, Category="Equipment")
@@ -10794,6 +10977,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Equipment")
 	void PrintEquippedItems();
+
+	FOnItemEquipped OnItemEquipped;
+	FOnItemUnequipped OnItemUnequipped;
 
 protected:
 	UPROPERTY(Replicated)
@@ -10807,6 +10993,58 @@ private:
 	UAbilitySystemComponent* GetAbilitySystemComponent() const;
 
 
+};
+</file>
+
+<file path="WitchPT/Public/Equipment/WitchPTQuickBarComponent.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "WitchPTQuickBarComponent.generated.h"
+
+
+class UWitchPTInventoryItemInstance;
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class WITCHPT_API UWitchPTQuickBarComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this component's properties
+	UWitchPTQuickBarComponent();
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="QuickBar")
+	void SetActiveSlotIndex(int32 NewIndex);
+
+private:
+	void EquipItemInSlot();
+	void UnequipItemInSlot();
+
+protected:
+	UPROPERTY()
+	int32 NumSlots = 4;
+
+	UFUNCTION()
+	void OnRep_Slots();
+
+	UFUNCTION()
+	void OnRep_ActiveSlotIndex();
+
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_Slots, VisibleAnywhere, Category="QuickBar")
+	TArray<TObjectPtr<UWitchPTInventoryItemInstance>> Slots;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_ActiveSlotIndex, VisibleAnywhere, Category="QuickBar")
+	int32 ActiveSlotIndex = -1; // -1 means no active slot
+
+	UPROPERTY(VisibleAnywhere, Category="QuickBar")
+	TObjectPtr<UWitchPTInventoryItemInstance> EquippedItem;
+	
 };
 </file>
 
@@ -11785,6 +12023,7 @@ public:
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "InventoryFunctionLibrary.generated.h"
 
 class UInventoryWidgetController;
@@ -11798,6 +12037,9 @@ class WITCHPT_API UInventoryFunctionLibrary : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintPure, Category="Inventory")
 	static UInventoryWidgetController* SetInventoryWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category="QuickBar")
+	static UQuickBarWidgetController* SetQuickBarWidgetController(const UObject* WorldContextObject);
 };
 </file>
 
@@ -13518,6 +13760,7 @@ private:
 #include "UI/Widgets/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
+class UWitchPTQuickBarComponent;
 class UCauldronUserWidget;
 class ABaseInteractableAltar;
 class ACauldronAltar;
@@ -13579,6 +13822,8 @@ public:
 	UPROPERTY()
 	TObjectPtr<UPointerWidget> HUDWidget;
 	UWitchPTInventoryManagerComponent* GetInventoryManager() { return InventoryManager; }
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "QuickBar")
+	TObjectPtr<UWitchPTQuickBarComponent> QuickBarComponent;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -13889,6 +14134,7 @@ struct TStructOpsTypeTraits<FGameplayTagStackContainer> : public TStructOpsTypeT
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UQuickBarWidgetController;
 class UCauldronWidgetController;
 class UWitchPTWidgetController;
 class URitualWidgetController;
@@ -13910,11 +14156,13 @@ public:
 	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
 	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
+	UQuickBarWidgetController* SetQuickBarWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	void InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
 	void ShowRitualWidget(class ARitualAltar* RitualAltar);
 	void HideRitualWidget();
@@ -13926,6 +14174,12 @@ public:
 
 
 private:
+	// ----------------------- User Widgets -----------------------
+	UPROPERTY()
+	TObjectPtr<UWitchPTUserWidget> QuickBarUserWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> QuickBarUserWidgetClass;
+	
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> OverlayWidget;
 	UPROPERTY(EditAnywhere)
@@ -13947,6 +14201,13 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> RitualWidgetClass;
 
+
+	// ----------------------- Widget Controllers -----------------------
+	UPROPERTY()
+	TObjectPtr<UQuickBarWidgetController> QuickBarWidgetController;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UQuickBarWidgetController> QuickBarWidgetControllerClass;
+	
 	UPROPERTY()
 	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
 	UPROPERTY(EditAnywhere)
@@ -14173,6 +14434,25 @@ T* UOverlayWidgetController::GetDataTableRowByTag(UDataTable* DataTable, const F
 	return  DataTable->FindRow<T>(GameplayTag.GetTagName(), TEXT(""));
 
 }
+</file>
+
+<file path="WitchPT/Public/UI/WidgetControllers/QuickBarWidgetController.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPTWidgetController.h"
+#include "QuickBarWidgetController.generated.h"
+
+/**
+ * 
+ */
+UCLASS(BlueprintType, Blueprintable)
+class WITCHPT_API UQuickBarWidgetController : public UWitchPTWidgetController
+{
+	GENERATED_BODY()
+};
 </file>
 
 <file path="WitchPT/Public/UI/WidgetControllers/RitualWidgetController.h">
@@ -14500,6 +14780,25 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
 	void HidePickupMessage();
+};
+</file>
+
+<file path="WitchPT/Public/UI/Widgets/QuickBarUserWidget.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPTUserWidget.h"
+#include "QuickBarUserWidget.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UQuickBarUserWidget : public UWitchPTUserWidget
+{
+	GENERATED_BODY()
 };
 </file>
 

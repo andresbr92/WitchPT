@@ -19,6 +19,16 @@ void UWitchPTQuickBarComponent::GetLifetimeReplicatedProps(TArray<class FLifetim
 	DOREPLIFETIME(ThisClass, ActiveSlotIndex);
 }
 
+void UWitchPTQuickBarComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (Slots.Num() < NumSlots)
+	{
+		Slots.AddDefaulted(NumSlots - Slots.Num());
+	}
+}
+
 void UWitchPTQuickBarComponent::EquipItemInSlot()
 {
 }
@@ -37,6 +47,19 @@ void UWitchPTQuickBarComponent::OnRep_ActiveSlotIndex()
 
 void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
 {
+	UE_LOG(LogTemp, Log, TEXT("Setting active slot index to %d"), NewIndex);
+	if (Slots.IsValidIndex(NewIndex) && (ActiveSlotIndex != NewIndex))
+	{
+		UnequipItemInSlot();
+		
+		ActiveSlotIndex = NewIndex;
+		
+		OnActiveSlotChanged.Broadcast(NewIndex);
+		
+		EquipItemInSlot();
+		
+		OnRep_ActiveSlotIndex();
+	}
 }
 
 

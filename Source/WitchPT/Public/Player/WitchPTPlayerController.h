@@ -69,6 +69,7 @@ public:
 	UPROPERTY()
 	TObjectPtr<UPointerWidget> HUDWidget;
 	UWitchPTInventoryManagerComponent* GetInventoryManager() { return InventoryManager; }
+	UWitchPTQuickBarComponent* GetQuickBarComponent() { return QuickBarComponent; }
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "QuickBar")
 	TObjectPtr<UWitchPTQuickBarComponent> QuickBarComponent;
 protected:

@@ -41,6 +41,7 @@ UQuickBarWidgetController* AWitchPTHUD::SetQuickBarWidgetController(const FWidge
 	{
 		QuickBarWidgetController = NewObject<UQuickBarWidgetController>(this, QuickBarWidgetControllerClass);
 		QuickBarWidgetController->SetWidgetControllerParams(WCParams);
+		QuickBarWidgetController->BindCallbacksToDependencies();
 		
 	}
 	return QuickBarWidgetController;
@@ -166,6 +167,7 @@ void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UA
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
 			QuickBarUserWidget->SetWidgetController(Controller);
+			
 			Widget->AddToViewport();
 		}
 	}
