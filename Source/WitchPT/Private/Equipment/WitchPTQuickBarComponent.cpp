@@ -29,6 +29,17 @@ void UWitchPTQuickBarComponent::BeginPlay()
 	}
 }
 
+bool UWitchPTQuickBarComponent::CanAcceptItemInSlot(UWitchPTInventoryItemInstance* Item, int32 SlotIndex) const
+{
+	return false;
+}
+
+void UWitchPTQuickBarComponent::Server_TryAddItemToSlot_Implementation(UWitchPTInventoryItemInstance* Item,
+	int32 SlotIndex)
+{
+}
+
+
 void UWitchPTQuickBarComponent::EquipItemInSlot()
 {
 }
@@ -43,6 +54,7 @@ void UWitchPTQuickBarComponent::OnRep_Slots()
 
 void UWitchPTQuickBarComponent::OnRep_ActiveSlotIndex()
 {
+	OnActiveSlotChanged.Broadcast(ActiveSlotIndex);
 }
 
 void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
@@ -53,8 +65,6 @@ void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex
 		UnequipItemInSlot();
 		
 		ActiveSlotIndex = NewIndex;
-		
-		OnActiveSlotChanged.Broadcast(NewIndex);
 		
 		EquipItemInSlot();
 		

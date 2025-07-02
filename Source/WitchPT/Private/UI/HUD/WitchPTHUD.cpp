@@ -175,6 +175,16 @@ void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UA
 	
 }
 
+void AWitchPTHUD::ShowOverlayWidget()
+{
+	OverlayWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void AWitchPTHUD::HideOverlayWidget()
+{
+	OverlayWidget->SetVisibility(ESlateVisibility::Collapsed);
+}
+
 void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)
 {
 	if (RitualWidget && RitualWidgetController)

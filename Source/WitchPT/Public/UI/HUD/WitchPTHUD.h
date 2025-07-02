@@ -29,19 +29,23 @@ public:
 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
 	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
 	UQuickBarWidgetController* SetQuickBarWidgetController(const FWidgetControllerParams& WCParams);
+	
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
-
+	
+	void ShowOverlayWidget();
+	void HideOverlayWidget();
 	void ShowRitualWidget(class ARitualAltar* RitualAltar);
 	void HideRitualWidget();
 	void ShowInventoryWidget();
 	void HideInventoryWidget();
 	void ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar);
 	void HideCauldronWithInventory();
+
 
 
 

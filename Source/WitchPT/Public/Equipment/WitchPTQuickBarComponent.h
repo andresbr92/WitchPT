@@ -24,6 +24,12 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable, Category="QuickBar")
+	bool CanAcceptItemInSlot(UWitchPTInventoryItemInstance* Item, int32 SlotIndex) const;
+
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="QuickBar")
+	void Server_TryAddItemToSlot(UWitchPTInventoryItemInstance* Item, int32 SlotIndex);
+
 	// --------------------- Quick Bar Delegates ---------------------
 	FOnActiveSlotChangedSignature OnActiveSlotChanged;
 

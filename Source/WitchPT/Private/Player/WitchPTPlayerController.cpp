@@ -182,6 +182,24 @@ void AWitchPTPlayerController::Client_HideRitualWidget_Implementation()
 	LocalHideRitualWidget();
 }
 
+void AWitchPTPlayerController::ShowOverlayWidget()
+{
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->ShowOverlayWidget();
+	}
+}
+
+void AWitchPTPlayerController::HideOverlayWidget()
+{
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->HideOverlayWidget();
+	}
+}
+
 void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
 {
 	LocalToggleCauldronMenu();

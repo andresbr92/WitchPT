@@ -6,6 +6,7 @@
 #include "WitchPTWidgetController.h"
 #include "QuickBarWidgetController.generated.h"
 
+class UWitchPTInventoryItemInstance;
 class UWitchPTQuickBarComponent;
 /**
  * 
