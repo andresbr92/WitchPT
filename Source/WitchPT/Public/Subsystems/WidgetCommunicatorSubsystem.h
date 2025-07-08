@@ -11,7 +11,7 @@ class UWitchPTInventoryItemInstance;
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemDraggedDelegate, UWitchPTInventoryItemInstance*, ItemInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemDraggedDelegate, const UWitchPTInventoryItemInstance*, ItemInstance);
 UCLASS(BlueprintType)
 class WITCHPT_API UWidgetCommunicatorSubsystem : public ULocalPlayerSubsystem
 {

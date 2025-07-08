@@ -4,7 +4,10 @@
 #include "UI/WidgetControllers/QuickBarWidgetController.h"
 
 #include "Equipment/WitchPTQuickBarComponent.h"
+#include "Inventory/WitchPTInventoryItemInstance.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
+#include "Subsystems/WidgetCommunicatorSubsystem.h"
 
 void UQuickBarWidgetController::BroadcastInitialValues()
 {
@@ -22,10 +25,37 @@ void UQuickBarWidgetController::BindCallbacksToDependencies()
 			QuickBarComponent->OnActiveSlotChanged.AddDynamic(this, &UQuickBarWidgetController::OnActiveSlotChanged);
 		}
 	}
+
+	// Bind UI changes from WidgetCommunicatorSubsystem
+	
+	if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+	{
+		if (UWidgetCommunicatorSubsystem* WidgetCommunicator = LocalPlayer->GetSubsystem<UWidgetCommunicatorSubsystem>())
+		{
+			WidgetCommunicator->OnItemDraggedDelegate.AddDynamic(this, &UQuickBarWidgetController::OnEquipableItemDragStart);
+		}
+	}
 	
 }
 
 void UQuickBarWidgetController::OnActiveSlotChanged(int32 NewActiveSlotIndex)
 {
 	OnActiveSlotChangedDelegate.Broadcast(NewActiveSlotIndex);
+}
+
+void UQuickBarWidgetController::OnEquipableItemDragStart(const UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (ItemInstance != nullptr)
+	{
+		// Find the equipable fragment in the item instance
+		const UWitchPTInventoryItemFragment_EquippableItem* EquipableFragment = 
+			Cast<UWitchPTInventoryItemFragment_EquippableItem>(
+				ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass()));
+		if (EquipableFragment)
+		{
+			OnEquipableItemDragStartDelegate.Broadcast();
+		}
+		
+		
+	}
 }

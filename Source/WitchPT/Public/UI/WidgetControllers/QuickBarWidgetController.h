@@ -12,6 +12,7 @@ class UWitchPTQuickBarComponent;
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickBarSlotChangedSignature, int32, NewActiveSlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipableItemDragStartSignature);
 UCLASS(BlueprintType, Blueprintable)
 class WITCHPT_API UQuickBarWidgetController : public UWitchPTWidgetController
 {
@@ -23,11 +24,18 @@ public:
 	// Delegates for widgets to subscribe to
 	UPROPERTY(BlueprintAssignable, Category = "QuickBar")
 	FOnQuickBarSlotChangedSignature OnActiveSlotChangedDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "QuickBar")
+	FOnEquipableItemDragStartSignature OnEquipableItemDragStartDelegate;
 
 
 protected:
 	UFUNCTION()
 	void OnActiveSlotChanged(int32 NewActiveSlotIndex);
+
+
+private:
+	UFUNCTION()
+	void OnEquipableItemDragStart(const UWitchPTInventoryItemInstance* ItemInstance);
 	
 	
 	

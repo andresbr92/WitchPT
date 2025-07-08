@@ -31,6 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
 
+	UFUNCTION(BlueprintCallable, Category= "UI Utils")
+	void OnItemDragStart(UWitchPTInventoryItemInstance* ItemInstance);
+
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	void EquipItem(UWitchPTInventoryItemInstance* ItemInstance);
 

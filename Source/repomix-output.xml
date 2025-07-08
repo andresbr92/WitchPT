@@ -96,6 +96,7 @@ WitchPT/Private/Item/RitualAltar.cpp
 WitchPT/Private/Item/RitualPosition.cpp
 WitchPT/Private/Player/WitchPTPlayerController.cpp
 WitchPT/Private/Player/WitchPTPlayerState.cpp
+WitchPT/Private/Subsystems/WidgetCommunicatorSubsystem.cpp
 WitchPT/Private/UI/HUD/WitchPTHUD.cpp
 WitchPT/Private/UI/WidgetControllers/CauldronWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/InventoryWidgetController.cpp
@@ -170,6 +171,7 @@ WitchPT/Public/Item/RitualAltar.h
 WitchPT/Public/Item/RitualPosition.h
 WitchPT/Public/Player/WitchPTPlayerController.h
 WitchPT/Public/Player/WitchPTPlayerState.h
+WitchPT/Public/Subsystems/WidgetCommunicatorSubsystem.h
 WitchPT/Public/Systems/GameplayTagStack.cpp
 WitchPT/Public/Systems/GameplayTagStack.h
 WitchPT/Public/UI/HUD/WitchPTHUD.h
@@ -3177,6 +3179,17 @@ void UWitchPTQuickBarComponent::BeginPlay()
 	}
 }
 
+bool UWitchPTQuickBarComponent::CanAcceptItemInSlot(UWitchPTInventoryItemInstance* Item, int32 SlotIndex) const
+{
+	return false;
+}
+
+void UWitchPTQuickBarComponent::Server_TryAddItemToSlot_Implementation(UWitchPTInventoryItemInstance* Item,
+	int32 SlotIndex)
+{
+}
+
+
 void UWitchPTQuickBarComponent::EquipItemInSlot()
 {
 }
@@ -3191,6 +3204,7 @@ void UWitchPTQuickBarComponent::OnRep_Slots()
 
 void UWitchPTQuickBarComponent::OnRep_ActiveSlotIndex()
 {
+	OnActiveSlotChanged.Broadcast(ActiveSlotIndex);
 }
 
 void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
@@ -3201,8 +3215,6 @@ void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex
 		UnequipItemInSlot();
 		
 		ActiveSlotIndex = NewIndex;
-		
-		OnActiveSlotChanged.Broadcast(NewIndex);
 		
 		EquipItemInSlot();
 		
@@ -8343,6 +8355,24 @@ void AWitchPTPlayerController::Client_HideRitualWidget_Implementation()
 	LocalHideRitualWidget();
 }
 
+void AWitchPTPlayerController::ShowOverlayWidget()
+{
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->ShowOverlayWidget();
+	}
+}
+
+void AWitchPTPlayerController::HideOverlayWidget()
+{
+	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
+	if (WitchPTHUD)
+	{
+		WitchPTHUD->HideOverlayWidget();
+	}
+}
+
 void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
 {
 	LocalToggleCauldronMenu();
@@ -8505,6 +8535,18 @@ AWitchPTPlayerState::AWitchPTPlayerState()
 UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+</file>
+
+<file path="WitchPT/Private/Subsystems/WidgetCommunicatorSubsystem.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Subsystems/WidgetCommunicatorSubsystem.h"
+
+void UWidgetCommunicatorSubsystem::OnItemDragged(UWitchPTInventoryItemInstance* ItemInstance)
+{
+    OnItemDraggedDelegate.Broadcast(ItemInstance);
 }
 </file>
 
@@ -8684,6 +8726,16 @@ void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UA
 	}
 	
 	
+}
+
+void AWitchPTHUD::ShowOverlayWidget()
+{
+	OverlayWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void AWitchPTHUD::HideOverlayWidget()
+{
+	OverlayWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)
@@ -11074,6 +11126,12 @@ public:
 	void SetActiveSlotIndex(int32 NewIndex);
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable, Category="QuickBar")
+	bool CanAcceptItemInSlot(UWitchPTInventoryItemInstance* Item, int32 SlotIndex) const;
+
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="QuickBar")
+	void Server_TryAddItemToSlot(UWitchPTInventoryItemInstance* Item, int32 SlotIndex);
 
 	// --------------------- Quick Bar Delegates ---------------------
 	FOnActiveSlotChangedSignature OnActiveSlotChanged;
@@ -13860,6 +13918,11 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_ToggleCauldronMenu();
 
+	UFUNCTION(BlueprintCallable, Category= "Overlay")
+	void ShowOverlayWidget();
+	UFUNCTION(BlueprintCallable, Category= "Overlay")
+	void HideOverlayWidget();
+
 	UFUNCTION(BlueprintCallable, Category= "Inventory")
 	void OpenInventoryMenu();
 	UFUNCTION(BlueprintCallable, Category= "Inventory")
@@ -13967,6 +14030,35 @@ protected:
 	TObjectPtr<UAttributeSet> AttributeSet;
 	
 	
+};
+</file>
+
+<file path="WitchPT/Public/Subsystems/WidgetCommunicatorSubsystem.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Subsystems/LocalPlayerSubsystem.h"
+#include "WidgetCommunicatorSubsystem.generated.h"
+
+class UWitchPTInventoryItemInstance;
+
+/**
+ * 
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemDraggedDelegate, UWitchPTInventoryItemInstance*, ItemInstance);
+UCLASS(BlueprintType)
+class WITCHPT_API UWidgetCommunicatorSubsystem : public ULocalPlayerSubsystem
+{
+	GENERATED_BODY()
+public:
+	UFUNCTION(BlueprintCallable, Category= "WidgetCommunicator")
+	void OnItemDragged(UWitchPTInventoryItemInstance* ItemInstance);
+
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnItemDraggedDelegate OnItemDraggedDelegate;
 };
 </file>
 
@@ -14215,19 +14307,23 @@ public:
 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
 	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
 	UQuickBarWidgetController* SetQuickBarWidgetController(const FWidgetControllerParams& WCParams);
+	
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
-
+	
+	void ShowOverlayWidget();
+	void HideOverlayWidget();
 	void ShowRitualWidget(class ARitualAltar* RitualAltar);
 	void HideRitualWidget();
 	void ShowInventoryWidget();
 	void HideInventoryWidget();
 	void ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar);
 	void HideCauldronWithInventory();
+
 
 
 
@@ -14503,6 +14599,7 @@ T* UOverlayWidgetController::GetDataTableRowByTag(UDataTable* DataTable, const F
 #include "WitchPTWidgetController.h"
 #include "QuickBarWidgetController.generated.h"
 
+class UWitchPTInventoryItemInstance;
 class UWitchPTQuickBarComponent;
 /**
  * 
