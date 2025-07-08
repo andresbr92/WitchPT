@@ -29,14 +29,16 @@ void UWitchPTQuickBarComponent::BeginPlay()
 	}
 }
 
-bool UWitchPTQuickBarComponent::CanAcceptItemInSlot(UWitchPTInventoryItemInstance* Item, int32 SlotIndex) const
+void UWitchPTQuickBarComponent::AddItemToSlot(int32 SlotIndex, UWitchPTInventoryItemInstance* Item)
 {
-	return false;
-}
-
-void UWitchPTQuickBarComponent::Server_TryAddItemToSlot_Implementation(UWitchPTInventoryItemInstance* Item,
-	int32 SlotIndex)
-{
+	if (Slots.IsValidIndex(SlotIndex) && (Item != nullptr))
+	{
+		if (Slots[SlotIndex] == nullptr)
+		{
+			Slots[SlotIndex] = Item;
+			OnRep_Slots();
+		}
+	}
 }
 
 

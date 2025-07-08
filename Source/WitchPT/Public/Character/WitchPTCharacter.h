@@ -26,6 +26,9 @@ public:
 	AWitchPTCharacter(const class FObjectInitializer& ObjectInitializer);
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
+
+	UWitchPTEquipmentManagerComponent* GetEquipmentManager() const { return EquipmentManagerComponent; }
+	
 	
 	virtual void InitAbilityActorInfo() override;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")

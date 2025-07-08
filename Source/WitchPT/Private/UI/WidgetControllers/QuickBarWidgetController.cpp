@@ -3,7 +3,10 @@
 
 #include "UI/WidgetControllers/QuickBarWidgetController.h"
 
+#include "Character/WitchPTCharacter.h"
+#include "Equipment/WitchPTEquipmentManagerComponent.h"
 #include "Equipment/WitchPTQuickBarComponent.h"
+#include "GameFramework/Character.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
@@ -33,6 +36,20 @@ void UQuickBarWidgetController::BindCallbacksToDependencies()
 		if (UWidgetCommunicatorSubsystem* WidgetCommunicator = LocalPlayer->GetSubsystem<UWidgetCommunicatorSubsystem>())
 		{
 			WidgetCommunicator->OnItemDraggedDelegate.AddDynamic(this, &UQuickBarWidgetController::OnEquipableItemDragStart);
+		}
+	}
+	
+}
+
+void UQuickBarWidgetController::AddItemToQuickBarSlot(int32 SlotIndex, UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (ItemInstance != nullptr)
+	{
+		if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+		{
+			WitchPtPlayerController->GetQuickBarComponent()->AddItemToSlot(SlotIndex, ItemInstance);
+			
+			
 		}
 	}
 	

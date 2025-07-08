@@ -21,7 +21,11 @@ public:
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
 
-	// Delegates for widgets to subscribe to
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void AddItemToQuickBarSlot(int32 SlotIndex, UWitchPTInventoryItemInstance* ItemInstance);
+
+	// --------------------------- DELEGATES ---------------------------
 	UPROPERTY(BlueprintAssignable, Category = "QuickBar")
 	FOnQuickBarSlotChangedSignature OnActiveSlotChangedDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "QuickBar")
