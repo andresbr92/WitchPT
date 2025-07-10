@@ -24,6 +24,8 @@ class WITCHPT_API AWitchPTHUD : public AHUD
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(VisibleAnywhere)
+	TArray<UUserWidget*> GameMenuWidgets;
 	UOverlayWidgetController* SetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);

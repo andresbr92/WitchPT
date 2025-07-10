@@ -3,6 +3,12 @@
 
 #include "UI/Widgets/WitchPTUserWidget.h"
 
+void UWitchPTUserWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	SetVisibility(ESlateVisibility::Collapsed);
+}
+
 void UWitchPTUserWidget::SetWidgetController(UObject* InWidgetController)
 {
 	WidgetController = InWidgetController;

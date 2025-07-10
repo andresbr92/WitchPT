@@ -14,6 +14,7 @@ class WITCHPT_API UWitchPTUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	virtual void NativeConstruct() override;
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetController(UObject* InWidgetController);
 	UPROPERTY(BlueprintReadOnly)

@@ -74,24 +74,17 @@ void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilityS
 	checkf(OverlayWidgetControllerClass, TEXT("Overlay Widget Controller Class uninitialized, please fill out BP_WitchPTHUD"));
 
 	// Initialize Overlay Widget
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
-	OverlayWidget = Cast<UWitchPTUserWidget>(Widget);
+	UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
+	OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
 
 	const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 	UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
 
 	OverlayWidget->SetWidgetController(WidgetController);
 	WidgetController->BroadcastInitialValues();
-	Widget->AddToViewport();
+	OverlayWidgetInstance->AddToViewport();
 
-	// Initialize Ritual Widget (but keep it hidden)
-	InitRitualWidget(PC, PS, ASC, AS);
-	// Initialize Inventory Widget (but keep it hidden)
-	InitInventoryWidget(PC, PS, ASC, AS);
-	// Initialize Cauldron Widget (but keep it hidden)
-	InitCauldronWidget(PC, PS, ASC, AS);
-	// Initialize Quick Bar Widget 
-	// InitQuickBarWidget(PC, PS, ASC, AS);
+	GameMenuWidgets.Add(OverlayWidgetInstance);
 	
 }
 
@@ -113,7 +106,7 @@ void AWitchPTHUD::InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbi
 			
 			// Add to viewport but set visibility to collapsed
 			RitualWidgetInstance->AddToViewport();
-			RitualWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+			GameMenuWidgets.Add(RitualWidgetInstance);
 		}
 	}
 }
@@ -123,16 +116,16 @@ void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, U
 {
 	if (InventoryWidgetClass && !InventoryWidget)
 	{
-		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
-		InventoryWidget = Cast<UWitchPTUserWidget>(Widget);
+		UUserWidget* InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+		InventoryWidget = Cast<UWitchPTUserWidget>(InventoryWidgetInstance);
         
 		if (InventoryWidget)
 		{
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
 			InventoryWidget->SetWidgetController(Controller);
-			Widget->AddToViewport();
-			Widget->SetVisibility(ESlateVisibility::Collapsed);
+			InventoryWidgetInstance->AddToViewport();
+			GameMenuWidgets.Add(InventoryWidgetInstance);
 		}
 	}
 }
@@ -141,16 +134,16 @@ void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UA
 {
 	if (CauldronWidgetClass && !CauldronWidget)
 	{
-		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
-		CauldronWidget = Cast<UWitchPTUserWidget>(Widget);
+		UUserWidget* CauldronWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
+		CauldronWidget = Cast<UWitchPTUserWidget>(CauldronWidgetInstance);
         
 		if (CauldronWidget)
 		{
 			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
 			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
 			CauldronWidget->SetWidgetController(Controller);
-			Widget->AddToViewport();
-			Widget->SetVisibility(ESlateVisibility::Collapsed);
+			CauldronWidgetInstance->AddToViewport();
+			GameMenuWidgets.Add(CauldronWidgetInstance);
 		}
 	}
 }
@@ -160,15 +153,16 @@ void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UA
 {
 	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
 	{
-		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
-		QuickBarUserWidget = Cast<UWitchPTUserWidget>(Widget);
+		UUserWidget* QuickBarWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
+		QuickBarUserWidget = Cast<UWitchPTUserWidget>(QuickBarWidgetInstance);
 		if (QuickBarUserWidget)
 		{
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
 			QuickBarUserWidget->SetWidgetController(Controller);
 			
-			Widget->AddToViewport();
+			QuickBarWidgetInstance->AddToViewport();
+			GameMenuWidgets.Add(QuickBarWidgetInstance);
 		}
 	}
 	
