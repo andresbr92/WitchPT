@@ -13,6 +13,21 @@
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
 
+UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByCass(TSubclassOf<UWitchPTUserWidget> WidgetClass)
+{
+	if (WidgetClass)
+	{
+		for (UUserWidget* Widget : GameMenuWidgets)
+		{
+			if (Widget && Widget->IsA(WidgetClass))
+			{
+				return Cast<UWitchPTUserWidget>(Widget);
+			}
+		}
+	}
+	return nullptr;
+}
+
 UOverlayWidgetController* AWitchPTHUD::SetOverlayWidgetController(const FWidgetControllerParams& WCParams)
 {
 	if (OverlayWidgetController == nullptr)
@@ -163,6 +178,54 @@ void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UA
 			
 			QuickBarWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(QuickBarWidgetInstance);
+		}
+	}
+	
+	
+}
+
+void AWitchPTHUD::ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass)
+{
+	// Find the widget by class
+	if (WidgetClass)
+	{
+		UWitchPTUserWidget* WidgetToToggle = nullptr;
+		for (UUserWidget* Widget : GameMenuWidgets)
+		{
+			if (Widget->IsA(WidgetClass))
+			{
+				WidgetToToggle = Cast<UWitchPTUserWidget>(Widget);
+				break;
+			}
+		}
+		if (!WidgetToToggle) return;
+		const bool bIsTargetWidgetAlreadyVisible = WidgetToToggle->IsVisible();
+		// Hide all game menu widgets first
+		for (auto& MenuWidget : GameMenuWidgets)
+		{
+			if (MenuWidget && MenuWidget->IsVisible())
+			{
+				MenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+			}
+		}
+		APlayerController* PC = GetOwningPlayerController();
+		
+		if (bIsTargetWidgetAlreadyVisible)
+		{
+			if (PC)
+			{
+				PC->SetInputMode(FInputModeGameOnly());
+				PC->bShowMouseCursor = false;
+			}
+		} else
+		{
+			
+			WidgetToToggle->SetVisibility(ESlateVisibility::Visible);
+			FInputModeGameAndUI InputMode;
+			InputMode.SetWidgetToFocus(WidgetToToggle->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PC->SetInputMode(InputMode);
+			PC->SetShowMouseCursor(true);
 		}
 	}
 	

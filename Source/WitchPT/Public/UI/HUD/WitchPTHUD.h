@@ -26,6 +26,8 @@ class WITCHPT_API AWitchPTHUD : public AHUD
 public:
 	UPROPERTY(VisibleAnywhere)
 	TArray<UUserWidget*> GameMenuWidgets;
+	UFUNCTION(BlueprintCallable)
+	UWitchPTUserWidget* GetMenuWidgetByCass(TSubclassOf<UWitchPTUserWidget> WidgetClass);
 	UOverlayWidgetController* SetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
 	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
@@ -38,6 +40,8 @@ public:
 	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 	void InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	UFUNCTION(BlueprintCallable)
+	void ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass);
 	
 	void ShowOverlayWidget();
 	void HideOverlayWidget();

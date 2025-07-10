@@ -20,6 +20,8 @@
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
 #include "Item/Components/CauldronCraftComponent.h"
 #include "Player/WitchPTPlayerController.h"
+#include "UI/HUD/WitchPTHUD.h"
+#include "UI/Widgets/CauldronUserWidget.h"
 
 // Sets default values
 ACauldronAltar::ACauldronAltar()
@@ -282,14 +284,15 @@ void ACauldronAltar::PositionCharacterForBrewing(ACharacter* Character)
             
             if (AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
             {
-                PC->LocalToggleCauldronMenu();
+                // PC->LocalToggleCauldronMenu();
             }
+            
         } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client
         {
            
             if ( AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
             {
-                PC->Client_ToggleCauldronMenu();
+                // PC->Client_ToggleCauldronMenu();
             }
         }
         FGameplayEventData Payload;
@@ -499,15 +502,19 @@ void ACauldronAltar::UnoccupyPosition(ACharacter* Character, ABaseInteractionPos
             
             if (AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
             {
-                PC->LocalToggleCauldronMenu();
-                
+                // PC->LocalToggleCauldronMenu();
+                AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD());
+                if (WitchPTHUD)
+                {
+                    WitchPTHUD->ToggleGameMenu(UCauldronUserWidget::StaticClass());
+                }
             }
         } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client
         {
            
             if ( AWitchPTPlayerController* PC = Cast<AWitchPTPlayerController>(Character->GetOwner()))
             {
-                PC->Client_ToggleCauldronMenu();
+                // PC->Client_ToggleCauldronMenu();
                 
             }
         }
