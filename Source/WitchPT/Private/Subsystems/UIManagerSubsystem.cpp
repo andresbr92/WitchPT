@@ -62,8 +62,8 @@ UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, TSof
 		{
 			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
 			{
-				// return PrimaryLayout->PushContentToLayer(LayerTag, WidgetClass);
-				UE_LOG(LogTemp, Log, TEXT("Pushing content to layer: %s"), *LayerTag.ToString());
+				return PrimaryLayout->PushContentToLayer(LayerTag, WidgetClass);
+				
 			}
 		}
 		

@@ -16,6 +16,7 @@ UUserWidget* UWitchPTUILayer::PushContent(TSoftClassPtr<UUserWidget> WidgetClass
 			CollapseTop();
 			Border->ClearChildren();
 			Stack.Add(NewUserWidgetInstance);
+			Border->AddChild(NewUserWidgetInstance);
 			ShowTop();
 			UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *NewUserWidgetInstance->GetName());
 			return PushedWidget;

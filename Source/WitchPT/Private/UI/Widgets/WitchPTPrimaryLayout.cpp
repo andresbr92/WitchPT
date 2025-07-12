@@ -34,13 +34,14 @@ void UWitchPTPrimaryLayout::NativeConstruct()
 	{
 		RegisterLayer(WitchPtGameplayTags.UI_Layer_Modal, ModalLayer);
 	}
+	PushInitialScreens();
 	
 }
 
 bool UWitchPTPrimaryLayout::RegisterLayer(FGameplayTag LayerTag, UWitchPTUILayer* InLayer)
 {
 	
-	if (InLayer != nullptr && !LayerTag.IsValid())
+	if (InLayer != nullptr && LayerTag.IsValid())
 	{
 		if (Layers.Contains(LayerTag))
 		{

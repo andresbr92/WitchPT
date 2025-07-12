@@ -20,7 +20,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Layout")
-	TMap<FGameplayTag, TSoftClassPtr<UWitchPTUILayer>> InitialScreens;
+	TMap<FGameplayTag, TSoftClassPtr<UUserWidget>> InitialScreens;
 
 	// ------------------------------- Main functions ------------------------------- //
 	UFUNCTION(BlueprintCallable, Category = "UI")
