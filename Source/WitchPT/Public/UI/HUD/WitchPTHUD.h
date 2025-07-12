@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UWitchPTPrimaryLayout;
 class UQuickBarWidgetController;
 class UCauldronWidgetController;
 class UWitchPTWidgetController;
@@ -24,6 +25,10 @@ class WITCHPT_API AWitchPTHUD : public AHUD
 {
 	GENERATED_BODY()
 public:
+	
+
+	virtual void BeginPlay() override;
+	
 	UPROPERTY(VisibleAnywhere)
 	TArray<UUserWidget*> GameMenuWidgets;
 	UFUNCTION(BlueprintCallable)
@@ -53,10 +58,19 @@ public:
 	void HideCauldronWithInventory();
 
 
+	// ----------------------- Getters -----------------------
+	UWitchPTPrimaryLayout* GetPrimaryLayout() const { return PrimaryLayout; }
+
+
 
 
 private:
 	// ----------------------- User Widgets -----------------------
+	UPROPERTY()
+	TObjectPtr<UWitchPTPrimaryLayout> PrimaryLayout;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWitchPTUserWidget> PrimaryLayoutClass;
+	
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> QuickBarUserWidget;
 	UPROPERTY(EditAnywhere)

@@ -62,6 +62,11 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.InputTag_Alt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Alt"));
 	GameplayTags.InputTag_Shift = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Shift"));
 	GameplayTags.InputTag_Tab = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Tab"));
+	// UI Tags
+	GameplayTags.UI_Layer_Game = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("UI.Layer.Game"));
+	GameplayTags.UI_Layer_GameMenu = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("UI.Layer.GameMenu"));
+	GameplayTags.UI_Layer_Menu = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("UI.Layer.Menu"));
+	GameplayTags.UI_Layer_Modal = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("UI.Layer.Modal"));
 	// Ritual
 	GameplayTags.Ritual_Position_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.1"));
 	GameplayTags.Ritual_Position_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ritual.Position.2"));

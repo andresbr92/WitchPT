@@ -17,15 +17,33 @@ class WITCHPT_API UWitchPTPrimaryLayout : public UWitchPTUserWidget
 	GENERATED_BODY()
 public:
 	UWitchPTPrimaryLayout();
+	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Layout")
-	TMap<FGameplayTag, TSoftClassPtr<UWitchPTPrimaryLayout>> InitialScreens;
+	TMap<FGameplayTag, TSoftClassPtr<UWitchPTUILayer>> InitialScreens;
 
 	// ------------------------------- Main functions ------------------------------- //
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	bool RegisterLayer(FGameplayTag LayoutTag, UWitchPTUILayer* InLayer);
+	bool RegisterLayer(FGameplayTag LayerTag, UWitchPTUILayer* InLayer);
+	
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	bool UnRegisterLayer(FGameplayTag LayoutTag);
+	bool UnRegisterLayer(FGameplayTag LayerTag);
+	
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, TSoftClassPtr<UUserWidget> WidgetClass);
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void PopContentFromLayer(FGameplayTag LayerTag);
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ClearAllLayers();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ClearAllLayersExcept(FGameplayTag LayerTag);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ClearLayer(FGameplayTag LayerTag);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void PushInitialScreens();
+	
 
 private:
 	
@@ -48,3 +66,5 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWitchPTUILayer> ModalLayer;
 };
+
+

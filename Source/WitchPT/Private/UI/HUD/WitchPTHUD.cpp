@@ -10,8 +10,21 @@
 #include "UI/WidgetControllers/OverlayWidgetController.h"
 #include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
+#include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
+
+void AWitchPTHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	if (PrimaryLayout == nullptr)
+	{
+		UUserWidget* PrimaryLayoutInstance = CreateWidget<UUserWidget>(GetOwningPlayerController(), PrimaryLayoutClass);
+		PrimaryLayout = Cast<UWitchPTPrimaryLayout>(PrimaryLayoutInstance);
+		PrimaryLayout->AddToViewport();
+		
+	}
+}
 
 UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByCass(TSubclassOf<UWitchPTUserWidget> WidgetClass)
 {

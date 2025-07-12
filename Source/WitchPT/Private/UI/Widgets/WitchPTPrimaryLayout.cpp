@@ -3,44 +3,153 @@
 
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 
+#include "FWitchPTGameplayTags.h"
+#include "Subsystems/UIManagerSubsystem.h"
 #include "UI/Widgets/Layer/WitchPTUILayer.h"
 
 UWitchPTPrimaryLayout::UWitchPTPrimaryLayout()
 {
-	// Todo: Register every layout in the map
+	
+	
 }
 
-bool UWitchPTPrimaryLayout::RegisterLayer(FGameplayTag LayoutTag, UWitchPTUILayer* InLayer)
+void UWitchPTPrimaryLayout::NativeConstruct()
+{
+	Super::NativeConstruct();
+	// Register all layers
+	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
+	if (GameLayer)
+	{
+		RegisterLayer(WitchPtGameplayTags.UI_Layer_Game, GameLayer);
+	}
+	if (GameMenuLayer)
+	{
+		RegisterLayer(WitchPtGameplayTags.UI_Layer_GameMenu, GameMenuLayer);
+	}
+	if (MenuLayer)
+	{
+		RegisterLayer(WitchPtGameplayTags.UI_Layer_Menu, MenuLayer);
+	}
+	if (ModalLayer)
+	{
+		RegisterLayer(WitchPtGameplayTags.UI_Layer_Modal, ModalLayer);
+	}
+	
+}
+
+bool UWitchPTPrimaryLayout::RegisterLayer(FGameplayTag LayerTag, UWitchPTUILayer* InLayer)
 {
 	
-	if (InLayer != nullptr && !LayoutTag.IsValid())
+	if (InLayer != nullptr && !LayerTag.IsValid())
 	{
-		if (Layers.Contains(LayoutTag))
+		if (Layers.Contains(LayerTag))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Layer %s is already registered!"), *LayoutTag.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("Layer %s is already registered!"), *LayerTag.ToString());
 			return false;
 		}
 		
 		// Register the layer
-		Layers.Add(LayoutTag, InLayer);
-		UE_LOG(LogTemp, Log, TEXT("Registered layer: %s"), *LayoutTag.ToString());
+		Layers.Add(LayerTag, InLayer);
+		UE_LOG(LogTemp, Log, TEXT("Registered layer: %s"), *LayerTag.ToString());
 		
 		return true;
 	}
 	return false;
 }
 
-bool UWitchPTPrimaryLayout::UnRegisterLayer(FGameplayTag LayoutTag)
+bool UWitchPTPrimaryLayout::UnRegisterLayer(FGameplayTag LayerTag)
 {
-	if (LayoutTag.IsValid())
+	if (LayerTag.IsValid())
 	{
-		if (UWitchPTUILayer* LayerToRemove = Layers.FindRef(LayoutTag))
+		if (UWitchPTUILayer* LayerToRemove = Layers.FindRef(LayerTag))
 		{
 			LayerToRemove->RemoveFromParent();
-			Layers.Remove(LayoutTag);
-			UE_LOG(LogTemp, Log, TEXT("Unregistered layer: %s"), *LayoutTag.ToString());
+			Layers.Remove(LayerTag);
+			UE_LOG(LogTemp, Log, TEXT("Unregistered layer: %s"), *LayerTag.ToString());
 			return true;
 		}
 	}
 	return false;
+}
+UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag,
+	TSoftClassPtr<UUserWidget> WidgetClass)
+{
+	if (LayerTag.IsValid() && WidgetClass.IsValid())
+	{
+		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
+		{
+			UUserWidget* PushedWidget = Layer->PushContent(WidgetClass);
+			return PushedWidget;
+		}
+	}
+	return nullptr;
+}
+
+void UWitchPTPrimaryLayout::PopContentFromLayer(FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
+		{
+			Layer->PopContent();
+		}
+		
+	}
+}
+
+void UWitchPTPrimaryLayout::ClearAllLayers()
+{
+	for (auto& LayerPair : Layers)
+	{
+		if (LayerPair.Value)
+		{
+			LayerPair.Value->ClearStack();
+		}
+	}
+}
+
+void UWitchPTPrimaryLayout::ClearAllLayersExcept(FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+		for (auto& LayerPair : Layers)
+		{
+			if (LayerPair.Key != LayerTag && LayerPair.Value)
+			{
+				LayerPair.Value->ClearStack();
+			}
+		}
+	}
+}
+
+void UWitchPTPrimaryLayout::ClearLayer(FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
+		{
+			Layer->ClearStack();
+		}
+		
+	}
+}
+
+void UWitchPTPrimaryLayout::PushInitialScreens()
+{
+	if (InitialScreens.Num())
+	{
+		for (auto & ScreenPair : InitialScreens)
+		{
+			if (ScreenPair.Value.IsValid())
+			{
+				if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
+				{
+					if (UUIManagerSubsystem* UIManagerSubsystem = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
+					{
+						UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
+					}
+				}
+			}
+		}
+	}
 }

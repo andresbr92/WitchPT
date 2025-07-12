@@ -86,6 +86,11 @@ public:
 	FGameplayTag InputTag_Alt;
 	FGameplayTag InputTag_Shift;
 	FGameplayTag InputTag_Tab;
+	// UI Tags
+	FGameplayTag UI_Layer_Game;
+	FGameplayTag UI_Layer_GameMenu;
+	FGameplayTag UI_Layer_Menu;
+	FGameplayTag UI_Layer_Modal;
 
 
 	// --- Ritual Position Tags ---
