@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
-#include "UWitchPTUILayer.generated.h"
+#include "WitchPTUILayer.generated.h"
 
 class UBorder;
 /**
  * 
  */
 UCLASS()
-class WITCHPT_API UUWitchPTUILayer : public UWitchPTUserWidget
+class WITCHPT_API UWitchPTUILayer : public UWitchPTUserWidget
 {
 	GENERATED_BODY()
 	
@@ -44,6 +44,8 @@ private:
 	// HELPER FUNCTIONS
 	void CollapseTop();
 	void ShowTop();
+
+	
 	
 	
 };

@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Widgets/Layer/UWitchPTUILayer.h"
+#include "UI/Widgets/Layer/WitchPTUILayer.h"
 
 #include "Components/Border.h"
 
-UUserWidget* UUWitchPTUILayer::PushContent(TSoftClassPtr<UUserWidget> WidgetClass)
+UUserWidget* UWitchPTUILayer::PushContent(TSoftClassPtr<UUserWidget> WidgetClass)
 {
 	if (WidgetClass.IsValid())
 	{
@@ -17,13 +17,14 @@ UUserWidget* UUWitchPTUILayer::PushContent(TSoftClassPtr<UUserWidget> WidgetClas
 			Border->ClearChildren();
 			Stack.Add(NewUserWidgetInstance);
 			ShowTop();
+			UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *NewUserWidgetInstance->GetName());
 			return PushedWidget;
 		}
 	}
 	return nullptr;
 }
 
-void UUWitchPTUILayer::PopContent()
+void UWitchPTUILayer::PopContent()
 {
 	if (!Stack.IsEmpty())
 	{
@@ -45,7 +46,7 @@ void UUWitchPTUILayer::PopContent()
 	}
 }
 
-UUserWidget* UUWitchPTUILayer::GetTopScreen() const
+UUserWidget* UWitchPTUILayer::GetTopScreen() const
 {
 	if (!Stack.IsEmpty())
 	{
@@ -54,7 +55,7 @@ UUserWidget* UUWitchPTUILayer::GetTopScreen() const
 	return nullptr;
 }
 
-FText UUWitchPTUILayer::GetStackListNames()
+FText UWitchPTUILayer::GetStackListNames()
 {
 	// Reverse for to get the names in the correct order
 	FString StackNames;
@@ -72,7 +73,7 @@ FText UUWitchPTUILayer::GetStackListNames()
 	return FText ::FromString(StackNames);
 }
 
-void UUWitchPTUILayer::ClearStack()
+void UWitchPTUILayer::ClearStack()
 {
 	for (auto & Widget : Stack)
 	{
@@ -84,9 +85,10 @@ void UUWitchPTUILayer::ClearStack()
 	Stack.Empty();
 	Border->ClearChildren();
 	
+	
 }
 
-void UUWitchPTUILayer::CollapseTop()
+void UWitchPTUILayer::CollapseTop()
 {
 	if (UUserWidget* TopWidgetToCollapse = GetTopScreen())
 	{
@@ -94,7 +96,7 @@ void UUWitchPTUILayer::CollapseTop()
 	}
 }
 
-void UUWitchPTUILayer::ShowTop()
+void UWitchPTUILayer::ShowTop()
 {
 	if (UUserWidget* TopWidgetToShow = GetTopScreen())
 	{
