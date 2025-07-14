@@ -58,20 +58,13 @@ UUserWidget* UWitchPTUILayer::GetTopScreen() const
 
 FText UWitchPTUILayer::GetStackListNames()
 {
-	// Reverse for to get the names in the correct order
-	FString StackNames;
-	for (int32 i = Stack.Num() - 1; i >= 0; --i)
+	// Return a list of the names but in reverse order
+	FString ListNames;
+	for (int i = Stack.Num() - 1; i >= 0; i--)
 	{
-		if (Stack[i])
-		{
-			StackNames += Stack[i]->GetName();
-			if (i > 0)
-			{
-				StackNames += TEXT(", ");
-			}
-		}
+		ListNames += Stack[i]->GetName() + "\n";
 	}
-	return FText ::FromString(StackNames);
+	return FText::FromString(ListNames);
 }
 
 void UWitchPTUILayer::ClearStack()

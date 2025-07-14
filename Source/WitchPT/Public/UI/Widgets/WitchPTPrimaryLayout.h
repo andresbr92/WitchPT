@@ -43,6 +43,10 @@ public:
 	void ClearLayer(FGameplayTag LayerTag);
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PushInitialScreens();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowFirstElementOfLayer(FGameplayTag LayerTag);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void CollapseFirstElementOfLayer(FGameplayTag LayerTag);
 	
 
 private:
@@ -50,21 +54,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TMap<FGameplayTag, TObjectPtr<UWitchPTUILayer>> Layers;
 	
-	// Main layer, this displays the Health bar, Mana bar and the QuickBarWidget
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> GameLayer;
-	
-	// This layer displays the inventory menu, the cauldron menu, etc
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> GameMenuLayer;
-	
-	// This layer displays the main menu, the pause menu, etc
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> MenuLayer;
-	
-	// This layer displays the modal windows, like the confirmation dialog, etc
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> ModalLayer;
 };
 
 

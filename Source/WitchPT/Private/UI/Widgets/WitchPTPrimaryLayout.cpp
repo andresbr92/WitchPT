@@ -16,25 +16,7 @@ UWitchPTPrimaryLayout::UWitchPTPrimaryLayout()
 void UWitchPTPrimaryLayout::NativeConstruct()
 {
 	Super::NativeConstruct();
-	// Register all layers
-	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
-	if (GameLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_Game, GameLayer);
-	}
-	if (GameMenuLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_GameMenu, GameMenuLayer);
-	}
-	if (MenuLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_Menu, MenuLayer);
-	}
-	if (ModalLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_Modal, ModalLayer);
-	}
-	PushInitialScreens();
+
 	
 }
 
@@ -151,6 +133,26 @@ void UWitchPTPrimaryLayout::PushInitialScreens()
 					}
 				}
 			}
+		}
+	}
+}
+void UWitchPTPrimaryLayout::ShowFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
+		{
+			Layer->ShowTop();
+		}
+	}
+}
+void UWitchPTPrimaryLayout::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
+		{
+			Layer->CollapseTop();
 		}
 	}
 }

@@ -6,7 +6,7 @@
 void UWitchPTUserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	SetVisibility(ESlateVisibility::Collapsed);
+	// SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UWitchPTUserWidget::SetWidgetController(UObject* InWidgetController)

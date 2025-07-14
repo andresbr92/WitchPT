@@ -10,8 +10,10 @@
 #include "UI/WidgetControllers/OverlayWidgetController.h"
 #include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
+#include "UI/Widgets/QuickBarUserWidget.h"
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
+#include "UI/Widgets/Inventory/InventoryUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
 
 void AWitchPTHUD::BeginPlay()
@@ -26,7 +28,7 @@ void AWitchPTHUD::BeginPlay()
 	}
 }
 
-UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByCass(TSubclassOf<UWitchPTUserWidget> WidgetClass)
+UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByClass(TSubclassOf<UWitchPTUserWidget> WidgetClass)
 {
 	if (WidgetClass)
 	{
@@ -96,52 +98,38 @@ URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetCon
 	return RitualWidgetController;
 }
 
-void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+void AWitchPTHUD::InitAllWidgets(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
 {
-	checkf(OverlayWidgetClass, TEXT("Overlay Widget Class uninitialized, please fill out BP_WitchPTHUD"));
-	checkf(OverlayWidgetControllerClass, TEXT("Overlay Widget Controller Class uninitialized, please fill out BP_WitchPTHUD"));
-
 	// Initialize Overlay Widget
-	UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
-	OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
+	if (OverlayWidgetClass && OverlayWidgetControllerClass)
+	{
+		UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
+		OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
 
-	const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-	UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
+		const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+		UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
 
-	OverlayWidget->SetWidgetController(WidgetController);
-	WidgetController->BroadcastInitialValues();
-	OverlayWidgetInstance->AddToViewport();
+		OverlayWidget->SetWidgetController(WidgetController);
+		WidgetController->BroadcastInitialValues();
+		GameMenuWidgets.Add(OverlayWidgetInstance);
+	}
 
-	GameMenuWidgets.Add(OverlayWidgetInstance);
-	
-}
-
-void AWitchPTHUD::InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
-	UAttributeSet* AS)
-{
+	// Initialize Ritual Widget
 	if (RitualWidgetClass)
 	{
-		
 		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
 		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
 		
 		if (RitualWidget)
 		{
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			// Create and set the ritual widget controller
 			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
 			RitualWidget->SetWidgetController(RitualController);
-			
-			// Add to viewport but set visibility to collapsed
-			RitualWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(RitualWidgetInstance);
 		}
 	}
-}
 
-void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
-	UAttributeSet* AS)
-{
+	// Initialize Inventory Widget
 	if (InventoryWidgetClass && !InventoryWidget)
 	{
 		UUserWidget* InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
@@ -152,14 +140,11 @@ void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, U
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
 			InventoryWidget->SetWidgetController(Controller);
-			InventoryWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(InventoryWidgetInstance);
 		}
 	}
-}
 
-void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
-{
+	// Initialize Cauldron Widget
 	if (CauldronWidgetClass && !CauldronWidget)
 	{
 		UUserWidget* CauldronWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
@@ -170,15 +155,11 @@ void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UA
 			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
 			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
 			CauldronWidget->SetWidgetController(Controller);
-			CauldronWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(CauldronWidgetInstance);
 		}
 	}
-}
 
-void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
-	UAttributeSet* AS)
-{
+	// Initialize QuickBar Widget
 	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
 	{
 		UUserWidget* QuickBarWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
@@ -188,13 +169,9 @@ void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UA
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
 			QuickBarUserWidget->SetWidgetController(Controller);
-			
-			QuickBarWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(QuickBarWidgetInstance);
 		}
 	}
-	
-	
 }
 
 void AWitchPTHUD::ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass)
@@ -245,15 +222,6 @@ void AWitchPTHUD::ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass)
 	
 }
 
-void AWitchPTHUD::ShowOverlayWidget()
-{
-	OverlayWidget->SetVisibility(ESlateVisibility::Visible);
-}
-
-void AWitchPTHUD::HideOverlayWidget()
-{
-	OverlayWidget->SetVisibility(ESlateVisibility::Collapsed);
-}
 
 void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)
 {
@@ -397,6 +365,30 @@ void AWitchPTHUD::HideCauldronWithInventory()
 			PC->SetShowMouseCursor(false);
 		}
 	}
+}
+
+UQuickBarUserWidget* AWitchPTHUD::GetQuickBarUserWidget() const
+{
+	if (QuickBarUserWidget)
+	{
+		if (UQuickBarUserWidget* QuickBarWidget = Cast<UQuickBarUserWidget>(QuickBarUserWidget))
+		{
+			return QuickBarWidget;
+		}
+	}
+	return nullptr;
+}
+
+UWitchPTUserWidget* AWitchPTHUD::GetInventoryUserWidget() const
+{
+	if (InventoryWidget)
+	{
+		if (UInventoryUserWidget* InventoryWidgetInstance = Cast<UInventoryUserWidget>(InventoryWidget))
+		{
+			return InventoryWidgetInstance;
+		}
+	}
+	return nullptr;
 }
 
 

@@ -83,11 +83,13 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 	{
 		if (AWitchPTHUD* WitchPT_HUD = Cast<AWitchPTHUD>(WitchPT_PC->GetHUD()))
 		{
-			WitchPT_HUD->InitOverlay(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
-			WitchPT_HUD->InitRitualWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
-			WitchPT_HUD->InitInventoryWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
-			WitchPT_HUD->InitCauldronWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
-			WitchPT_HUD->InitQuickBarWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			// WitchPT_HUD->InitOverlay(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			// WitchPT_HUD->InitRitualWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			// WitchPT_HUD->InitInventoryWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			// WitchPT_HUD->InitCauldronWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			// WitchPT_HUD->InitQuickBarWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			WitchPT_HUD->InitAllWidgets(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			
 		}
 	}
 	InitializeDefaultAttributes();

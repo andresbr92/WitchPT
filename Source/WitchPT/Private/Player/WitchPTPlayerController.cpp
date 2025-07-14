@@ -71,21 +71,6 @@ void AWitchPTPlayerController::LocalToggleCauldronMenu()
 		OpenCauldronMenu();
 	}
 }
-void AWitchPTPlayerController::OpenInventoryMenu()
-{
-	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
-	{
-		WitchPTHUD->ShowInventoryWidget();
-	}
-}
-
-void AWitchPTPlayerController::CloseInventoryMenu()
-{
-	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
-	{
-		WitchPTHUD->HideInventoryWidget();
-	}
-}
 
 void AWitchPTPlayerController::LocalShowRitualWidget(ABaseInteractableAltar* Altar)
 {
@@ -182,23 +167,7 @@ void AWitchPTPlayerController::Client_HideRitualWidget_Implementation()
 	LocalHideRitualWidget();
 }
 
-void AWitchPTPlayerController::ShowOverlayWidget()
-{
-	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-	if (WitchPTHUD)
-	{
-		WitchPTHUD->ShowOverlayWidget();
-	}
-}
 
-void AWitchPTPlayerController::HideOverlayWidget()
-{
-	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-	if (WitchPTHUD)
-	{
-		WitchPTHUD->HideOverlayWidget();
-	}
-}
 
 void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
 {
@@ -300,36 +269,6 @@ UWitchPTAbilitySystemComponent* AWitchPTPlayerController::GetASC()
 	return WitchPtAbilitySystemComponent;
 }
 
-// Debug console commands for testing Step 4
-void AWitchPTPlayerController::ShowRitualWidgetDebug()
-{
-	// Find a ritual altar in the level for testing
-	ARitualAltar* TestAltar = Cast<ARitualAltar>(UGameplayStatics::GetActorOfClass(this, ARitualAltar::StaticClass()));
-	if (TestAltar)
-	{
-		LocalShowRitualWidget(TestAltar);
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: Showing ritual widget for test altar"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: No ritual altar found in level"));
-	}
-}
 
-void AWitchPTPlayerController::HideRitualWidgetDebug()
-{
-	LocalHideRitualWidget();
-	UE_LOG(LogTemp, Warning, TEXT("[DEBUG] HideRitualWidgetDebug: Hiding ritual widget"));
-}
 
-void AWitchPTPlayerController::ToggleRitualWidgetDebug()
-{
-	if (IsRitualWidgetVisible())
-	{
-		HideRitualWidgetDebug();
-	}
-	else
-	{
-		ShowRitualWidgetDebug();
-	}
-}
+

@@ -13,6 +13,8 @@ Content/fullscreen_flat_gui
 Content/Village
 Content/LootDrop_VFX
 Content/Fab
+guides/*
+repomix-output/*
 
 .vscode
 .vs

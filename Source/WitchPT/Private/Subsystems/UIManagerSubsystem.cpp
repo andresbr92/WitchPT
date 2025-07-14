@@ -79,7 +79,7 @@ void UUIManagerSubsystem::PopContentFromLayer(FGameplayTag LayerTag)
 		{
 			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
 			{
-				// PrimaryLayout->PopContentFromLayer(LayerTag);
+				PrimaryLayout->PopContentFromLayer(LayerTag);
 				UE_LOG(LogTemp, Log, TEXT("Popping content from layer: %s"), *LayerTag.ToString());
 			}
 		}
@@ -112,4 +112,57 @@ UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout()
 		}
 	}
 	return nullptr;
+}
+void UUIManagerSubsystem::FocusGame()
+{
+	// get player controller
+	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	{
+		// set input mode to game only
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		// hide mouse cursor
+		PlayerController->bShowMouseCursor = false;
+	}
+}
+
+void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
+{
+	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	{
+		if(bUIOnlyInput)
+		{
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+			PlayerController->SetInputMode(InputMode);
+			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+		}
+		else
+		{
+			FInputModeGameAndUI InputMode;
+										InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+			PlayerController->SetInputMode(InputMode);
+		}
+	}
+}
+void UUIManagerSubsystem::ShowFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	{
+		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+		{
+			PrimaryLayout->ShowFirstElementOfLayer(LayerTag);
+		}
+	}
+}
+void UUIManagerSubsystem::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	{
+		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+		{
+			PrimaryLayout->CollapseFirstElementOfLayer(LayerTag);
+		}
+	}
 }

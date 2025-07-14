@@ -1,0 +1,619 @@
+Begin Object Class=/Script/UMGEditor.WidgetBlueprint Name="WBP_LayersDebugger" ExportPath="/Script/UMGEditor.WidgetBlueprint'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger'"
+   Begin Object Class=/Script/UMG.WidgetTree Name="WidgetTree" Archetype="/Script/UMG.WidgetTree'/Script/UMGEditor.Default__WidgetBlueprint:WidgetTree'" ExportPath="/Script/UMG.WidgetTree'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree'"
+      Begin Object Class=/Script/UMG.Border Name="Border_0" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_0'"
+         Begin Object Class=/Script/UMG.BorderSlot Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_0.BorderSlot_0'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.HorizontalBox Name="HorizontalBox_35" ExportPath="/Script/UMG.HorizontalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35'"
+         Begin Object Class=/Script/UMG.HorizontalBoxSlot Name="HorizontalBoxSlot_0" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_0'"
+         End Object
+         Begin Object Class=/Script/UMG.HorizontalBoxSlot Name="HorizontalBoxSlot_1" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_1'"
+         End Object
+         Begin Object Class=/Script/UMG.HorizontalBoxSlot Name="HorizontalBoxSlot_2" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_2'"
+         End Object
+         Begin Object Class=/Script/UMG.HorizontalBoxSlot Name="HorizontalBoxSlot_3" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_3'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.Border Name="Border_1" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_1'"
+         Begin Object Class=/Script/UMG.BorderSlot Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_1.BorderSlot_0'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.Border Name="Border_2" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_2'"
+         Begin Object Class=/Script/UMG.BorderSlot Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_2.BorderSlot_0'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.Border Name="Border_3" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_3'"
+         Begin Object Class=/Script/UMG.BorderSlot Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_3.BorderSlot_0'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.SizeBox Name="SizeBox_0" ExportPath="/Script/UMG.SizeBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.SizeBox_0'"
+         Begin Object Class=/Script/UMG.SizeBoxSlot Name="SizeBoxSlot_0" ExportPath="/Script/UMG.SizeBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.SizeBox_0.SizeBoxSlot_0'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.VerticalBox Name="VerticalBox_0" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.VerticalBox_0'"
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.VerticalBox_0.VerticalBoxSlot_1'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.VerticalBox_0.VerticalBoxSlot_0'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="TextBlock_80" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.TextBlock_80'"
+      End Object
+      Begin Object Class=/Script/UMG.VerticalBox Name="LayerPanel" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel'"
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_0'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_1'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_2" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_2'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="GameLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameLayerTextBlock'"
+      End Object
+      Begin Object Class=/Script/UMG.Spacer Name="Spacer_50" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer_50'"
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="GameStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameStack'"
+      End Object
+      Begin Object Class=/Script/UMG.VerticalBox Name="LayerPanel_1" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1'"
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_0'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_1'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_2" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_2'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="GameMenuLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameMenuLayerTextBlock'"
+      End Object
+      Begin Object Class=/Script/UMG.Spacer Name="Spacer" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer'"
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="GameMenuStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameMenuStack'"
+      End Object
+      Begin Object Class=/Script/UMG.VerticalBox Name="LayerPanel_2" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2'"
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_0'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_1'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_3" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_3'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="MenuLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.MenuLayerTextBlock'"
+      End Object
+      Begin Object Class=/Script/UMG.Spacer Name="Spacer_1" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer_1'"
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="MenuStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.MenuStack'"
+      End Object
+      Begin Object Class=/Script/UMG.VerticalBox Name="LayerPanel_3" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3'"
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_0'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_1'"
+         End Object
+         Begin Object Class=/Script/UMG.VerticalBoxSlot Name="VerticalBoxSlot_2" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_2'"
+         End Object
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="ModalLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.ModalLayerTextBlock'"
+      End Object
+      Begin Object Class=/Script/UMG.Spacer Name="Spacer_2" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer_2'"
+      End Object
+      Begin Object Class=/Script/UMG.TextBlock Name="ModalStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.ModalStack'"
+      End Object
+   End Object
+   Begin Object Class=/Script/Engine.EdGraph Name="EventGraph" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:EventGraph'"
+   End Object
+   Begin Object Class=/Script/Engine.EdGraph Name="Get_MenuStack_Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text'"
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionResult Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_FunctionResult_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionEntry Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_FunctionEntry_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_VariableGet Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_VariableGet_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_CallFunction Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_CallFunction_0'"
+      End Object
+   End Object
+   Begin Object Class=/Script/Engine.EdGraph Name="Get_ModalStack_Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text'"
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionResult Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_FunctionResult_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionEntry Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_FunctionEntry_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_VariableGet Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_VariableGet_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_CallFunction Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_CallFunction_0'"
+      End Object
+   End Object
+   Begin Object Class=/Script/Engine.EdGraph Name="Get Game Stack Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text'"
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionResult Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_FunctionResult_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionEntry Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_FunctionEntry_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_VariableGet Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_VariableGet_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_CallFunction Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_CallFunction_0'"
+      End Object
+   End Object
+   Begin Object Class=/Script/Engine.EdGraph Name="Get_GameMenuStack_Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text'"
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionResult Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_FunctionResult_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_FunctionEntry Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_FunctionEntry_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_VariableGet Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_VariableGet_0'"
+      End Object
+      Begin Object Class=/Script/BlueprintGraph.K2Node_CallFunction Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_CallFunction_0'"
+      End Object
+   End Object
+   Begin Object Name="WidgetTree" ExportPath="/Script/UMG.WidgetTree'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree'"
+      Begin Object Name="Border_0" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_0'"
+         Begin Object Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_0.BorderSlot_0'"
+            Parent="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_0'"
+            Content="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel'"
+         End Object
+         Background=(TintColor=(SpecifiedColor=(R=0.020833,G=0.020833,B=0.020833,A=0.500000)))
+         Slots(0)="/Script/UMG.BorderSlot'BorderSlot_0'"
+         Slot="/Script/UMG.HorizontalBoxSlot'WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_0'"
+         bExpandedInDesigner=True
+      End Object
+      Begin Object Name="HorizontalBox_35" ExportPath="/Script/UMG.HorizontalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35'"
+         Begin Object Name="HorizontalBoxSlot_0" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_0'"
+            Size=(SizeRule=Fill)
+            Padding=(Left=20.000000,Top=20.000000,Right=20.000000,Bottom=20.000000)
+            Parent="/Script/UMG.HorizontalBox'WBP_LayersDebugger:WidgetTree.HorizontalBox_35'"
+            Content="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_0'"
+         End Object
+         Begin Object Name="HorizontalBoxSlot_1" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_1'"
+            Size=(SizeRule=Fill)
+            Padding=(Left=20.000000,Top=20.000000,Right=20.000000,Bottom=20.000000)
+            Parent="/Script/UMG.HorizontalBox'WBP_LayersDebugger:WidgetTree.HorizontalBox_35'"
+            Content="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_1'"
+         End Object
+         Begin Object Name="HorizontalBoxSlot_2" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_2'"
+            Size=(SizeRule=Fill)
+            Padding=(Left=20.000000,Top=20.000000,Right=20.000000,Bottom=20.000000)
+            Parent="/Script/UMG.HorizontalBox'WBP_LayersDebugger:WidgetTree.HorizontalBox_35'"
+            Content="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_2'"
+         End Object
+         Begin Object Name="HorizontalBoxSlot_3" ExportPath="/Script/UMG.HorizontalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_3'"
+            Size=(SizeRule=Fill)
+            Padding=(Left=20.000000,Top=20.000000,Right=20.000000,Bottom=20.000000)
+            Parent="/Script/UMG.HorizontalBox'WBP_LayersDebugger:WidgetTree.HorizontalBox_35'"
+            Content="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_3'"
+         End Object
+         Slots(0)="/Script/UMG.HorizontalBoxSlot'HorizontalBoxSlot_0'"
+         Slots(1)="/Script/UMG.HorizontalBoxSlot'HorizontalBoxSlot_1'"
+         Slots(2)="/Script/UMG.HorizontalBoxSlot'HorizontalBoxSlot_2'"
+         Slots(3)="/Script/UMG.HorizontalBoxSlot'HorizontalBoxSlot_3'"
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.VerticalBox_0.VerticalBoxSlot_0'"
+         bExpandedInDesigner=True
+      End Object
+      Begin Object Name="Border_1" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_1'"
+         Begin Object Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_1.BorderSlot_0'"
+            Parent="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_1'"
+            Content="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_1'"
+         End Object
+         Background=(TintColor=(SpecifiedColor=(R=0.020833,G=0.020833,B=0.020833,A=0.500000)))
+         Slots(0)="/Script/UMG.BorderSlot'BorderSlot_0'"
+         Slot="/Script/UMG.HorizontalBoxSlot'WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_1'"
+         bExpandedInDesigner=True
+      End Object
+      Begin Object Name="Border_2" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_2'"
+         Begin Object Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_2.BorderSlot_0'"
+            Parent="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_2'"
+            Content="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_2'"
+         End Object
+         Background=(TintColor=(SpecifiedColor=(R=0.020833,G=0.020833,B=0.020833,A=0.500000)))
+         Slots(0)="/Script/UMG.BorderSlot'BorderSlot_0'"
+         Slot="/Script/UMG.HorizontalBoxSlot'WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_2'"
+         bExpandedInDesigner=True
+      End Object
+      Begin Object Name="Border_3" ExportPath="/Script/UMG.Border'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_3'"
+         Begin Object Name="BorderSlot_0" ExportPath="/Script/UMG.BorderSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Border_3.BorderSlot_0'"
+            Parent="/Script/UMG.Border'WBP_LayersDebugger:WidgetTree.Border_3'"
+            Content="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_3'"
+         End Object
+         Background=(TintColor=(SpecifiedColor=(R=0.020833,G=0.020833,B=0.020833,A=0.500000)))
+         Slots(0)="/Script/UMG.BorderSlot'BorderSlot_0'"
+         Slot="/Script/UMG.HorizontalBoxSlot'WBP_LayersDebugger:WidgetTree.HorizontalBox_35.HorizontalBoxSlot_3'"
+         bExpandedInDesigner=True
+      End Object
+      Begin Object Name="SizeBox_0" ExportPath="/Script/UMG.SizeBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.SizeBox_0'"
+         Begin Object Name="SizeBoxSlot_0" ExportPath="/Script/UMG.SizeBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.SizeBox_0.SizeBoxSlot_0'"
+            Parent="/Script/UMG.SizeBox'WBP_LayersDebugger:WidgetTree.SizeBox_0'"
+            Content="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.VerticalBox_0'"
+         End Object
+         MinDesiredWidth=1000.000000
+         MinDesiredHeight=400.000000
+         bOverride_MinDesiredWidth=True
+         bOverride_MinDesiredHeight=True
+         Slots(0)="/Script/UMG.SizeBoxSlot'SizeBoxSlot_0'"
+         bExpandedInDesigner=True
+      End Object
+      Begin Object Name="VerticalBox_0" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.VerticalBox_0'"
+         Begin Object Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.VerticalBox_0.VerticalBoxSlot_1'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.VerticalBox_0'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.TextBlock_80'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.VerticalBox_0.VerticalBoxSlot_0'"
+            Size=(SizeRule=Fill)
+            Padding=(Top=20.000000,Bottom=20.000000)
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.VerticalBox_0'"
+            Content="/Script/UMG.HorizontalBox'WBP_LayersDebugger:WidgetTree.HorizontalBox_35'"
+         End Object
+         Slots(0)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_1'"
+         Slots(1)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_0'"
+         Slot="/Script/UMG.SizeBoxSlot'WBP_LayersDebugger:WidgetTree.SizeBox_0.SizeBoxSlot_0'"
+         bExpandedInDesigner=True
+      End Object
+      Begin Object Name="TextBlock_80" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.TextBlock_80'"
+         Text=NSLOCTEXT("", "6DD9012D4438CEB6B919AE9ADE31BF9A", "Layers")
+         Font=(Size=48.000000)
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.VerticalBox_0.VerticalBoxSlot_1'"
+      End Object
+      Begin Object Name="LayerPanel" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel'"
+         Begin Object Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_0'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.GameLayerTextBlock'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_1'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel'"
+            Content="/Script/UMG.Spacer'WBP_LayersDebugger:WidgetTree.Spacer_50'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_2" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_2'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.GameStack'"
+         End Object
+         Slots(0)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_0'"
+         Slots(1)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_1'"
+         Slots(2)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_2'"
+         Slot="/Script/UMG.BorderSlot'WBP_LayersDebugger:WidgetTree.Border_0.BorderSlot_0'"
+         bExpandedInDesigner=True
+         DisplayLabel="LayerPanel"
+      End Object
+      Begin Object Name="GameLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameLayerTextBlock'"
+         Text=NSLOCTEXT("", "1A3CB816448E74D00CE551A6C290251C", "Game")
+         ColorAndOpacity=(SpecifiedColor=(R=1.000000,G=0.610496,B=0.000000,A=1.000000))
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_0'"
+         DisplayLabel="GameLayerTextBlock"
+      End Object
+      Begin Object Name="Spacer_50" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer_50'"
+         Size=(X=1.000000,Y=10.000000)
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_1'"
+      End Object
+      Begin Object Name="GameStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameStack'"
+         Font=(TypefaceFontName="Regular",Size=16.000000)
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel.VerticalBoxSlot_2'"
+         bIsVariable=True
+         DisplayLabel="GameStack"
+      End Object
+      Begin Object Name="LayerPanel_1" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1'"
+         Begin Object Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_0'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_1'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.GameMenuLayerTextBlock'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_1'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_1'"
+            Content="/Script/UMG.Spacer'WBP_LayersDebugger:WidgetTree.Spacer'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_2" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_2'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_1'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.GameMenuStack'"
+         End Object
+         Slots(0)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_0'"
+         Slots(1)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_1'"
+         Slots(2)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_2'"
+         Slot="/Script/UMG.BorderSlot'WBP_LayersDebugger:WidgetTree.Border_1.BorderSlot_0'"
+         bExpandedInDesigner=True
+         DisplayLabel="LayerPanel_1"
+      End Object
+      Begin Object Name="GameMenuLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameMenuLayerTextBlock'"
+         Text=NSLOCTEXT("", "ECE954074F012C42E8505C8CEBFDE093", "Game Menu")
+         ColorAndOpacity=(SpecifiedColor=(R=0.000000,G=1.000000,B=0.000000,A=1.000000))
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_0'"
+         DisplayLabel="GameMenuLayerTextBlock"
+      End Object
+      Begin Object Name="Spacer" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer'"
+         Size=(X=1.000000,Y=10.000000)
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_1'"
+      End Object
+      Begin Object Name="GameMenuStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.GameMenuStack'"
+         Font=(TypefaceFontName="Regular",Size=16.000000)
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_1.VerticalBoxSlot_2'"
+         bIsVariable=True
+         DisplayLabel="GameMenuStack"
+      End Object
+      Begin Object Name="LayerPanel_2" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2'"
+         Begin Object Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_0'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_2'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.MenuLayerTextBlock'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_1'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_2'"
+            Content="/Script/UMG.Spacer'WBP_LayersDebugger:WidgetTree.Spacer_1'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_3" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_3'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_2'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.MenuStack'"
+         End Object
+         Slots(0)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_0'"
+         Slots(1)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_1'"
+         Slots(2)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_3'"
+         Slot="/Script/UMG.BorderSlot'WBP_LayersDebugger:WidgetTree.Border_2.BorderSlot_0'"
+         bExpandedInDesigner=True
+         DisplayLabel="LayerPanel_2"
+      End Object
+      Begin Object Name="MenuLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.MenuLayerTextBlock'"
+         Text=NSLOCTEXT("", "4BF08A09418FE371397D0C9C8DCAA7EB", "Menu")
+         ColorAndOpacity=(SpecifiedColor=(R=1.000000,G=0.000000,B=0.000000,A=1.000000))
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_0'"
+         DisplayLabel="MenuLayerTextBlock"
+      End Object
+      Begin Object Name="Spacer_1" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer_1'"
+         Size=(X=1.000000,Y=10.000000)
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_1'"
+      End Object
+      Begin Object Name="MenuStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.MenuStack'"
+         Font=(TypefaceFontName="Regular",Size=16.000000)
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_2.VerticalBoxSlot_3'"
+         bIsVariable=True
+         DisplayLabel="MenuStack"
+      End Object
+      Begin Object Name="LayerPanel_3" ExportPath="/Script/UMG.VerticalBox'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3'"
+         Begin Object Name="VerticalBoxSlot_0" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_0'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_3'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.ModalLayerTextBlock'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_1" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_1'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_3'"
+            Content="/Script/UMG.Spacer'WBP_LayersDebugger:WidgetTree.Spacer_2'"
+         End Object
+         Begin Object Name="VerticalBoxSlot_2" ExportPath="/Script/UMG.VerticalBoxSlot'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_2'"
+            Parent="/Script/UMG.VerticalBox'WBP_LayersDebugger:WidgetTree.LayerPanel_3'"
+            Content="/Script/UMG.TextBlock'WBP_LayersDebugger:WidgetTree.ModalStack'"
+         End Object
+         Slots(0)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_0'"
+         Slots(1)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_1'"
+         Slots(2)="/Script/UMG.VerticalBoxSlot'VerticalBoxSlot_2'"
+         Slot="/Script/UMG.BorderSlot'WBP_LayersDebugger:WidgetTree.Border_3.BorderSlot_0'"
+         bExpandedInDesigner=True
+         DisplayLabel="LayerPanel_3"
+      End Object
+      Begin Object Name="ModalLayerTextBlock" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.ModalLayerTextBlock'"
+         Text=NSLOCTEXT("", "C632F43546C2E8A5FD2AD6900D043936", "Modal")
+         ColorAndOpacity=(SpecifiedColor=(R=0.000000,G=0.552012,B=1.000000,A=1.000000))
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_0'"
+         DisplayLabel="ModalLayerTextBlock"
+      End Object
+      Begin Object Name="Spacer_2" ExportPath="/Script/UMG.Spacer'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.Spacer_2'"
+         Size=(X=1.000000,Y=10.000000)
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_1'"
+      End Object
+      Begin Object Name="ModalStack" ExportPath="/Script/UMG.TextBlock'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:WidgetTree.ModalStack'"
+         Font=(TypefaceFontName="Regular",Size=16.000000)
+         Justification=Center
+         Slot="/Script/UMG.VerticalBoxSlot'WBP_LayersDebugger:WidgetTree.LayerPanel_3.VerticalBoxSlot_2'"
+         bIsVariable=True
+         DisplayLabel="ModalStack"
+      End Object
+      RootWidget="/Script/UMG.SizeBox'SizeBox_0'"
+   End Object
+   Begin Object Name="EventGraph" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:EventGraph'"
+      Schema="/Script/CoreUObject.Class'/Script/BlueprintGraph.EdGraphSchema_K2'"
+      bAllowDeletion=False
+      GraphGuid=9A20F8B342753A229D54949D5E98CD39
+   End Object
+   Begin Object Name="Get_MenuStack_Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text'"
+      Begin Object Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_FunctionResult_0'"
+         FunctionReference=(MemberName="Get_MenuStack_Text")
+         bIsEditable=True
+         NodePosX=256
+         NodeGuid=AFA60A7448B8FB032D1A1F987044E267
+         CustomProperties Pin (PinId=5700FEE54417ED4BD7B572AEC6DDBD09,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 3C5E0BB741F689275C5ADD81F2A2E2F0,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=E301A9564131A753612C099144231906,PinName="ReturnValue",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 71C756884458BF5602B988B9A761F736,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties UserDefinedPin (PinName="ReturnValue",PinType=(PinCategory="text"),DesiredPinDirection=EGPD_Input)
+      End Object
+      Begin Object Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_FunctionEntry_0'"
+         ExtraFlags=469893120
+         FunctionReference=(MemberName="Get_MenuStack_Text")
+         bIsEditable=True
+         NodePosX=-448
+         NodeGuid=B5E590CC4A72D334E944F8A000C67C95
+         CustomProperties Pin (PinId=8D2CD2ED49247BE1D7E47189F3D16FC5,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 FF15F5F84A8C034AF78221BD479CC876,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_VariableGet_0'"
+         bIsPureGet=False
+         VariableReference=(MemberName="MenuLayer",MemberGuid=52118883475480B6FC27B890102E5750,bSelfContext=True)
+         NodePosX=-224
+         NodeGuid=5431CD7E460FBC78E93E25A19DD0D31E
+         CustomProperties Pin (PinId=FF15F5F84A8C034AF78221BD479CC876,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionEntry_0 8D2CD2ED49247BE1D7E47189F3D16FC5,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=7CFA0C41402C0E8617867FBD268FEA5B,PinName="then",PinFriendlyName=NSLOCTEXT("K2Node", "Valid", "Is Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 9ECFB3DC488FC80E3FF9639760C4231E,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=069EB576441F214E80C7FE84B49B57B0,PinName="else",PinFriendlyName=NSLOCTEXT("K2Node", "Invalid", "Is Not Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=2C5BDDA94B720F9343D1AC9BDDD62EFC,PinName="MenuLayer",Direction="EGPD_Output",PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 BF2168374F2C787919A6CFA9A8EFC7C1,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=ED25D54E4211D62C04D1BD812074561C,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=True,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text.K2Node_CallFunction_0'"
+         FunctionReference=(MemberParent="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",MemberName="GetStackListNames",MemberGuid=A4146E8A44195245444551951275FD0C)
+         NodePosX=-16
+         NodePosY=-16
+         NodeGuid=163C1FEE46D222F42C3DA9A22754754D
+         CustomProperties Pin (PinId=9ECFB3DC488FC80E3FF9639760C4231E,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 7CFA0C41402C0E8617867FBD268FEA5B,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=3C5E0BB741F689275C5ADD81F2A2E2F0,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 5700FEE54417ED4BD7B572AEC6DDBD09,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=BF2168374F2C787919A6CFA9A8EFC7C1,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 2C5BDDA94B720F9343D1AC9BDDD62EFC,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=71C756884458BF5602B988B9A761F736,PinName="ReturnValue",Direction="EGPD_Output",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 E301A9564131A753612C099144231906,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Schema="/Script/CoreUObject.Class'/Script/BlueprintGraph.EdGraphSchema_K2'"
+      Nodes(0)="/Script/BlueprintGraph.K2Node_FunctionEntry'K2Node_FunctionEntry_0'"
+      Nodes(1)="/Script/BlueprintGraph.K2Node_FunctionResult'K2Node_FunctionResult_0'"
+      Nodes(2)="/Script/BlueprintGraph.K2Node_VariableGet'K2Node_VariableGet_0'"
+      Nodes(3)="/Script/BlueprintGraph.K2Node_CallFunction'K2Node_CallFunction_0'"
+      GraphGuid=5F1A605449F30BC68BEE1585B4BAC203
+   End Object
+   Begin Object Name="Get_ModalStack_Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text'"
+      Begin Object Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_FunctionResult_0'"
+         FunctionReference=(MemberName="Get_ModalStack_Text")
+         bIsEditable=True
+         NodePosX=368
+         NodeGuid=0D912A4F4A1008C24A7F8B810990A53D
+         CustomProperties Pin (PinId=0F9B70D144DA878DFBB8E7BBC9CA08AD,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 3C5E0BB741F689275C5ADD81F2A2E2F0,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=E718133447083BF5B40EA3BCFCC70492,PinName="ReturnValue",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 71C756884458BF5602B988B9A761F736,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties UserDefinedPin (PinName="ReturnValue",PinType=(PinCategory="text"),DesiredPinDirection=EGPD_Input)
+      End Object
+      Begin Object Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_FunctionEntry_0'"
+         ExtraFlags=469893120
+         FunctionReference=(MemberName="Get_ModalStack_Text")
+         bIsEditable=True
+         NodePosX=-304
+         NodeGuid=2D55F6DA4350B442AF11E9A9B0373041
+         CustomProperties Pin (PinId=5824AD81456CFE9838A36D9E767CBD4E,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 FF15F5F84A8C034AF78221BD479CC876,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_VariableGet_0'"
+         bIsPureGet=False
+         VariableReference=(MemberName="ModalLayer",MemberGuid=D974A8AE44E8AA7B6ED83D89C8684550,bSelfContext=True)
+         NodePosX=-96
+         NodeGuid=4E7604074D942245AAA595A5F08B34E4
+         CustomProperties Pin (PinId=FF15F5F84A8C034AF78221BD479CC876,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionEntry_0 5824AD81456CFE9838A36D9E767CBD4E,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=7CFA0C41402C0E8617867FBD268FEA5B,PinName="then",PinFriendlyName=NSLOCTEXT("K2Node", "Valid", "Is Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 9ECFB3DC488FC80E3FF9639760C4231E,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=069EB576441F214E80C7FE84B49B57B0,PinName="else",PinFriendlyName=NSLOCTEXT("K2Node", "Invalid", "Is Not Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=17AA4FC640A2588A7E2CAFBC5CB774AF,PinName="ModalLayer",Direction="EGPD_Output",PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 BF2168374F2C787919A6CFA9A8EFC7C1,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=ED25D54E4211D62C04D1BD812074561C,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=True,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text.K2Node_CallFunction_0'"
+         FunctionReference=(MemberParent="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",MemberName="GetStackListNames",MemberGuid=A4146E8A44195245444551951275FD0C)
+         NodePosX=112
+         NodePosY=-16
+         NodeGuid=8C071FFB459795627103459FEFE70C96
+         CustomProperties Pin (PinId=9ECFB3DC488FC80E3FF9639760C4231E,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 7CFA0C41402C0E8617867FBD268FEA5B,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=3C5E0BB741F689275C5ADD81F2A2E2F0,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 0F9B70D144DA878DFBB8E7BBC9CA08AD,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=BF2168374F2C787919A6CFA9A8EFC7C1,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 17AA4FC640A2588A7E2CAFBC5CB774AF,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=71C756884458BF5602B988B9A761F736,PinName="ReturnValue",Direction="EGPD_Output",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 E718133447083BF5B40EA3BCFCC70492,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Schema="/Script/CoreUObject.Class'/Script/BlueprintGraph.EdGraphSchema_K2'"
+      Nodes(0)="/Script/BlueprintGraph.K2Node_FunctionEntry'K2Node_FunctionEntry_0'"
+      Nodes(1)="/Script/BlueprintGraph.K2Node_FunctionResult'K2Node_FunctionResult_0'"
+      Nodes(2)="/Script/BlueprintGraph.K2Node_VariableGet'K2Node_VariableGet_0'"
+      Nodes(3)="/Script/BlueprintGraph.K2Node_CallFunction'K2Node_CallFunction_0'"
+      GraphGuid=386DB26346AE2CC053DA31A5F01609E8
+   End Object
+   Begin Object Name="Get Game Stack Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text'"
+      Begin Object Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_FunctionResult_0'"
+         FunctionReference=(MemberName="Get Game Stack Text")
+         bIsEditable=True
+         NodePosX=256
+         NodeGuid=616406F14293A3B6FED69F8292921485
+         CustomProperties Pin (PinId=62DAE2E24FAD58D971C87CB805E83C64,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 DFD360D14D19C7604AA5DE9C5A8D8B8E,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=597D434A4FAAF5FFF2655C99F3B5ADF8,PinName="ReturnValue",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 1008579849964B336B86E29F929439BC,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties UserDefinedPin (PinName="ReturnValue",PinType=(PinCategory="text"),DesiredPinDirection=EGPD_Input)
+      End Object
+      Begin Object Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_FunctionEntry_0'"
+         ExtraFlags=469893120
+         FunctionReference=(MemberName="Get Game Stack Text")
+         bIsEditable=True
+         NodePosX=-368
+         NodePosY=16
+         NodeGuid=A885CC1D487B41841E40F895A3C5C00A
+         CustomProperties Pin (PinId=B9B6EDD24079AAFE4AF4989168F8E191,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 9B73A23C42DC524ED2C7D0ADADABC6F2,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_VariableGet_0'"
+         bIsPureGet=False
+         VariableReference=(MemberName="GameLayer",MemberGuid=FD8C7E434C39B54DF129DB80774B690C,bSelfContext=True)
+         NodePosX=-160
+         NodePosY=16
+         NodeGuid=1C1DF1394E3A029BE7EBC5A35BF874A0
+         CustomProperties Pin (PinId=9B73A23C42DC524ED2C7D0ADADABC6F2,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionEntry_0 B9B6EDD24079AAFE4AF4989168F8E191,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=6DE0528948818A19D85C65B9AA64AFBC,PinName="then",PinFriendlyName=NSLOCTEXT("K2Node", "Valid", "Is Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 3CCF965A418C5E50CA49F092F6C43AFC,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=883548224EA9CF9C154414B6141B7FBB,PinName="else",PinFriendlyName=NSLOCTEXT("K2Node", "Invalid", "Is Not Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=649BB58143A054F979EF9C87F4886D79,PinName="GameLayer",Direction="EGPD_Output",PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 FF5B9C7F4BC39F3641241FB644A7B81A,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=36AFFD98415345F66F2A39B867C6D230,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=True,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text.K2Node_CallFunction_0'"
+         FunctionReference=(MemberParent="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",MemberName="GetStackListNames",MemberGuid=A4146E8A44195245444551951275FD0C)
+         NodePosX=32
+         NodeGuid=B71DCBEE4515D45E39796FBF7D5A0E6C
+         CustomProperties Pin (PinId=3CCF965A418C5E50CA49F092F6C43AFC,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 6DE0528948818A19D85C65B9AA64AFBC,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=DFD360D14D19C7604AA5DE9C5A8D8B8E,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 62DAE2E24FAD58D971C87CB805E83C64,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=FF5B9C7F4BC39F3641241FB644A7B81A,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 649BB58143A054F979EF9C87F4886D79,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=1008579849964B336B86E29F929439BC,PinName="ReturnValue",Direction="EGPD_Output",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 597D434A4FAAF5FFF2655C99F3B5ADF8,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Schema="/Script/CoreUObject.Class'/Script/BlueprintGraph.EdGraphSchema_K2'"
+      Nodes(0)="/Script/BlueprintGraph.K2Node_FunctionEntry'K2Node_FunctionEntry_0'"
+      Nodes(1)="/Script/BlueprintGraph.K2Node_FunctionResult'K2Node_FunctionResult_0'"
+      Nodes(2)="/Script/BlueprintGraph.K2Node_VariableGet'K2Node_VariableGet_0'"
+      Nodes(3)="/Script/BlueprintGraph.K2Node_CallFunction'K2Node_CallFunction_0'"
+      GraphGuid=0060D90A431D50CFAEC33E9BA984FF13
+   End Object
+   Begin Object Name="Get_GameMenuStack_Text" ExportPath="/Script/Engine.EdGraph'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text'"
+      Begin Object Name="K2Node_FunctionResult_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionResult'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_FunctionResult_0'"
+         FunctionReference=(MemberName="Get_GameMenuStack_Text")
+         bIsEditable=True
+         NodePosX=256
+         NodeGuid=F3CFF40F48EA423B4028A4B588CF54D7
+         CustomProperties Pin (PinId=233D23F04885597DCE2297A2CDADEAC0,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 DFD360D14D19C7604AA5DE9C5A8D8B8E,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=D3BC4799413AC749F9950FAF2E725C87,PinName="ReturnValue",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 1008579849964B336B86E29F929439BC,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties UserDefinedPin (PinName="ReturnValue",PinType=(PinCategory="text"),DesiredPinDirection=EGPD_Input)
+      End Object
+      Begin Object Name="K2Node_FunctionEntry_0" ExportPath="/Script/BlueprintGraph.K2Node_FunctionEntry'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_FunctionEntry_0'"
+         ExtraFlags=469893120
+         FunctionReference=(MemberName="Get_GameMenuStack_Text")
+         bIsEditable=True
+         NodePosX=-480
+         NodeGuid=7ECA77E1432C003D2B7F96B3C5B35C71
+         CustomProperties Pin (PinId=E2C94C0A4B7DC9AC14AECF84DECB79DD,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 9B73A23C42DC524ED2C7D0ADADABC6F2,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_VariableGet_0" ExportPath="/Script/BlueprintGraph.K2Node_VariableGet'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_VariableGet_0'"
+         bIsPureGet=False
+         VariableReference=(MemberName="GameMenuLayer",MemberGuid=DC71444F46EC1A72ACBCAEB9F6AD9DEE,bSelfContext=True)
+         NodePosX=-208
+         NodeGuid=68F277244B1C3195330B6A9899953252
+         CustomProperties Pin (PinId=9B73A23C42DC524ED2C7D0ADADABC6F2,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionEntry_0 E2C94C0A4B7DC9AC14AECF84DECB79DD,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=6DE0528948818A19D85C65B9AA64AFBC,PinName="then",PinFriendlyName=NSLOCTEXT("K2Node", "Valid", "Is Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 3CCF965A418C5E50CA49F092F6C43AFC,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=883548224EA9CF9C154414B6141B7FBB,PinName="else",PinFriendlyName=NSLOCTEXT("K2Node", "Invalid", "Is Not Valid"),Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=649BB58143A054F979EF9C87F4886D79,PinName="GameMenuLayer",Direction="EGPD_Output",PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_CallFunction_0 FF5B9C7F4BC39F3641241FB644A7B81A,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=36AFFD98415345F66F2A39B867C6D230,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,PersistentGuid=00000000000000000000000000000000,bHidden=True,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="K2Node_CallFunction_0" ExportPath="/Script/BlueprintGraph.K2Node_CallFunction'/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text.K2Node_CallFunction_0'"
+         FunctionReference=(MemberParent="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",MemberName="GetStackListNames",MemberGuid=A4146E8A44195245444551951275FD0C)
+         NodePosX=-16
+         NodePosY=-16
+         NodeGuid=14DB91F34ECA2D3D4571ACA492291C84
+         CustomProperties Pin (PinId=3CCF965A418C5E50CA49F092F6C43AFC,PinName="execute",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 6DE0528948818A19D85C65B9AA64AFBC,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=DFD360D14D19C7604AA5DE9C5A8D8B8E,PinName="then",Direction="EGPD_Output",PinType.PinCategory="exec",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 233D23F04885597DCE2297A2CDADEAC0,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=FF5B9C7F4BC39F3641241FB644A7B81A,PinName="self",PinFriendlyName=NSLOCTEXT("K2Node", "Target", "Target"),PinType.PinCategory="object",PinType.PinSubCategory="",PinType.PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'",PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_VariableGet_0 649BB58143A054F979EF9C87F4886D79,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=1008579849964B336B86E29F929439BC,PinName="ReturnValue",Direction="EGPD_Output",PinType.PinCategory="text",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(K2Node_FunctionResult_0 D3BC4799413AC749F9950FAF2E725C87,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Schema="/Script/CoreUObject.Class'/Script/BlueprintGraph.EdGraphSchema_K2'"
+      Nodes(0)="/Script/BlueprintGraph.K2Node_FunctionEntry'K2Node_FunctionEntry_0'"
+      Nodes(1)="/Script/BlueprintGraph.K2Node_FunctionResult'K2Node_FunctionResult_0'"
+      Nodes(2)="/Script/BlueprintGraph.K2Node_VariableGet'K2Node_VariableGet_0'"
+      Nodes(3)="/Script/BlueprintGraph.K2Node_CallFunction'K2Node_CallFunction_0'"
+      GraphGuid=710BDFF64E71456D934863B104FF9B46
+   End Object
+   Bindings(0)=(ObjectName="MenuStack",PropertyName="Text",FunctionName="Get_MenuStack_Text",SourcePath=(Segments=((Struct="/Script/UMG.WidgetBlueprintGeneratedClass'WBP_LayersDebugger_C'",MemberName="Get_MenuStack_Text",MemberGuid=5F1A605449F30BC68BEE1585B4BAC203,IsProperty=False))),MemberGuid=5F1A605449F30BC68BEE1585B4BAC203,Kind=Function)
+   Bindings(1)=(ObjectName="ModalStack",PropertyName="Text",FunctionName="Get_ModalStack_Text",SourcePath=(Segments=((Struct="/Script/UMG.WidgetBlueprintGeneratedClass'WBP_LayersDebugger_C'",MemberName="Get_ModalStack_Text",MemberGuid=386DB26346AE2CC053DA31A5F01609E8,IsProperty=False))),MemberGuid=386DB26346AE2CC053DA31A5F01609E8,Kind=Function)
+   Bindings(2)=(ObjectName="GameStack",PropertyName="Text",FunctionName="Get_GameStack_Text",SourcePath=(Segments=((Struct="/Script/UMG.WidgetBlueprintGeneratedClass'WBP_LayersDebugger_C'",MemberName="Get_GameStack_Text",MemberGuid=0060D90A431D50CFAEC33E9BA984FF13,IsProperty=False))),MemberGuid=0060D90A431D50CFAEC33E9BA984FF13,Kind=Function)
+   Bindings(3)=(ObjectName="GameMenuStack",PropertyName="Text",FunctionName="Get_GameMenuStack_Text",SourcePath=(Segments=((Struct="/Script/UMG.WidgetBlueprintGeneratedClass'WBP_LayersDebugger_C'",MemberName="Get_GameMenuStack_Text",MemberGuid=710BDFF64E71456D934863B104FF9B46,IsProperty=False))),MemberGuid=710BDFF64E71456D934863B104FF9B46,Kind=Function)
+   PropertyBindings=4
+   WidgetTree="WidgetTree"
+   ParentClass="/Script/CoreUObject.Class'/Script/UMG.UserWidget'"
+   BlueprintSystemVersion=2
+   UbergraphPages(0)="/Script/Engine.EdGraph'EventGraph'"
+   FunctionGraphs(0)="/Script/Engine.EdGraph'Get_MenuStack_Text'"
+   FunctionGraphs(1)="/Script/Engine.EdGraph'Get_ModalStack_Text'"
+   FunctionGraphs(2)="/Script/Engine.EdGraph'Get Game Stack Text'"
+   FunctionGraphs(3)="/Script/Engine.EdGraph'Get_GameMenuStack_Text'"
+   NewVariables(0)=(VarName="GameLayer",VarGuid=FD8C7E434C39B54DF129DB80774B690C,VarType=(PinCategory="object",PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'"),FriendlyName="Game Layer",Category=NSLOCTEXT("KismetSchema", "Default", "Default"),PropertyFlags=5,MetaDataArray=((DataKey="ExposeOnSpawn",DataValue="true")))
+   NewVariables(1)=(VarName="GameMenuLayer",VarGuid=DC71444F46EC1A72ACBCAEB9F6AD9DEE,VarType=(PinCategory="object",PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'"),FriendlyName="Game Menu Layer",Category=NSLOCTEXT("KismetSchema", "Default", "Default"),PropertyFlags=5,MetaDataArray=((DataKey="ExposeOnSpawn",DataValue="true")))
+   NewVariables(2)=(VarName="MenuLayer",VarGuid=52118883475480B6FC27B890102E5750,VarType=(PinCategory="object",PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'"),FriendlyName="Menu Layer",Category=NSLOCTEXT("KismetSchema", "Default", "Default"),PropertyFlags=5,MetaDataArray=((DataKey="ExposeOnSpawn",DataValue="true")))
+   NewVariables(3)=(VarName="ModalLayer",VarGuid=D974A8AE44E8AA7B6ED83D89C8684550,VarType=(PinCategory="object",PinSubCategoryObject="/Script/UMG.WidgetBlueprintGeneratedClass'/Game/UI/Layout/WBP_Layer.WBP_Layer_C'"),FriendlyName="Modal Layer",Category=NSLOCTEXT("KismetSchema", "Default", "Default"),PropertyFlags=5,MetaDataArray=((DataKey="ExposeOnSpawn",DataValue="true")))
+   CategorySorting(0)="WBP Layers Debugger"
+   CategorySorting(1)="Default"
+   CategorySorting(2)=""
+   LastEditedDocuments(0)=(EditedObjectPath="/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_MenuStack_Text",SavedViewOffset=(X=-409.426505,Y=-110.870681),SavedZoomAmount=1.000000)
+   LastEditedDocuments(1)=(EditedObjectPath="/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_GameMenuStack_Text",SavedViewOffset=(X=-437.322296,Y=-278.617544),SavedZoomAmount=0.750000)
+   LastEditedDocuments(2)=(EditedObjectPath="/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get Game Stack Text",SavedViewOffset=(X=-370.282694,Y=-272.522303),SavedZoomAmount=0.750000)
+   LastEditedDocuments(3)=(EditedObjectPath="/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:Get_ModalStack_Text",SavedViewOffset=(X=-370.949361,Y=-269.633418),SavedZoomAmount=0.750000)
+   LastEditedDocuments(4)=(EditedObjectPath="/Game/UI/Layout/WBP_LayersDebugger.WBP_LayersDebugger:EventGraph",SavedViewOffset=(X=-8627.202907,Y=-1971.323782),SavedZoomAmount=0.100000)
+   GeneratedClass="/Script/UMG.WidgetBlueprintGeneratedClass'WBP_LayersDebugger_C'"
+   bLegacyNeedToPurgeSkelRefs=False
+   BlueprintGuid=F7A771EE422314C84432CF8225D953A4
+End Object

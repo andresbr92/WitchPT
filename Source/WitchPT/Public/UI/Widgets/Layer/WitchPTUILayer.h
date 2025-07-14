@@ -29,6 +29,9 @@ public:
 	FText GetStackListNames();
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void ClearStack();
+	
+	void ShowTop();
+	void CollapseTop();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -42,8 +45,6 @@ private:
 	TObjectPtr<UUserWidget> PushedWidget = nullptr;
 
 	// HELPER FUNCTIONS
-	void CollapseTop();
-	void ShowTop();
 
 	
 	

@@ -50,24 +50,6 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_ToggleCauldronMenu();
 
-	UFUNCTION(BlueprintCallable, Category= "Overlay")
-	void ShowOverlayWidget();
-	UFUNCTION(BlueprintCallable, Category= "Overlay")
-	void HideOverlayWidget();
-
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void OpenInventoryMenu();
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void CloseInventoryMenu();
-
-	// Debug console commands for testing (Step 4 testing)
-	UFUNCTION(Exec, Category = "Debug")
-	void ShowRitualWidgetDebug();
-	UFUNCTION(Exec, Category = "Debug") 
-	void HideRitualWidgetDebug();
-	UFUNCTION(Exec, Category = "Debug")
-	void ToggleRitualWidgetDebug();
-
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
