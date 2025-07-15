@@ -37,11 +37,11 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UBorder> Border;
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TArray<TObjectPtr<UUserWidget>> Stack;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UUserWidget> TopWidget = nullptr;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UUserWidget> PushedWidget = nullptr;
 
 	// HELPER FUNCTIONS

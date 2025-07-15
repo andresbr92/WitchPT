@@ -64,6 +64,7 @@ WitchPT/Private/Equipment/WitchPTEquipmentDefinition.cpp
 WitchPT/Private/Equipment/WitchPTEquipmentInstance.cpp
 WitchPT/Private/Equipment/WitchPTEquipmentManagerComponent.cpp
 WitchPT/Private/Equipment/WitchPTQuickBarComponent.cpp
+WitchPT/Private/FunctionLibrary/WidgetControllerFunctionLibrary.cpp
 WitchPT/Private/Game/WitchPTGameModeBase.cpp
 WitchPT/Private/Input/WitchPTInputComponent.cpp
 WitchPT/Private/Input/WitchPTInputConfig.cpp
@@ -140,6 +141,7 @@ WitchPT/Public/Equipment/WitchPTEquipmentDefinition.h
 WitchPT/Public/Equipment/WitchPTEquipmentInstance.h
 WitchPT/Public/Equipment/WitchPTEquipmentManagerComponent.h
 WitchPT/Public/Equipment/WitchPTQuickBarComponent.h
+WitchPT/Public/FunctionLibrary/WidgetControllerFunctionLibrary.h
 WitchPT/Public/FWitchPTGameplayTags.cpp
 WitchPT/Public/FWitchPTGameplayTags.h
 WitchPT/Public/Game/WitchPTGameModeBase.h
@@ -2529,6 +2531,8 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 			// WitchPT_HUD->InitInventoryWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitCauldronWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitQuickBarWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			WitchPT_HUD->InitAllWidgets(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			
 		}
 	}
 	InitializeDefaultAttributes();
@@ -3232,6 +3236,107 @@ void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex
 		
 		OnRep_ActiveSlotIndex();
 	}
+}
+</file>
+
+<file path="WitchPT/Private/FunctionLibrary/WidgetControllerFunctionLibrary.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "FunctionLibrary/WidgetControllerFunctionLibrary.h"
+
+#include "Kismet/GameplayStatics.h"
+#include "Player/WitchPTPlayerState.h"
+#include "UI/HUD/WitchPTHUD.h"
+#include "UI/WidgetControllers/WitchPTWidgetController.h"
+
+UInventoryWidgetController* UWidgetControllerFunctionLibrary::SetInventoryWidgetController(
+	const UObject* WorldContextObject)
+{
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD()))
+		{
+			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			const FWidgetControllerParams WCParams = FWidgetControllerParams(PC, PS,ASC, AS);
+			
+			return WitchPTHUD->SetInventoryWidgetController(WCParams);
+		}
+	}
+	return nullptr;
+}
+
+UQuickBarWidgetController* UWidgetControllerFunctionLibrary::SetQuickBarWidgetController(
+	const UObject* WorldContextObject)
+{
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD()))
+		{
+			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			const FWidgetControllerParams WCParams = FWidgetControllerParams(PC, PS,ASC, AS);
+			
+			return WitchPTHUD->SetQuickBarWidgetController(WCParams);
+		}
+	}
+	return nullptr;
+}
+
+URitualWidgetController* UWidgetControllerFunctionLibrary::SetRitualWidgetController(const UObject* WorldContextObject)
+{
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD()))
+		{
+			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			const FWidgetControllerParams WCParams = FWidgetControllerParams(PC, PS,ASC, AS);
+			
+			return WitchPTHUD->SetRitualWidgetController(WCParams);
+		}
+	}
+	return nullptr;
+}
+
+UCauldronWidgetController* UWidgetControllerFunctionLibrary::SetCauldronWidgetController(
+	const UObject* WorldContextObject)
+{
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD()))
+		{
+			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			const FWidgetControllerParams WCParams = FWidgetControllerParams(PC, PS,ASC, AS);
+			
+			return WitchPTHUD->SetCauldronWidgetController(WCParams);
+		}
+	}
+	return nullptr;
+}
+
+UOverlayWidgetController* UWidgetControllerFunctionLibrary::SetOverlayWidgetController(
+	const UObject* WorldContextObject)
+{
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD()))
+		{
+			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			const FWidgetControllerParams WCParams = FWidgetControllerParams(PC, PS,ASC, AS);
+			
+			return WitchPTHUD->SetOverlayWidgetController(WCParams);
+		}
+	}
+	return nullptr;
 }
 </file>
 
@@ -8263,21 +8368,6 @@ void AWitchPTPlayerController::LocalToggleCauldronMenu()
 		OpenCauldronMenu();
 	}
 }
-void AWitchPTPlayerController::OpenInventoryMenu()
-{
-	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
-	{
-		WitchPTHUD->ShowInventoryWidget();
-	}
-}
-
-void AWitchPTPlayerController::CloseInventoryMenu()
-{
-	if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD()))
-	{
-		WitchPTHUD->HideInventoryWidget();
-	}
-}
 
 void AWitchPTPlayerController::LocalShowRitualWidget(ABaseInteractableAltar* Altar)
 {
@@ -8374,23 +8464,7 @@ void AWitchPTPlayerController::Client_HideRitualWidget_Implementation()
 	LocalHideRitualWidget();
 }
 
-void AWitchPTPlayerController::ShowOverlayWidget()
-{
-	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-	if (WitchPTHUD)
-	{
-		WitchPTHUD->ShowOverlayWidget();
-	}
-}
 
-void AWitchPTPlayerController::HideOverlayWidget()
-{
-	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-	if (WitchPTHUD)
-	{
-		WitchPTHUD->HideOverlayWidget();
-	}
-}
 
 void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
 {
@@ -8490,40 +8564,6 @@ UWitchPTAbilitySystemComponent* AWitchPTPlayerController::GetASC()
 		WitchPtAbilitySystemComponent = Cast<UWitchPTAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
 	}
 	return WitchPtAbilitySystemComponent;
-}
-
-// Debug console commands for testing Step 4
-void AWitchPTPlayerController::ShowRitualWidgetDebug()
-{
-	// Find a ritual altar in the level for testing
-	ARitualAltar* TestAltar = Cast<ARitualAltar>(UGameplayStatics::GetActorOfClass(this, ARitualAltar::StaticClass()));
-	if (TestAltar)
-	{
-		LocalShowRitualWidget(TestAltar);
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: Showing ritual widget for test altar"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[DEBUG] ShowRitualWidgetDebug: No ritual altar found in level"));
-	}
-}
-
-void AWitchPTPlayerController::HideRitualWidgetDebug()
-{
-	LocalHideRitualWidget();
-	UE_LOG(LogTemp, Warning, TEXT("[DEBUG] HideRitualWidgetDebug: Hiding ritual widget"));
-}
-
-void AWitchPTPlayerController::ToggleRitualWidgetDebug()
-{
-	if (IsRitualWidgetVisible())
-	{
-		HideRitualWidgetDebug();
-	}
-	else
-	{
-		ShowRitualWidgetDebug();
-	}
 }
 </file>
 
@@ -8639,7 +8679,7 @@ void UUIManagerSubsystem::PopContentFromLayer(FGameplayTag LayerTag)
 		{
 			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
 			{
-				// PrimaryLayout->PopContentFromLayer(LayerTag);
+				PrimaryLayout->PopContentFromLayer(LayerTag);
 				UE_LOG(LogTemp, Log, TEXT("Popping content from layer: %s"), *LayerTag.ToString());
 			}
 		}
@@ -8673,6 +8713,59 @@ UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout()
 	}
 	return nullptr;
 }
+void UUIManagerSubsystem::FocusGame()
+{
+	// get player controller
+	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	{
+		// set input mode to game only
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		// hide mouse cursor
+		PlayerController->bShowMouseCursor = false;
+	}
+}
+
+void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
+{
+	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	{
+		if(bUIOnlyInput)
+		{
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+			PlayerController->SetInputMode(InputMode);
+			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+		}
+		else
+		{
+			FInputModeGameAndUI InputMode;
+										InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+			PlayerController->SetInputMode(InputMode);
+		}
+	}
+}
+void UUIManagerSubsystem::ShowFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	{
+		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+		{
+			PrimaryLayout->ShowFirstElementOfLayer(LayerTag);
+		}
+	}
+}
+void UUIManagerSubsystem::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	{
+		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+		{
+			PrimaryLayout->CollapseFirstElementOfLayer(LayerTag);
+		}
+	}
+}
 </file>
 
 <file path="WitchPT/Private/Subsystems/WidgetCommunicatorSubsystem.cpp">
@@ -8700,8 +8793,10 @@ void UWidgetCommunicatorSubsystem::OnItemDragged(UWitchPTInventoryItemInstance* 
 #include "UI/WidgetControllers/OverlayWidgetController.h"
 #include "UI/WidgetControllers/QuickBarWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
+#include "UI/Widgets/QuickBarUserWidget.h"
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
+#include "UI/Widgets/Inventory/InventoryUserWidget.h"
 #include "UI/Widgets/Inventory/RitualUserWidget.h"
 
 void AWitchPTHUD::BeginPlay()
@@ -8716,7 +8811,7 @@ void AWitchPTHUD::BeginPlay()
 	}
 }
 
-UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByCass(TSubclassOf<UWitchPTUserWidget> WidgetClass)
+UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByClass(TSubclassOf<UWitchPTUserWidget> WidgetClass)
 {
 	if (WidgetClass)
 	{
@@ -8786,52 +8881,38 @@ URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetCon
 	return RitualWidgetController;
 }
 
-void AWitchPTHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+void AWitchPTHUD::InitAllWidgets(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
 {
-	checkf(OverlayWidgetClass, TEXT("Overlay Widget Class uninitialized, please fill out BP_WitchPTHUD"));
-	checkf(OverlayWidgetControllerClass, TEXT("Overlay Widget Controller Class uninitialized, please fill out BP_WitchPTHUD"));
-
 	// Initialize Overlay Widget
-	UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
-	OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
+	if (OverlayWidgetClass && OverlayWidgetControllerClass)
+	{
+		UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
+		OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
 
-	const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-	UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
+		const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+		UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
 
-	OverlayWidget->SetWidgetController(WidgetController);
-	WidgetController->BroadcastInitialValues();
-	// OverlayWidgetInstance->AddToViewport();
+		OverlayWidget->SetWidgetController(WidgetController);
+		WidgetController->BroadcastInitialValues();
+		GameMenuWidgets.Add(OverlayWidgetInstance);
+	}
 
-	// GameMenuWidgets.Add(OverlayWidgetInstance);
-	
-}
-
-void AWitchPTHUD::InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
-	UAttributeSet* AS)
-{
+	// Initialize Ritual Widget
 	if (RitualWidgetClass)
 	{
-		
 		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
 		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
 		
 		if (RitualWidget)
 		{
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			// Create and set the ritual widget controller
 			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
 			RitualWidget->SetWidgetController(RitualController);
-			
-			// Add to viewport but set visibility to collapsed
-			RitualWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(RitualWidgetInstance);
 		}
 	}
-}
 
-void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
-	UAttributeSet* AS)
-{
+	// Initialize Inventory Widget
 	if (InventoryWidgetClass && !InventoryWidget)
 	{
 		UUserWidget* InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
@@ -8842,14 +8923,11 @@ void AWitchPTHUD::InitInventoryWidget(APlayerController* PC, APlayerState* PS, U
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
 			InventoryWidget->SetWidgetController(Controller);
-			InventoryWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(InventoryWidgetInstance);
 		}
 	}
-}
 
-void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
-{
+	// Initialize Cauldron Widget
 	if (CauldronWidgetClass && !CauldronWidget)
 	{
 		UUserWidget* CauldronWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
@@ -8860,15 +8938,11 @@ void AWitchPTHUD::InitCauldronWidget(APlayerController* PC, APlayerState* PS, UA
 			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
 			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
 			CauldronWidget->SetWidgetController(Controller);
-			CauldronWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(CauldronWidgetInstance);
 		}
 	}
-}
 
-void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC,
-	UAttributeSet* AS)
-{
+	// Initialize QuickBar Widget
 	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
 	{
 		UUserWidget* QuickBarWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
@@ -8878,13 +8952,9 @@ void AWitchPTHUD::InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UA
 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
 			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
 			QuickBarUserWidget->SetWidgetController(Controller);
-			
-			QuickBarWidgetInstance->AddToViewport();
 			GameMenuWidgets.Add(QuickBarWidgetInstance);
 		}
 	}
-	
-	
 }
 
 void AWitchPTHUD::ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass)
@@ -8935,15 +9005,6 @@ void AWitchPTHUD::ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass)
 	
 }
 
-void AWitchPTHUD::ShowOverlayWidget()
-{
-	OverlayWidget->SetVisibility(ESlateVisibility::Visible);
-}
-
-void AWitchPTHUD::HideOverlayWidget()
-{
-	OverlayWidget->SetVisibility(ESlateVisibility::Collapsed);
-}
 
 void AWitchPTHUD::ShowRitualWidget(class ARitualAltar* RitualAltar)
 {
@@ -9087,6 +9148,30 @@ void AWitchPTHUD::HideCauldronWithInventory()
 			PC->SetShowMouseCursor(false);
 		}
 	}
+}
+
+UQuickBarUserWidget* AWitchPTHUD::GetQuickBarUserWidget() const
+{
+	if (QuickBarUserWidget)
+	{
+		if (UQuickBarUserWidget* QuickBarWidget = Cast<UQuickBarUserWidget>(QuickBarUserWidget))
+		{
+			return QuickBarWidget;
+		}
+	}
+	return nullptr;
+}
+
+UWitchPTUserWidget* AWitchPTHUD::GetInventoryUserWidget() const
+{
+	if (InventoryWidget)
+	{
+		if (UInventoryUserWidget* InventoryWidgetInstance = Cast<UInventoryUserWidget>(InventoryWidget))
+		{
+			return InventoryWidgetInstance;
+		}
+	}
+	return nullptr;
 }
 </file>
 
@@ -9885,20 +9970,13 @@ UUserWidget* UWitchPTUILayer::GetTopScreen() const
 
 FText UWitchPTUILayer::GetStackListNames()
 {
-	// Reverse for to get the names in the correct order
-	FString StackNames;
-	for (int32 i = Stack.Num() - 1; i >= 0; --i)
+	// Return a list of the names but in reverse order
+	FString ListNames;
+	for (int i = Stack.Num() - 1; i >= 0; i--)
 	{
-		if (Stack[i])
-		{
-			StackNames += Stack[i]->GetName();
-			if (i > 0)
-			{
-				StackNames += TEXT(", ");
-			}
-		}
+		ListNames += Stack[i]->GetName() + "\n";
 	}
-	return FText ::FromString(StackNames);
+	return FText::FromString(ListNames);
 }
 
 void UWitchPTUILayer::ClearStack()
@@ -9966,25 +10044,7 @@ UWitchPTPrimaryLayout::UWitchPTPrimaryLayout()
 void UWitchPTPrimaryLayout::NativeConstruct()
 {
 	Super::NativeConstruct();
-	// Register all layers
-	const FWitchPTGameplayTags& WitchPtGameplayTags = FWitchPTGameplayTags::Get();
-	if (GameLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_Game, GameLayer);
-	}
-	if (GameMenuLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_GameMenu, GameMenuLayer);
-	}
-	if (MenuLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_Menu, MenuLayer);
-	}
-	if (ModalLayer)
-	{
-		RegisterLayer(WitchPtGameplayTags.UI_Layer_Modal, ModalLayer);
-	}
-	PushInitialScreens();
+
 	
 }
 
@@ -10101,6 +10161,26 @@ void UWitchPTPrimaryLayout::PushInitialScreens()
 					}
 				}
 			}
+		}
+	}
+}
+void UWitchPTPrimaryLayout::ShowFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
+		{
+			Layer->ShowTop();
+		}
+	}
+}
+void UWitchPTPrimaryLayout::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
+		{
+			Layer->CollapseTop();
 		}
 	}
 }
@@ -11705,6 +11785,47 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="QuickBar")
 	TObjectPtr<UWitchPTInventoryItemInstance> EquippedItem;
 	
+};
+</file>
+
+<file path="WitchPT/Public/FunctionLibrary/WidgetControllerFunctionLibrary.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
+#include "WidgetControllerFunctionLibrary.generated.h"
+
+class UInventoryWidgetController;
+class UQuickBarWidgetController;
+class URitualWidgetController;
+class UCauldronWidgetController;
+class UOverlayWidgetController;
+
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UWidgetControllerFunctionLibrary : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+	public:
+	UFUNCTION(BlueprintPure, Category="Inventory", meta=(WorldContext="WorldContextObject"))
+	static UInventoryWidgetController* SetInventoryWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category="QuickBar", meta=(WorldContext="WorldContextObject"))
+	static UQuickBarWidgetController* SetQuickBarWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category="Ritual", meta=(WorldContext="WorldContextObject"))
+	static URitualWidgetController* SetRitualWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category="Cauldron", meta=(WorldContext="WorldContextObject"))
+	static UCauldronWidgetController* SetCauldronWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category="Overlay", meta=(WorldContext="WorldContextObject"))
+	static UOverlayWidgetController* SetOverlayWidgetController(const UObject* WorldContextObject);
+
 };
 </file>
 
@@ -14473,24 +14594,6 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_ToggleCauldronMenu();
 
-	UFUNCTION(BlueprintCallable, Category= "Overlay")
-	void ShowOverlayWidget();
-	UFUNCTION(BlueprintCallable, Category= "Overlay")
-	void HideOverlayWidget();
-
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void OpenInventoryMenu();
-	UFUNCTION(BlueprintCallable, Category= "Inventory")
-	void CloseInventoryMenu();
-
-	// Debug console commands for testing (Step 4 testing)
-	UFUNCTION(Exec, Category = "Debug")
-	void ShowRitualWidgetDebug();
-	UFUNCTION(Exec, Category = "Debug") 
-	void HideRitualWidgetDebug();
-	UFUNCTION(Exec, Category = "Debug")
-	void ToggleRitualWidgetDebug();
-
 
 	UPROPERTY(Replicated, VisibleAnywhere)
 	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
@@ -14635,6 +14738,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void ClearLayer(FGameplayTag LayerTag);
+
+	UFUNCTION(BlueprintCallable, Category = "UI Manager")
+	void FocusGame();
+
+	UFUNCTION(BlueprintCallable, Category = "UI Manager")
+	void FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor = true, bool bUIOnlyInput = false);
+
+	// function to get the first element of a layer, and set is visibility to true
+	UFUNCTION(BlueprintCallable, Category = "UI Manager")
+	void ShowFirstElementOfLayer(FGameplayTag LayerTag);
+	UFUNCTION(BlueprintCallable, Category = "UI Manager")
+	void CollapseFirstElementOfLayer(FGameplayTag LayerTag);
 private:
 	
 	UWitchPTUserWidget* GetPrimaryLayout();
@@ -14893,6 +15008,7 @@ struct TStructOpsTypeTraits<FGameplayTagStackContainer> : public TStructOpsTypeT
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UQuickBarUserWidget;
 class UWitchPTPrimaryLayout;
 class UQuickBarWidgetController;
 class UCauldronWidgetController;
@@ -14905,51 +15021,45 @@ class UInventoryWidgetController;
 struct FWidgetControllerParams;
 class UOverlayWidgetController;
 /**
- * 
+ *
  */
 UCLASS()
 class WITCHPT_API AWitchPTHUD : public AHUD
 {
 	GENERATED_BODY()
 public:
-	
-
 	virtual void BeginPlay() override;
-	
-	UPROPERTY(VisibleAnywhere)
-	TArray<UUserWidget*> GameMenuWidgets;
-	UFUNCTION(BlueprintCallable)
-	UWitchPTUserWidget* GetMenuWidgetByCass(TSubclassOf<UWitchPTUserWidget> WidgetClass);
-	UOverlayWidgetController* SetOverlayWidgetController(const FWidgetControllerParams& WCParams);
-	UInventoryWidgetController* SetInventoryWidgetController(const FWidgetControllerParams& WCParams);
-	URitualWidgetController* SetRitualWidgetController(const FWidgetControllerParams& WCParams);
-	UCauldronWidgetController* SetCauldronWidgetController(const FWidgetControllerParams& WCParams);
-	UQuickBarWidgetController* SetQuickBarWidgetController(const FWidgetControllerParams& WCParams);
-	
 
-	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
-	void InitRitualWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
-	void InitInventoryWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
-	void InitCauldronWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
-	void InitQuickBarWidget(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+	UPROPERTY(VisibleAnywhere)
+	TArray<UUserWidget *> GameMenuWidgets;
+	UFUNCTION(BlueprintCallable)
+	UWitchPTUserWidget *GetMenuWidgetByClass(TSubclassOf<UWitchPTUserWidget> WidgetClass);
+
+	
+	UOverlayWidgetController *SetOverlayWidgetController(const FWidgetControllerParams &WCParams);
+	UInventoryWidgetController *SetInventoryWidgetController(const FWidgetControllerParams &WCParams);
+	URitualWidgetController *SetRitualWidgetController(const FWidgetControllerParams &WCParams);
+	UCauldronWidgetController *SetCauldronWidgetController(const FWidgetControllerParams &WCParams);
+	UQuickBarWidgetController *SetQuickBarWidgetController(const FWidgetControllerParams &WCParams);
+
+	void InitAllWidgets(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
 	UFUNCTION(BlueprintCallable)
 	void ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass);
-	
-	void ShowOverlayWidget();
-	void HideOverlayWidget();
-	void ShowRitualWidget(class ARitualAltar* RitualAltar);
+
+
+	void ShowRitualWidget(class ARitualAltar *RitualAltar);
 	void HideRitualWidget();
 	void ShowInventoryWidget();
 	void HideInventoryWidget();
-	void ShowCauldronWithInventory(class ACauldronAltar* CauldronAltar);
+	void ShowCauldronWithInventory(class ACauldronAltar *CauldronAltar);
 	void HideCauldronWithInventory();
 
-
 	// ----------------------- Getters -----------------------
-	UWitchPTPrimaryLayout* GetPrimaryLayout() const { return PrimaryLayout; }
-
-
-
+	UWitchPTPrimaryLayout *GetPrimaryLayout() const { return PrimaryLayout; }
+	UFUNCTION(BlueprintCallable)
+	UQuickBarUserWidget* GetQuickBarUserWidget() const;
+	UFUNCTION(BlueprintCallable)
+	UWitchPTUserWidget* GetInventoryUserWidget() const;
 
 private:
 	// ----------------------- User Widgets -----------------------
@@ -14957,12 +15067,12 @@ private:
 	TObjectPtr<UWitchPTPrimaryLayout> PrimaryLayout;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> PrimaryLayoutClass;
-	
+
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> QuickBarUserWidget;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> QuickBarUserWidgetClass;
-	
+
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> OverlayWidget;
 	UPROPERTY(EditAnywhere)
@@ -14984,13 +15094,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTUserWidget> RitualWidgetClass;
 
-
 	// ----------------------- Widget Controllers -----------------------
 	UPROPERTY()
 	TObjectPtr<UQuickBarWidgetController> QuickBarWidgetController;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UQuickBarWidgetController> QuickBarWidgetControllerClass;
-	
+
 	UPROPERTY()
 	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
 	UPROPERTY(EditAnywhere)
@@ -15605,6 +15714,9 @@ public:
 	FText GetStackListNames();
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void ClearStack();
+	
+	void ShowTop();
+	void CollapseTop();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -15618,8 +15730,6 @@ private:
 	TObjectPtr<UUserWidget> PushedWidget = nullptr;
 
 	// HELPER FUNCTIONS
-	void CollapseTop();
-	void ShowTop();
 
 	
 	
@@ -15718,6 +15828,10 @@ public:
 	void ClearLayer(FGameplayTag LayerTag);
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PushInitialScreens();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowFirstElementOfLayer(FGameplayTag LayerTag);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void CollapseFirstElementOfLayer(FGameplayTag LayerTag);
 	
 
 private:
@@ -15725,21 +15839,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TMap<FGameplayTag, TObjectPtr<UWitchPTUILayer>> Layers;
 	
-	// Main layer, this displays the Health bar, Mana bar and the QuickBarWidget
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> GameLayer;
-	
-	// This layer displays the inventory menu, the cauldron menu, etc
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> GameMenuLayer;
-	
-	// This layer displays the main menu, the pause menu, etc
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> MenuLayer;
-	
-	// This layer displays the modal windows, like the confirmation dialog, etc
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWitchPTUILayer> ModalLayer;
 };
 </file>
 
