@@ -129,6 +129,13 @@ void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCurso
 {
 	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
 	{
+		// Check if the widget is valid before trying to focus it
+		if (!IsValid(WidgetToFocus))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("FocusModal: WidgetToFocus is invalid or null"));
+			return;
+		}
+
 		if(bUIOnlyInput)
 		{
 			FInputModeUIOnly InputMode;
@@ -139,7 +146,7 @@ void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCurso
 		else
 		{
 			FInputModeGameAndUI InputMode;
-										InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+			InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
 			PlayerController->SetInputMode(InputMode);

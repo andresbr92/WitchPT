@@ -64,7 +64,6 @@ FText UWitchPTUILayer::GetStackListNames()
 	{
 		ListNames += Stack[i]->GetName() + "\n";
 	}
-	UE_LOG(LogTemp, Log, TEXT("ListNames: %s"), *ListNames);
 	return FText::FromString(ListNames);
 }
 
