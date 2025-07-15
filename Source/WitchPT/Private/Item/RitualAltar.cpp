@@ -1007,13 +1007,14 @@ void ARitualAltar::OccupyPosition(ACharacter* Player, ABaseInteractionPosition* 
 	{
 		if (Player->IsLocallyControlled())
 		{
-			// Local player (either Listen Server or Client)
-			PC->LocalShowRitualWidget(this);
+			// TODO: Remove this method of UI Initialization
+			// PC->LocalShowRitualWidget(this);
 		}
 		else
 		{
-			// Remote player - use RPC
-			PC->Client_ShowRitualWidget(this);
+			// TODO: Remove this method of UI Initialization
+			// PC->Client_ShowRitualWidget(this);
+			
 		}
 		
 		UE_LOG(LogTemp, Log, TEXT("[RitualAltar] Showing ritual widget for player %s"), *Player->GetName());

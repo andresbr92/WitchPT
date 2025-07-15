@@ -8753,26 +8753,6 @@ void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCurso
 		}
 	}
 }
-void UUIManagerSubsystem::ShowFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
-	{
-		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-		{
-			PrimaryLayout->ShowFirstElementOfLayer(LayerTag);
-		}
-	}
-}
-void UUIManagerSubsystem::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
-	{
-		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-		{
-			PrimaryLayout->CollapseFirstElementOfLayer(LayerTag);
-		}
-	}
-}
 </file>
 
 <file path="WitchPT/Private/Subsystems/WidgetCommunicatorSubsystem.cpp">
@@ -10168,26 +10148,6 @@ void UWitchPTPrimaryLayout::PushInitialScreens()
 					}
 				}
 			}
-		}
-	}
-}
-void UWitchPTPrimaryLayout::ShowFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (LayerTag.IsValid())
-	{
-		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
-		{
-			Layer->ShowTop();
-		}
-	}
-}
-void UWitchPTPrimaryLayout::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (LayerTag.IsValid())
-	{
-		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
-		{
-			Layer->CollapseTop();
 		}
 	}
 }
@@ -14751,12 +14711,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor = true, bool bUIOnlyInput = false);
-
-	// function to get the first element of a layer, and set is visibility to true
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void ShowFirstElementOfLayer(FGameplayTag LayerTag);
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void CollapseFirstElementOfLayer(FGameplayTag LayerTag);
 private:
 	
 	UWitchPTUserWidget* GetPrimaryLayout();
@@ -15722,8 +15676,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void ClearStack();
 	
-	void ShowTop();
-	void CollapseTop();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -15736,6 +15688,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UUserWidget> PushedWidget = nullptr;
 
+	void ShowTop();
+	void CollapseTop();
 	// HELPER FUNCTIONS
 
 	
@@ -15835,10 +15789,6 @@ public:
 	void ClearLayer(FGameplayTag LayerTag);
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PushInitialScreens();
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void ShowFirstElementOfLayer(FGameplayTag LayerTag);
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void CollapseFirstElementOfLayer(FGameplayTag LayerTag);
 	
 
 private:
