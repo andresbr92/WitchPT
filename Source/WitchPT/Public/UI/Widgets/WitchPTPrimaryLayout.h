@@ -43,10 +43,6 @@ public:
 	void ClearLayer(FGameplayTag LayerTag);
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PushInitialScreens();
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void ShowFirstElementOfLayer(FGameplayTag LayerTag);
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void CollapseFirstElementOfLayer(FGameplayTag LayerTag);
 	
 
 private:

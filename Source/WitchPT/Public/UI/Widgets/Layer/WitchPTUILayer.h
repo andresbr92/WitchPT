@@ -30,8 +30,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void ClearStack();
 	
-	void ShowTop();
-	void CollapseTop();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -44,6 +42,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UUserWidget> PushedWidget = nullptr;
 
+	void ShowTop();
+	void CollapseTop();
 	// HELPER FUNCTIONS
 
 	

@@ -153,23 +153,3 @@ void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCurso
 		}
 	}
 }
-void UUIManagerSubsystem::ShowFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
-	{
-		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-		{
-			PrimaryLayout->ShowFirstElementOfLayer(LayerTag);
-		}
-	}
-}
-void UUIManagerSubsystem::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
-	{
-		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-		{
-			PrimaryLayout->CollapseFirstElementOfLayer(LayerTag);
-		}
-	}
-}

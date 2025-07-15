@@ -136,23 +136,3 @@ void UWitchPTPrimaryLayout::PushInitialScreens()
 		}
 	}
 }
-void UWitchPTPrimaryLayout::ShowFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (LayerTag.IsValid())
-	{
-		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
-		{
-			Layer->ShowTop();
-		}
-	}
-}
-void UWitchPTPrimaryLayout::CollapseFirstElementOfLayer(FGameplayTag LayerTag)
-{
-	if (LayerTag.IsValid())
-	{
-		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
-		{
-			Layer->CollapseTop();
-		}
-	}
-}

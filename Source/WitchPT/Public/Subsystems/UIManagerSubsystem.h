@@ -50,12 +50,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor = true, bool bUIOnlyInput = false);
-
-	// function to get the first element of a layer, and set is visibility to true
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void ShowFirstElementOfLayer(FGameplayTag LayerTag);
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void CollapseFirstElementOfLayer(FGameplayTag LayerTag);
 private:
 	
 	UWitchPTUserWidget* GetPrimaryLayout();
