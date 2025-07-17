@@ -19,6 +19,7 @@ class WITCHPT_API UInventoryWidgetController : public UWitchPTWidgetController
 	GENERATED_BODY()
 	
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UFUNCTION(BlueprintCallable)
 	virtual void BindCallbacksToDependencies() override;
 						

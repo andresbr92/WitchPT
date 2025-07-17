@@ -17,7 +17,7 @@ public:
 	virtual void NativeConstruct() override;
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetController(UObject* InWidgetController);
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UObject> WidgetController;
 
 	UFUNCTION(BlueprintImplementableEvent)

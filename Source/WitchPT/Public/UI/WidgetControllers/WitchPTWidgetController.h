@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Item/Interfaces/SetContextualObjectInterface.h"
 #include "UObject/Object.h"
 #include "WitchPTWidgetController.generated.h"
 
@@ -49,10 +50,11 @@ struct FWidgetControllerParams
 	
 };
 UCLASS()
-class WITCHPT_API UWitchPTWidgetController : public UObject
+class WITCHPT_API UWitchPTWidgetController : public UObject, public ISetContextualObjectInterface
 {
 	GENERATED_BODY()
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
 

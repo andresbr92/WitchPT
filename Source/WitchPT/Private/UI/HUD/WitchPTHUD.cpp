@@ -4,6 +4,7 @@
 #include "UI/HUD/WitchPTHUD.h"
 
 #include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Item/CauldronAltar.h"
 #include "Player/WitchPTPlayerController.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
@@ -26,6 +27,40 @@ void AWitchPTHUD::BeginPlay()
 		PrimaryLayout->AddToViewport();
 		
 	}
+}
+
+TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> AWitchPTHUD::CreateWidgetsControllers(
+	const TArray<TSubclassOf<UWitchPTWidgetController>>& ControllerClasses, const FWidgetControllerParams& WCParams,
+	UObject* ContextObject)
+{
+	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ResultPackage;
+	for (TSubclassOf ControllerClass : ControllerClasses)
+	{
+		if (!ControllerClass) continue;
+		
+		TObjectPtr<UWitchPTWidgetController>* FoundController = ControllerCache.Find(ControllerClass);
+		UWitchPTWidgetController* ControllerInstance = nullptr;
+
+		if (FoundController && *FoundController)
+		{
+			ControllerInstance = *FoundController;
+		}
+		else
+		{
+			ControllerInstance = NewObject<UWitchPTWidgetController>(this, ControllerClass);
+			ControllerCache.Add(ControllerClass, ControllerInstance);
+		}
+
+		
+		ControllerInstance->SetContextualObject(ContextObject);
+		ControllerInstance->SetWidgetControllerParams(WCParams);
+		ControllerInstance->BindCallbacksToDependencies();
+		ControllerInstance->BroadcastInitialValues();
+	
+		ResultPackage.Add(ControllerClass, ControllerInstance);
+	}
+
+	return ResultPackage;
 }
 
 UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByClass(TSubclassOf<UWitchPTUserWidget> WidgetClass)

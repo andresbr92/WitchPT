@@ -12,6 +12,11 @@
 #include "Player/WitchPTPlayerController.h"
 #include "Subsystems/WidgetCommunicatorSubsystem.h"
 
+void UQuickBarWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	Super::SetContextualObject(ContextualObject);
+}
+
 void UQuickBarWidgetController::BroadcastInitialValues()
 {
 

@@ -129,7 +129,7 @@ void UWitchPTPrimaryLayout::PushInitialScreens()
 				{
 					if (UUIManagerSubsystem* UIManagerSubsystem = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
 					{
-						UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
+						// UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
 					}
 				}
 			}

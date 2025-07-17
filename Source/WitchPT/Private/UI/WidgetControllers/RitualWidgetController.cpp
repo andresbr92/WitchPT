@@ -66,6 +66,17 @@ void URitualWidgetController::BindCallbacksToDependencies()
     UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Callbacks bound to dependencies"));
 }
 
+void URitualWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+    if (ContextualObject)
+    {
+        if (ARitualAltar* InRitualAltar = Cast<ARitualAltar>(ContextualObject))
+        {
+            SetRitualAltar(InRitualAltar);
+        }
+    }
+}
+
 void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
 {
     // Enhanced null safety and cleanup
@@ -87,17 +98,6 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
     // Assign the new altar
     RitualAltar = InRitualAltar;
     
-    // Rebind and broadcast if we have a valid altar
-    if (IsValid(RitualAltar))
-    {
-        BindCallbacksToDependencies();
-        BroadcastInitialValues();
-        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Set new ritual altar and bound callbacks"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Cleared ritual altar reference"));
-    }
 }
 
 bool URitualWidgetController::IsLocalPlayerActive() const

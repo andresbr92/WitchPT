@@ -3,6 +3,11 @@
 
 #include "UI/WidgetControllers/WitchPTWidgetController.h"
 
+void UWitchPTWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	ISetContextualObjectInterface::SetContextualObject(ContextualObject);
+}
+
 void UWitchPTWidgetController::SetWidgetControllerParams(const FWidgetControllerParams& WCParams)
 {
 	PlayerController = WCParams.PlayerController;

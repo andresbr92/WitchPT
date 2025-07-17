@@ -80,6 +80,12 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	
 
 }
+
+void UOverlayWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	Super::SetContextualObject(ContextualObject);
+}
+
 void UOverlayWidgetController::OnAssetTagReceivedFromGE(const FGameplayTagContainer& TagContainer) const
 {
 

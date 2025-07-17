@@ -27,6 +27,11 @@ class WITCHPT_API AWitchPTHUD : public AHUD
 	GENERATED_BODY()
 public:
 	virtual void BeginPlay() override;
+	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> CreateWidgetsControllers(
+		const TArray<TSubclassOf<UWitchPTWidgetController>>& ControllerClasses,
+		const FWidgetControllerParams& WCParams,
+		UObject* ContextObject
+		);
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<UUserWidget *> GameMenuWidgets;
@@ -93,6 +98,8 @@ private:
 	TSubclassOf<UWitchPTUserWidget> RitualWidgetClass;
 
 	// ----------------------- Widget Controllers -----------------------
+	UPROPERTY()
+	TMap<TSubclassOf<UWitchPTWidgetController>, TObjectPtr<UWitchPTWidgetController>> ControllerCache;
 	UPROPERTY()
 	TObjectPtr<UQuickBarWidgetController> QuickBarWidgetController;
 	UPROPERTY(EditAnywhere)

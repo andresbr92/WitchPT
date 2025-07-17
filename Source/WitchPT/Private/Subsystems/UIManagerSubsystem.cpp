@@ -4,7 +4,14 @@
 #include "Subsystems/UIManagerSubsystem.h"
 
 #include "GameplayTagContainer.h"
+#include "Item/CauldronAltar.h"
+#include "Item/RitualAltar.h"
+#include "Player/WitchPTPlayerState.h"
 #include "UI/HUD/WitchPTHUD.h"
+#include "UI/WidgetControllers/CauldronWidgetController.h"
+#include "UI/WidgetControllers/GenericContainerWidgetController.h"
+#include "UI/WidgetControllers/RitualWidgetController.h"
+#include "UI/WidgetControllers/WitchPTWidgetController.h"
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 
@@ -54,18 +61,41 @@ bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
 	return false;
 }
 
-UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, TSoftClassPtr<UUserWidget> WidgetClass)
+UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext)
 {
-	if (LayerTag.IsValid() && WidgetClass.IsValid())
+	if (LayerTag.IsValid() && ActivationContext.WidgetClass.IsValid())
 	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+		AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
+		APlayerController* PC = GetLocalPlayer()->GetPlayerController(GetWorld());
+	
+		if (!WitchPTHUD || !PC) return nullptr;
+	
+		AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+		UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+		UAttributeSet* AS = PS->GetAttributeSet();
+
+		const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
+		TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage =
+			WitchPTHUD->CreateWidgetsControllers(ActivationContext.RequiredControllers, WCParams, ActivationContext.ContextObject);
+		if (ControllerPackage.Num() == 0)
 		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-			{
-				return PrimaryLayout->PushContentToLayer(LayerTag, WidgetClass);
-				
-			}
+			UE_LOG(LogTemp, Warning, TEXT("UIManager: No controllers created."));
 		}
+		UGenericContainerWidgetController* ContainerController = NewObject<UGenericContainerWidgetController>();
+		ContainerController->SetControllerPackage(ControllerPackage);
+		
+		if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+		{
+			UUserWidget* PushedWidget = PrimaryLayout->PushContentToLayer(LayerTag, ActivationContext.WidgetClass);
+			if (PushedWidget)
+			{
+				UWitchPTUserWidget* WitchPtUserWidget = Cast<UWitchPTUserWidget>(PushedWidget);
+				WitchPtUserWidget->SetWidgetController(ContainerController);
+			}
+			return PushedWidget;
+			
+		}
+		
 		
 	}
 	return nullptr;
@@ -113,6 +143,9 @@ UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout()
 	}
 	return nullptr;
 }
+
+
+
 void UUIManagerSubsystem::FocusGame()
 {
 	// get player controller

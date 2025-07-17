@@ -18,6 +18,7 @@ class WITCHPT_API UQuickBarWidgetController : public UWitchPTWidgetController
 {
 	GENERATED_BODY()
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
 

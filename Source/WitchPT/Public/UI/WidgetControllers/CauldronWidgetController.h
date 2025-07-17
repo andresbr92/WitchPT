@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WitchPTWidgetController.h"
+#include "Item/Interfaces/SetContextualObjectInterface.h"
 #include "CauldronWidgetController.generated.h"
 
 class ACauldronAltar;
@@ -23,6 +24,7 @@ class WITCHPT_API UCauldronWidgetController : public UWitchPTWidgetController
 {
 	GENERATED_BODY()
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UCauldronWidgetController();
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;

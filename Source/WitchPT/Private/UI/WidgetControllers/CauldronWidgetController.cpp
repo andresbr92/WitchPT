@@ -5,13 +5,37 @@
 
 #include "Item/CauldronAltar.h"
 #include "Item/Components/CauldronCraftComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+void UCauldronWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	if (ContextualObject)
+	{
+		if (ACauldronAltar* InCauldronAltar = Cast<ACauldronAltar>(ContextualObject))
+		{
+			CauldronAltar = InCauldronAltar;
+		}
+	}
+}
 
 UCauldronWidgetController::UCauldronWidgetController()
 {
+	
 }
 
 void UCauldronWidgetController::BroadcastInitialValues()
 {
+	// find the CauldronAltar in the world
+	CauldronAltar = nullptr; // Initialize to null
+	if (GetWorld())
+	{
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACauldronAltar::StaticClass(), FoundActors);
+		if (FoundActors.Num() > 0)
+		{
+			CauldronAltar = Cast<ACauldronAltar>(FoundActors[0]);
+		}
+	}
 	if(CauldronAltar)
 	{
 		OnBaseIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredient());
@@ -26,7 +50,6 @@ void UCauldronWidgetController::BroadcastInitialValues()
 
 void UCauldronWidgetController::BindCallbacksToDependencies()
 {
-	Super::BindCallbacksToDependencies();
 	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
 	{
 		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);

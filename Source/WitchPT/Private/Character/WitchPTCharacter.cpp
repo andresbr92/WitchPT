@@ -88,7 +88,7 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 			// WitchPT_HUD->InitInventoryWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitCauldronWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitQuickBarWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
-			WitchPT_HUD->InitAllWidgets(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			// WitchPT_HUD->InitAllWidgets(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			
 		}
 	}

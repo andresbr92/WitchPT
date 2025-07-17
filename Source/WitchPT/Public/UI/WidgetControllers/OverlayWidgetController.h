@@ -46,6 +46,7 @@ public:
 	 *
 	 * @param TagContainer A container of gameplay tags associated with the triggered Gameplay Effect.
 	 */
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	void OnAssetTagReceivedFromGE(const FGameplayTagContainer& TagContainer) const;
 	virtual void BroadcastInitialValues() override;
 

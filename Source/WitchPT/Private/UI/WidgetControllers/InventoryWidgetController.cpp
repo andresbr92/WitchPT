@@ -14,6 +14,11 @@
 class UWitchPTEquipmentInstance;
 class UWitchPTEquipmentManagerComponent;
 
+void UInventoryWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	Super::SetContextualObject(ContextualObject);
+}
+
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
 	AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController);

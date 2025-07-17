@@ -3,13 +3,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UIManagerSubsystem.generated.h"
 
+class UWitchPTWidgetController;
 /**
  * 
  */
+USTRUCT(BlueprintType)
+struct FUIActivationContext
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftClassPtr<UUserWidget> WidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<TSubclassOf<class UWitchPTWidgetController>> RequiredControllers;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UObject> ContextObject = nullptr;
+};
 
 class UWitchPTUILayer;
 struct FGameplayTag;
@@ -31,7 +47,7 @@ public:
 	bool UnRegisterLayout(FGameplayTag LayerTag);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, TSoftClassPtr<UUserWidget> WidgetClass);
+	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void PopContentFromLayer(FGameplayTag LayerTag);

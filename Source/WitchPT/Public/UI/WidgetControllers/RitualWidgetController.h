@@ -6,6 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "WitchPTWidgetController.h"
 #include "Item/RitualAltar.h"
+#include "Item/Interfaces/SetContextualObjectInterface.h"
 #include "RitualWidgetController.generated.h"
 
 enum class ERitualInput : uint8;
@@ -43,7 +44,7 @@ public:
 	
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
-	
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	// Method to set the associated ritual altar
 	UFUNCTION(BlueprintCallable, Category = "Ritual")
 	void SetRitualAltar(ARitualAltar* InRitualAltar);
