@@ -4,46 +4,54 @@
 #include "UI/Widgets/Layer/WitchPTUILayer.h"
 
 #include "Components/Border.h"
+#include "Subsystems/UIManagerSubsystem.h"
 
-UUserWidget* UWitchPTUILayer::PushContent(TSoftClassPtr<UUserWidget> WidgetClass)
+UUserWidget* UWitchPTUILayer::PushContent(UUserWidget* InUserWidget)
 {
-	if (WidgetClass.IsValid())
+	if (IsValid(InUserWidget))
 	{
-		if(UClass* LoadedClass = WidgetClass.Get())
-		{
-			UUserWidget* NewUserWidgetInstance = CreateWidget<UUserWidget>(GetOwningPlayer(), LoadedClass);
-			PushedWidget = NewUserWidgetInstance;
-			CollapseTop();
-			Border->ClearChildren();
-			Stack.Add(NewUserWidgetInstance);
-			Border->AddChild(NewUserWidgetInstance);
-			ShowTop();
-			UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *NewUserWidgetInstance->GetName());
-			return PushedWidget;
-		}
+		PushedWidget = InUserWidget;
+		CollapseTop();
+		Border->ClearChildren();
+		Stack.Add(InUserWidget);
+		Border->AddChild(InUserWidget);
+		ShowTop();
+		UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *InUserWidget->GetName());
+		return PushedWidget;
+		
 	}
 	return nullptr;
 }
+
+
 
 void UWitchPTUILayer::PopContent()
 {
 	if (!Stack.IsEmpty())
 	{
-		TopWidget = GetTopScreen();
-		if (TopWidget)
+		UUserWidget* TopWidgetToRelease = Stack.Last();
+		if (TopWidgetToRelease)
 		{
-			TopWidget->RemoveFromParent();
-			// remove the top widget from the stack
-			Stack.RemoveAt(Stack.Num() - 1);
-			Border->ClearChildren();
-			TopWidget = GetTopScreen();
-			if (TopWidget)
+			TopWidgetToRelease->RemoveFromParent();
+			Stack.Pop();
+
+			// --- Cambio Clave ---
+			// En lugar de dejar que se destruya, lo devolvemos al pool.
+			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
 			{
-				TopWidget->SetVisibility(ESlateVisibility::Visible);
-				Border->AddChild(TopWidget);
+				if (UUIManagerSubsystem* UIManager = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
+				{
+					UIManager->ReleaseWidgetToPool(TopWidgetToRelease);
+				}
 			}
 		}
-		
+
+		// Mostrar el siguiente widget en el stack si existe
+		if (UUserWidget* NewTopWidget = GetTopScreen())
+		{
+			NewTopWidget->SetVisibility(ESlateVisibility::Visible);
+			Border->AddChild(NewTopWidget);
+		}
 	}
 }
 

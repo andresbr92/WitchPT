@@ -18,7 +18,7 @@ class WITCHPT_API UWitchPTUILayer : public UWitchPTUserWidget
 public:
 	
 	UFUNCTION(Blueprintable, Category= "UI Layer")
-	UUserWidget* PushContent(TSoftClassPtr<UUserWidget> WidgetClass);
+	UUserWidget* PushContent(UUserWidget* InUserWidget);
 	
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void PopContent();

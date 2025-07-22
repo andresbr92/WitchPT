@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WitchPTUserWidget.h"
 #include "GameplayTagContainer.h"
+#include "Subsystems/UIManagerSubsystem.h"
 #include "WitchPTPrimaryLayout.generated.h"
 
 class UWitchPTUILayer;
@@ -20,7 +21,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Layout")
-	TMap<FGameplayTag, TSoftClassPtr<UUserWidget>> InitialScreens;
+	TMap<FGameplayTag, FUIActivationContext> InitialScreens;
 
 	// ------------------------------- Main functions ------------------------------- //
 	UFUNCTION(BlueprintCallable, Category = "UI")
@@ -30,7 +31,7 @@ public:
 	bool UnRegisterLayer(FGameplayTag LayerTag);
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, TSoftClassPtr<UUserWidget> WidgetClass);
+	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PopContentFromLayer(FGameplayTag LayerTag);

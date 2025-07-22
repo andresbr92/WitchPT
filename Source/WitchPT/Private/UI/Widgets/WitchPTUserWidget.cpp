@@ -14,3 +14,12 @@ void UWitchPTUserWidget::SetWidgetController(UObject* InWidgetController)
 	WidgetController = InWidgetController;
 	OnWidgetControllerSet();
 }
+
+void UWitchPTUserWidget::SetPoolingInfo(const TSubclassOf<UUserWidget>& InPoolKey, UObject* InContextObject)
+{
+	PoolKey = InPoolKey;
+	if (InContextObject != nullptr)
+	{
+		LastContextObject = InContextObject;
+	}
+}

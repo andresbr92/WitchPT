@@ -12,6 +12,13 @@ class UWitchPTWidgetController;
 /**
  * 
  */
+USTRUCT()
+struct FWidgetPool
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	TArray<TObjectPtr<UUserWidget>> AvailableWidgets;
+};
 USTRUCT(BlueprintType)
 struct FUIActivationContext
 {
@@ -49,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext);
 
+	void ReleaseWidgetToPool(UUserWidget* Widget);
+	void ClearAllPools();
+
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void PopContentFromLayer(FGameplayTag LayerTag);
 
@@ -69,5 +79,8 @@ public:
 private:
 	
 	UWitchPTUserWidget* GetPrimaryLayout();
+
+	UPROPERTY()
+	TMap<TSubclassOf<UUserWidget>, FWidgetPool> WidgetPools;
 	
 };

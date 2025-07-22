@@ -54,14 +54,13 @@ bool UWitchPTPrimaryLayout::UnRegisterLayer(FGameplayTag LayerTag)
 	}
 	return false;
 }
-UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag,
-	TSoftClassPtr<UUserWidget> WidgetClass)
+UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget)
 {
-	if (LayerTag.IsValid() && WidgetClass.IsValid())
+	if (LayerTag.IsValid() && IsValid(InUserWidget))
 	{
 		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
 		{
-			UUserWidget* PushedWidget = Layer->PushContent(WidgetClass);
+			UUserWidget* PushedWidget = Layer->PushContent(InUserWidget);
 			return PushedWidget;
 		}
 	}
@@ -123,14 +122,11 @@ void UWitchPTPrimaryLayout::PushInitialScreens()
 	{
 		for (auto & ScreenPair : InitialScreens)
 		{
-			if (ScreenPair.Value.IsValid())
+			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
 			{
-				if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
+				if (UUIManagerSubsystem* UIManagerSubsystem = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
 				{
-					if (UUIManagerSubsystem* UIManagerSubsystem = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
-					{
-						// UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
-					}
+					UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
 				}
 			}
 		}
