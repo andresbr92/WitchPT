@@ -19,6 +19,25 @@ void UInventoryWidgetController::SetContextualObject(UObject* ContextualObject)
 	Super::SetContextualObject(ContextualObject);
 }
 
+void UInventoryWidgetController::BroadcastInitialValues()
+{
+	// if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	// {
+	// 	if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+	// 	{
+	// 		TArray<UWitchPTInventoryItemInstance*> AllItems = InventoryManager->GetAllItems();
+	// 		for (UWitchPTInventoryItemInstance* ItemInstance : AllItems)
+	// 		{
+	// 			if (ItemInstance)
+	// 			{
+	// 				OnItemAddedDelegate.Broadcast(ItemInstance);
+	// 			}
+	// 		}
+	// 	}
+	// 	
+	// }
+}
+
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
 	AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController);
@@ -41,6 +60,20 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 			});
 		}
 	}
+}
+
+void UInventoryWidgetController::UnbindCallbacksFromDependencies()
+{
+	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	{
+		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+		{
+			InventoryManager->OnItemAdded.RemoveAll(this);
+			InventoryManager->OnItemStackChanged.RemoveAll(this);
+			InventoryManager->OnItemRemoved.RemoveAll(this);
+		}
+	}
+	
 }
 
 void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)

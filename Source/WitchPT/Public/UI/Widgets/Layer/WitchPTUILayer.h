@@ -28,6 +28,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	FText GetStackListNames();
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
+	FText GetStackWidgetControllerName();
+	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void ClearStack();
 	
 

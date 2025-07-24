@@ -22,6 +22,9 @@ public:
 	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UFUNCTION(BlueprintCallable)
 	virtual void BindCallbacksToDependencies() override;
+	virtual void UnbindCallbacksFromDependencies() override;
+	
+	virtual void BroadcastInitialValues() override;
 						
 	/**
 	 * Removes a stack or specified amount from an inventory item instance

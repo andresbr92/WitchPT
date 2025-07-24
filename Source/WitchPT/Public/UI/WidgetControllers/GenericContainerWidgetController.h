@@ -19,6 +19,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Controllers", meta = (DeterminesOutputType = "ControllerClass"))
 	UWitchPTWidgetController* GetControllerByClass(TSubclassOf<UWitchPTWidgetController> ControllerClass);
 
+	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> GetControllerPackage() const { return ControllerPackage; }
+
 private:
 	UPROPERTY()
 	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage;

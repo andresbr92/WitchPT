@@ -3,6 +3,17 @@
 
 #include "UI/WidgetControllers/WitchPTWidgetController.h"
 
+void UWitchPTWidgetController::Activate()
+{
+	BindCallbacksToDependencies();
+	BroadcastInitialValues();
+}
+
+void UWitchPTWidgetController::Deactivate()
+{
+	UnbindCallbacksFromDependencies();
+}
+
 void UWitchPTWidgetController::SetContextualObject(UObject* ContextualObject)
 {
 	ISetContextualObjectInterface::SetContextualObject(ContextualObject);
@@ -21,5 +32,9 @@ void UWitchPTWidgetController::BroadcastInitialValues()
 }
 
 void UWitchPTWidgetController::BindCallbacksToDependencies()
+{
+}
+
+void UWitchPTWidgetController::UnbindCallbacksFromDependencies()
 {
 }

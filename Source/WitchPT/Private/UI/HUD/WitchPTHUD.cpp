@@ -50,12 +50,9 @@ TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> AWitchPTH
 			ControllerInstance = NewObject<UWitchPTWidgetController>(this, ControllerClass);
 			ControllerCache.Add(ControllerClass, ControllerInstance);
 		}
-
 		
-		ControllerInstance->SetContextualObject(ContextObject);
 		ControllerInstance->SetWidgetControllerParams(WCParams);
-		ControllerInstance->BindCallbacksToDependencies();
-		ControllerInstance->BroadcastInitialValues();
+		ControllerInstance->SetContextualObject(ContextObject);
 	
 		ResultPackage.Add(ControllerClass, ControllerInstance);
 	}

@@ -75,6 +75,23 @@ FText UWitchPTUILayer::GetStackListNames()
 	return FText::FromString(ListNames);
 }
 
+FText UWitchPTUILayer::GetStackWidgetControllerName()
+{
+	FString ListNames;
+	for (int i = Stack.Num() - 1; i >= 0; i--)
+	{
+		UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Stack[i]);
+		// also print his WidgetController name
+		if (WitchWidget && WitchWidget->WidgetController)
+		{
+			ListNames += WitchWidget->WidgetController->GetClass()->GetName() + " - ";
+			
+		}
+		
+	}
+	return FText::FromString(ListNames);
+}
+
 void UWitchPTUILayer::ClearStack()
 {
 	for (auto & Widget : Stack)

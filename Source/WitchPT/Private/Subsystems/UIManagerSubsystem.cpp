@@ -63,105 +63,105 @@ bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
 
 UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext)
 {
-	if (LayerTag.IsValid() && ActivationContext.WidgetClass.IsValid())
-	{
-		UUserWidget* FoundOrCreatedWidget = nullptr;
-		TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
-		AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
-		UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout();
-		
-		// ----------------------------------- FIND THE WIDGET ------------------------------------
-		FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
-		if (Pool && Pool->AvailableWidgets.Num() > 0)
-		{
-			
-			for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
-			{
-				UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
-				if (PooledWidget)
-				{
-					
-					if (PooledWidget->LastContextObject == ActivationContext.ContextObject)
-					{
-						// ¡Match perfecto! Lo reutilizamos.
-						FoundOrCreatedWidget = PooledWidget;
-						Pool->AvailableWidgets.RemoveAt(i); // Lo sacamos del pool
-						
-						PrimaryLayout->PushContentToLayer(LayerTag, FoundOrCreatedWidget);
-						UE_LOG(LogTemp, Log, TEXT("Reusing widget for class:  %s"), *WidgetClass->GetName());
-						return FoundOrCreatedWidget;
-					}
-				}
-			}
-		}
-		// ----------------------------------- CREATE A NEW WIDGET ------------------------------------
-		if (!FoundOrCreatedWidget)
-		{
-			
-			
-			APlayerController* PC = GetLocalPlayer()->GetPlayerController(GetWorld());
-		
-			if (!WitchPTHUD || !PC) return nullptr;
-		
-			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-			UAttributeSet* AS = PS->GetAttributeSet();
+	 if (!LayerTag.IsValid() || ActivationContext.WidgetClass.IsNull())
+    {
+        return nullptr;
+    }
 
-			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
-			TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage =
-				WitchPTHUD->CreateWidgetsControllers(ActivationContext.RequiredControllers, WCParams, ActivationContext.ContextObject);
-			if (ControllerPackage.Num() == 0)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("UIManager: No controllers created."));
-			}
-			UGenericContainerWidgetController* ContainerController = NewObject<UGenericContainerWidgetController>();
-			ContainerController->SetControllerPackage(ControllerPackage);
-			FoundOrCreatedWidget = CreateWidget<UUserWidget>(PC, WidgetClass);
-			
-			if (PrimaryLayout)
-			{
-				PrimaryLayout->PushContentToLayer(LayerTag, FoundOrCreatedWidget);
-				
-				UWitchPTUserWidget* WitchPtUserWidget = Cast<UWitchPTUserWidget>(FoundOrCreatedWidget);
-				WitchPtUserWidget->SetPoolingInfo(WidgetClass, ActivationContext.ContextObject);
-				WitchPtUserWidget->SetWidgetController(ContainerController);
-				
-				return FoundOrCreatedWidget;
-			}
-		}
-	}
-	return nullptr;
+    TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
+    if (!WidgetClass) return nullptr;
+
+    UWitchPTUserWidget* TargetWidget = nullptr;
+
+    // --- FASE 1: ADQUISICIÓN DEL WIDGET (POOL O NUEVO) ---
+    FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
+    if (Pool && Pool->AvailableWidgets.Num() > 0)
+    {
+        // Busca un widget compatible
+        for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
+        {
+            UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
+            if (PooledWidget && PooledWidget->LastContextObject == ActivationContext.ContextObject)
+            {
+                TargetWidget = PooledWidget;
+                Pool->AvailableWidgets.RemoveAt(i);
+                UE_LOG(LogTemp, Log, TEXT("Reusing widget for class: %s"), *WidgetClass->GetName());
+                break;
+            }
+        }
+    }
+
+    if (!TargetWidget)
+    {
+        // No se encontró uno compatible, o el pool está vacío. Creamos uno nuevo.
+        TargetWidget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass);
+        UE_LOG(LogTemp, Log, TEXT("Creating new widget for class: %s"), *WidgetClass->GetName());
+    }
+
+    if (!TargetWidget)
+    {
+        return nullptr;
+    }
+
+    // --- FASE 2: CREACIÓN Y CABLEADO DE CONTROLADORES ---
+    AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
+    APlayerController* PC = GetLocalPlayer()->GetPlayerController(GetWorld());
+    if (!WitchPTHUD || !PC) return nullptr;
+
+    AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+    const FWidgetControllerParams WCParams(PC, PS, PS->GetAbilitySystemComponent(), PS->GetAttributeSet());
+
+    // La fábrica ahora solo crea y prepara los controladores, sin activarlos.
+    TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage =
+        WitchPTHUD->CreateWidgetsControllers(ActivationContext.RequiredControllers, WCParams, ActivationContext.ContextObject);
+
+    // Creamos el contenedor
+    UGenericContainerWidgetController* ContainerController = NewObject<UGenericContainerWidgetController>();
+    ContainerController->SetControllerPackage(ControllerPackage);
+
+    // Cableamos: Inyectamos el contenedor en la View. Esto dispara el OnWidgetControllerSet en BP.
+    TargetWidget->SetPoolingInfo(WidgetClass, ActivationContext.ContextObject);
+    TargetWidget->SetWidgetController(ContainerController);
+    
+    // --- FASE 3: ACTIVACIÓN DE CONTROLADORES ---
+    // Ahora que la UI está completamente conectada, activamos los controladores.
+    for (auto const& [Key, Val] : ControllerPackage)
+    {
+        if (Val)
+        {
+            Val->Activate();
+        }
+    }
+
+    // --- FASE 4: MOSTRAR EN PANTALLA ---
+    if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+    {
+        PrimaryLayout->PushContentToLayer(LayerTag, TargetWidget);
+    }
+    
+    return TargetWidget;
 }
 
 void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
 {
-	if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
-	{
-		TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
-		if (Key)
-		{
-			// Opcional: Lógica de destrucción si el contexto es "sucio"
-			if (WitchWidget->LastContextObject != nullptr)
-			{
-				// Si decidimos que los widgets con contexto NUNCA se reutilizan si el contexto puede cambiar,
-				// los destruimos aquí en lugar de devolverlos al pool.
-				// Esto es una decisión de diseño, el enfoque híbrido es más óptimo.
-				// Para este ejemplo, los devolvemos al pool.
-			}
-
-			FWidgetPool& Pool = WidgetPools.FindOrAdd(Key);
-			Pool.AvailableWidgets.Add(WitchWidget);
-			UE_LOG(LogTemp, Log, TEXT("Devolviendo widget al pool para la clase %s"), *Key->GetName());
-			// Print all available widgets in the pool for debugging
-			for (UUserWidget* AvailableWidget : Pool.AvailableWidgets)
-			{
-				if (AvailableWidget)
-				{
-					UE_LOG(LogTemp, Log, TEXT("Available widget: %s"), *AvailableWidget->GetName());
-				}
-			}
-		}
-	}
+	 if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
+    {
+        // Desactivamos los controladores antes de guardarlo.
+        if (UGenericContainerWidgetController* Container = Cast<UGenericContainerWidgetController>(WitchWidget->WidgetController))
+        {
+            // Opcional pero recomendado: un método para obtener el paquete
+            TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage = Container->GetControllerPackage();
+            for(auto const& [Key, Val] : ControllerPackage) { Val->Deactivate(); }
+        }
+        
+        TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
+        if (Key)
+        {
+            FWidgetPool& Pool = WidgetPools.FindOrAdd(Key);
+            Pool.AvailableWidgets.Add(WitchWidget);
+            UE_LOG(LogTemp, Log, TEXT("Returning widget to pool for class %s"), *Key->GetName());
+        }
+    }
 }
 
 void UUIManagerSubsystem::ClearAllPools()

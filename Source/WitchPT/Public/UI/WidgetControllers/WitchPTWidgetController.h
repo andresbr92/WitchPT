@@ -54,14 +54,19 @@ class WITCHPT_API UWitchPTWidgetController : public UObject, public ISetContextu
 {
 	GENERATED_BODY()
 public:
+	void Activate();
+	void Deactivate();
+	
 	virtual void SetContextualObject(UObject* ContextualObject) override;
-	UFUNCTION(BlueprintCallable)
+	
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
 
-	UFUNCTION(BlueprintCallable)
+	
+protected:
 	virtual void BroadcastInitialValues();
 	virtual void BindCallbacksToDependencies();
-protected:
+	virtual void UnbindCallbacksFromDependencies();
+	
 	UPROPERTY(BlueprintReadOnly, Category= "WidgetController")
 	TObjectPtr<APlayerController> PlayerController;
 	

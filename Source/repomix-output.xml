@@ -88,6 +88,7 @@ WitchPT/Private/Item/CauldronAltar.cpp
 WitchPT/Private/Item/CauldronPosition.cpp
 WitchPT/Private/Item/Components/CauldronCraftComponent.cpp
 WitchPT/Private/Item/Ingredient/IngredientBase.cpp
+WitchPT/Private/Item/Interfaces/SetContextualObjectInterface.cpp
 WitchPT/Private/Item/Item.cpp
 WitchPT/Private/Item/MechanicsInterface.cpp
 WitchPT/Private/Item/PositionInterface.cpp
@@ -101,6 +102,7 @@ WitchPT/Private/Subsystems/UIManagerSubsystem.cpp
 WitchPT/Private/Subsystems/WidgetCommunicatorSubsystem.cpp
 WitchPT/Private/UI/HUD/WitchPTHUD.cpp
 WitchPT/Private/UI/WidgetControllers/CauldronWidgetController.cpp
+WitchPT/Private/UI/WidgetControllers/GenericContainerWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/InventoryWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/OverlayWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/QuickBarWidgetController.cpp
@@ -167,6 +169,7 @@ WitchPT/Public/Item/CauldronAltar.h
 WitchPT/Public/Item/CauldronPosition.h
 WitchPT/Public/Item/Components/CauldronCraftComponent.h
 WitchPT/Public/Item/Ingredient/IngredientBase.h
+WitchPT/Public/Item/Interfaces/SetContextualObjectInterface.h
 WitchPT/Public/Item/Item.h
 WitchPT/Public/Item/MechanicsInterface.h
 WitchPT/Public/Item/PositionInterface.h
@@ -182,6 +185,7 @@ WitchPT/Public/Systems/GameplayTagStack.cpp
 WitchPT/Public/Systems/GameplayTagStack.h
 WitchPT/Public/UI/HUD/WitchPTHUD.h
 WitchPT/Public/UI/WidgetControllers/CauldronWidgetController.h
+WitchPT/Public/UI/WidgetControllers/GenericContainerWidgetController.h
 WitchPT/Public/UI/WidgetControllers/InventoryWidgetController.h
 WitchPT/Public/UI/WidgetControllers/OverlayWidgetController.h
 WitchPT/Public/UI/WidgetControllers/QuickBarWidgetController.h
@@ -2531,7 +2535,7 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 			// WitchPT_HUD->InitInventoryWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitCauldronWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitQuickBarWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
-			WitchPT_HUD->InitAllWidgets(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			// WitchPT_HUD->InitAllWidgets(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			
 		}
 	}
@@ -6785,6 +6789,19 @@ FItemManifest AIngredientBase::GetPickupInventory() const
 }
 </file>
 
+<file path="WitchPT/Private/Item/Interfaces/SetContextualObjectInterface.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Item/Interfaces/SetContextualObjectInterface.h"
+
+
+// Add default functionality here for any ISetContextualObjectInterface functions that are not pure virtual.
+void ISetContextualObjectInterface::SetContextualObject(UObject* ContextualObject)
+{
+}
+</file>
+
 <file path="WitchPT/Private/Item/Item.cpp">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -8605,7 +8622,14 @@ UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 #include "Subsystems/UIManagerSubsystem.h"
 
 #include "GameplayTagContainer.h"
+#include "Item/CauldronAltar.h"
+#include "Item/RitualAltar.h"
+#include "Player/WitchPTPlayerState.h"
 #include "UI/HUD/WitchPTHUD.h"
+#include "UI/WidgetControllers/CauldronWidgetController.h"
+#include "UI/WidgetControllers/GenericContainerWidgetController.h"
+#include "UI/WidgetControllers/RitualWidgetController.h"
+#include "UI/WidgetControllers/WitchPTWidgetController.h"
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 
@@ -8655,21 +8679,124 @@ bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
 	return false;
 }
 
-UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, TSoftClassPtr<UUserWidget> WidgetClass)
+UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext)
 {
-	if (LayerTag.IsValid() && WidgetClass.IsValid())
+	if (LayerTag.IsValid() && ActivationContext.WidgetClass.IsValid())
 	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+		UUserWidget* FoundOrCreatedWidget = nullptr;
+		TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
+		AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
+		UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout();
+		
+		// ----------------------------------- FIND THE WIDGET ------------------------------------
+		FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
+		if (Pool && Pool->AvailableWidgets.Num() > 0)
 		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+			
+			for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
 			{
-				return PrimaryLayout->PushContentToLayer(LayerTag, WidgetClass);
-				
+				UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
+				if (PooledWidget)
+				{
+					
+					if (PooledWidget->LastContextObject == ActivationContext.ContextObject)
+					{
+						// ¡Match perfecto! Lo reutilizamos.
+						FoundOrCreatedWidget = PooledWidget;
+						Pool->AvailableWidgets.RemoveAt(i); // Lo sacamos del pool
+						
+						PrimaryLayout->PushContentToLayer(LayerTag, FoundOrCreatedWidget);
+						UE_LOG(LogTemp, Log, TEXT("Reusing widget for class:  %s"), *WidgetClass->GetName());
+						return FoundOrCreatedWidget;
+					}
+				}
 			}
 		}
+		// ----------------------------------- CREATE A NEW WIDGET ------------------------------------
+		if (!FoundOrCreatedWidget)
+		{
+			
+			
+			APlayerController* PC = GetLocalPlayer()->GetPlayerController(GetWorld());
 		
+			if (!WitchPTHUD || !PC) return nullptr;
+		
+			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+
+			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
+			TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage =
+				WitchPTHUD->CreateWidgetsControllers(ActivationContext.RequiredControllers, WCParams, ActivationContext.ContextObject);
+			if (ControllerPackage.Num() == 0)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UIManager: No controllers created."));
+			}
+			UGenericContainerWidgetController* ContainerController = NewObject<UGenericContainerWidgetController>();
+			ContainerController->SetControllerPackage(ControllerPackage);
+			FoundOrCreatedWidget = CreateWidget<UUserWidget>(PC, WidgetClass);
+			
+			if (PrimaryLayout)
+			{
+				PrimaryLayout->PushContentToLayer(LayerTag, FoundOrCreatedWidget);
+				
+				UWitchPTUserWidget* WitchPtUserWidget = Cast<UWitchPTUserWidget>(FoundOrCreatedWidget);
+				WitchPtUserWidget->SetPoolingInfo(WidgetClass, ActivationContext.ContextObject);
+				WitchPtUserWidget->SetWidgetController(ContainerController);
+				
+				return FoundOrCreatedWidget;
+			}
+		}
 	}
 	return nullptr;
+}
+
+void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
+{
+	if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
+	{
+		TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
+		if (Key)
+		{
+			// Opcional: Lógica de destrucción si el contexto es "sucio"
+			if (WitchWidget->LastContextObject != nullptr)
+			{
+				// Si decidimos que los widgets con contexto NUNCA se reutilizan si el contexto puede cambiar,
+				// los destruimos aquí en lugar de devolverlos al pool.
+				// Esto es una decisión de diseño, el enfoque híbrido es más óptimo.
+				// Para este ejemplo, los devolvemos al pool.
+			}
+
+			FWidgetPool& Pool = WidgetPools.FindOrAdd(Key);
+			Pool.AvailableWidgets.Add(WitchWidget);
+			UE_LOG(LogTemp, Log, TEXT("Devolviendo widget al pool para la clase %s"), *Key->GetName());
+			// Print all available widgets in the pool for debugging
+			for (UUserWidget* AvailableWidget : Pool.AvailableWidgets)
+			{
+				if (AvailableWidget)
+				{
+					UE_LOG(LogTemp, Log, TEXT("Available widget: %s"), *AvailableWidget->GetName());
+				}
+			}
+		}
+	}
+}
+
+void UUIManagerSubsystem::ClearAllPools()
+{
+	for (auto& Pair : WidgetPools)
+	{
+		for (UUserWidget* Widget : Pair.Value.AvailableWidgets)
+		{
+			if (Widget)
+			{
+				Widget->RemoveFromParent();
+				Widget->MarkAsGarbage();
+			}
+		}
+	}
+	WidgetPools.Empty();
+	UE_LOG(LogTemp, Log, TEXT("All widget pools have been cleaned."));
 }
 
 void UUIManagerSubsystem::PopContentFromLayer(FGameplayTag LayerTag)
@@ -8714,6 +8841,9 @@ UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout()
 	}
 	return nullptr;
 }
+
+
+
 void UUIManagerSubsystem::FocusGame()
 {
 	// get player controller
@@ -8775,6 +8905,7 @@ void UWidgetCommunicatorSubsystem::OnItemDragged(UWitchPTInventoryItemInstance* 
 #include "UI/HUD/WitchPTHUD.h"
 
 #include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Item/CauldronAltar.h"
 #include "Player/WitchPTPlayerController.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
@@ -8797,6 +8928,40 @@ void AWitchPTHUD::BeginPlay()
 		PrimaryLayout->AddToViewport();
 		
 	}
+}
+
+TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> AWitchPTHUD::CreateWidgetsControllers(
+	const TArray<TSubclassOf<UWitchPTWidgetController>>& ControllerClasses, const FWidgetControllerParams& WCParams,
+	UObject* ContextObject)
+{
+	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ResultPackage;
+	for (TSubclassOf ControllerClass : ControllerClasses)
+	{
+		if (!ControllerClass) continue;
+		
+		TObjectPtr<UWitchPTWidgetController>* FoundController = ControllerCache.Find(ControllerClass);
+		UWitchPTWidgetController* ControllerInstance = nullptr;
+
+		if (FoundController && *FoundController)
+		{
+			ControllerInstance = *FoundController;
+		}
+		else
+		{
+			ControllerInstance = NewObject<UWitchPTWidgetController>(this, ControllerClass);
+			ControllerCache.Add(ControllerClass, ControllerInstance);
+		}
+
+		
+		ControllerInstance->SetContextualObject(ContextObject);
+		ControllerInstance->SetWidgetControllerParams(WCParams);
+		ControllerInstance->BindCallbacksToDependencies();
+		ControllerInstance->BroadcastInitialValues();
+	
+		ResultPackage.Add(ControllerClass, ControllerInstance);
+	}
+
+	return ResultPackage;
 }
 
 UWitchPTUserWidget* AWitchPTHUD::GetMenuWidgetByClass(TSubclassOf<UWitchPTUserWidget> WidgetClass)
@@ -9171,13 +9336,37 @@ UWitchPTUserWidget* AWitchPTHUD::GetInventoryUserWidget() const
 
 #include "Item/CauldronAltar.h"
 #include "Item/Components/CauldronCraftComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+void UCauldronWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	if (ContextualObject)
+	{
+		if (ACauldronAltar* InCauldronAltar = Cast<ACauldronAltar>(ContextualObject))
+		{
+			CauldronAltar = InCauldronAltar;
+		}
+	}
+}
 
 UCauldronWidgetController::UCauldronWidgetController()
 {
+	
 }
 
 void UCauldronWidgetController::BroadcastInitialValues()
 {
+	// find the CauldronAltar in the world
+	CauldronAltar = nullptr; // Initialize to null
+	if (GetWorld())
+	{
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACauldronAltar::StaticClass(), FoundActors);
+		if (FoundActors.Num() > 0)
+		{
+			CauldronAltar = Cast<ACauldronAltar>(FoundActors[0]);
+		}
+	}
 	if(CauldronAltar)
 	{
 		OnBaseIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredient());
@@ -9192,7 +9381,6 @@ void UCauldronWidgetController::BroadcastInitialValues()
 
 void UCauldronWidgetController::BindCallbacksToDependencies()
 {
-	Super::BindCallbacksToDependencies();
 	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
 	{
 		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
@@ -9256,6 +9444,29 @@ void UCauldronWidgetController::HandleModifierIngredientIconSet(TSubclassOf<UUse
 }
 </file>
 
+<file path="WitchPT/Private/UI/WidgetControllers/GenericContainerWidgetController.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/WidgetControllers/GenericContainerWidgetController.h"
+
+void UGenericContainerWidgetController::SetControllerPackage(
+	const TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*>& InControllers)
+{
+	ControllerPackage = InControllers;
+}
+
+UWitchPTWidgetController* UGenericContainerWidgetController::GetControllerByClass(
+	TSubclassOf<UWitchPTWidgetController> ControllerClass)
+{
+	if (ControllerClass && ControllerPackage.Contains(ControllerClass))
+	{
+		return ControllerPackage[ControllerClass];
+	}
+	return nullptr;
+}
+</file>
+
 <file path="WitchPT/Private/UI/WidgetControllers/InventoryWidgetController.cpp">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -9272,6 +9483,11 @@ void UCauldronWidgetController::HandleModifierIngredientIconSet(TSubclassOf<UUse
 
 class UWitchPTEquipmentInstance;
 class UWitchPTEquipmentManagerComponent;
+
+void UInventoryWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	Super::SetContextualObject(ContextualObject);
+}
 
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
@@ -9460,6 +9676,12 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	
 
 }
+
+void UOverlayWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	Super::SetContextualObject(ContextualObject);
+}
+
 void UOverlayWidgetController::OnAssetTagReceivedFromGE(const FGameplayTagContainer& TagContainer) const
 {
 
@@ -9480,6 +9702,11 @@ void UOverlayWidgetController::OnAssetTagReceivedFromGE(const FGameplayTagContai
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
 #include "Subsystems/WidgetCommunicatorSubsystem.h"
+
+void UQuickBarWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	Super::SetContextualObject(ContextualObject);
+}
 
 void UQuickBarWidgetController::BroadcastInitialValues()
 {
@@ -9616,6 +9843,17 @@ void URitualWidgetController::BindCallbacksToDependencies()
     UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Callbacks bound to dependencies"));
 }
 
+void URitualWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+    if (ContextualObject)
+    {
+        if (ARitualAltar* InRitualAltar = Cast<ARitualAltar>(ContextualObject))
+        {
+            SetRitualAltar(InRitualAltar);
+        }
+    }
+}
+
 void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
 {
     // Enhanced null safety and cleanup
@@ -9637,17 +9875,6 @@ void URitualWidgetController::SetRitualAltar(ARitualAltar* InRitualAltar)
     // Assign the new altar
     RitualAltar = InRitualAltar;
     
-    // Rebind and broadcast if we have a valid altar
-    if (IsValid(RitualAltar))
-    {
-        BindCallbacksToDependencies();
-        BroadcastInitialValues();
-        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Set new ritual altar and bound callbacks"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Log, TEXT("[RitualWidgetController] Cleared ritual altar reference"));
-    }
 }
 
 bool URitualWidgetController::IsLocalPlayerActive() const
@@ -9759,6 +9986,11 @@ void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
 
 
 #include "UI/WidgetControllers/WitchPTWidgetController.h"
+
+void UWitchPTWidgetController::SetContextualObject(UObject* ContextualObject)
+{
+	ISetContextualObjectInterface::SetContextualObject(ContextualObject);
+}
 
 void UWitchPTWidgetController::SetWidgetControllerParams(const FWidgetControllerParams& WCParams)
 {
@@ -9904,46 +10136,54 @@ void URitualUserWidget::ResetWidgetState()
 #include "UI/Widgets/Layer/WitchPTUILayer.h"
 
 #include "Components/Border.h"
+#include "Subsystems/UIManagerSubsystem.h"
 
-UUserWidget* UWitchPTUILayer::PushContent(TSoftClassPtr<UUserWidget> WidgetClass)
+UUserWidget* UWitchPTUILayer::PushContent(UUserWidget* InUserWidget)
 {
-	if (WidgetClass.IsValid())
+	if (IsValid(InUserWidget))
 	{
-		if(UClass* LoadedClass = WidgetClass.Get())
-		{
-			UUserWidget* NewUserWidgetInstance = CreateWidget<UUserWidget>(GetOwningPlayer(), LoadedClass);
-			PushedWidget = NewUserWidgetInstance;
-			CollapseTop();
-			Border->ClearChildren();
-			Stack.Add(NewUserWidgetInstance);
-			Border->AddChild(NewUserWidgetInstance);
-			ShowTop();
-			UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *NewUserWidgetInstance->GetName());
-			return PushedWidget;
-		}
+		PushedWidget = InUserWidget;
+		CollapseTop();
+		Border->ClearChildren();
+		Stack.Add(InUserWidget);
+		Border->AddChild(InUserWidget);
+		ShowTop();
+		UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *InUserWidget->GetName());
+		return PushedWidget;
+		
 	}
 	return nullptr;
 }
+
+
 
 void UWitchPTUILayer::PopContent()
 {
 	if (!Stack.IsEmpty())
 	{
-		TopWidget = GetTopScreen();
-		if (TopWidget)
+		UUserWidget* TopWidgetToRelease = Stack.Last();
+		if (TopWidgetToRelease)
 		{
-			TopWidget->RemoveFromParent();
-			// remove the top widget from the stack
-			Stack.RemoveAt(Stack.Num() - 1);
-			Border->ClearChildren();
-			TopWidget = GetTopScreen();
-			if (TopWidget)
+			TopWidgetToRelease->RemoveFromParent();
+			Stack.Pop();
+
+			// --- Cambio Clave ---
+			// En lugar de dejar que se destruya, lo devolvemos al pool.
+			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
 			{
-				TopWidget->SetVisibility(ESlateVisibility::Visible);
-				Border->AddChild(TopWidget);
+				if (UUIManagerSubsystem* UIManager = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
+				{
+					UIManager->ReleaseWidgetToPool(TopWidgetToRelease);
+				}
 			}
 		}
-		
+
+		// Mostrar el siguiente widget en el stack si existe
+		if (UUserWidget* NewTopWidget = GetTopScreen())
+		{
+			NewTopWidget->SetVisibility(ESlateVisibility::Visible);
+			Border->AddChild(NewTopWidget);
+		}
 	}
 }
 
@@ -10070,14 +10310,13 @@ bool UWitchPTPrimaryLayout::UnRegisterLayer(FGameplayTag LayerTag)
 	}
 	return false;
 }
-UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag,
-	TSoftClassPtr<UUserWidget> WidgetClass)
+UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget)
 {
-	if (LayerTag.IsValid() && WidgetClass.IsValid())
+	if (LayerTag.IsValid() && IsValid(InUserWidget))
 	{
 		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
 		{
-			UUserWidget* PushedWidget = Layer->PushContent(WidgetClass);
+			UUserWidget* PushedWidget = Layer->PushContent(InUserWidget);
 			return PushedWidget;
 		}
 	}
@@ -10139,14 +10378,11 @@ void UWitchPTPrimaryLayout::PushInitialScreens()
 	{
 		for (auto & ScreenPair : InitialScreens)
 		{
-			if (ScreenPair.Value.IsValid())
+			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
 			{
-				if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
+				if (UUIManagerSubsystem* UIManagerSubsystem = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
 				{
-					if (UUIManagerSubsystem* UIManagerSubsystem = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
-					{
-						UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
-					}
+					UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
 				}
 			}
 		}
@@ -10170,6 +10406,15 @@ void UWitchPTUserWidget::SetWidgetController(UObject* InWidgetController)
 {
 	WidgetController = InWidgetController;
 	OnWidgetControllerSet();
+}
+
+void UWitchPTUserWidget::SetPoolingInfo(const TSubclassOf<UUserWidget>& InPoolKey, UObject* InContextObject)
+{
+	PoolKey = InPoolKey;
+	if (InContextObject != nullptr)
+	{
+		LastContextObject = InContextObject;
+	}
 }
 </file>
 
@@ -13933,6 +14178,37 @@ protected:
 };
 </file>
 
+<file path="WitchPT/Public/Item/Interfaces/SetContextualObjectInterface.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "SetContextualObjectInterface.generated.h"
+
+// This class does not need to be modified.
+UINTERFACE()
+class USetContextualObjectInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/**
+ * 
+ */
+class WITCHPT_API ISetContextualObjectInterface
+{
+	GENERATED_BODY()
+
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+public:
+	UFUNCTION()
+	virtual void SetContextualObject(UObject* ContextualObject);
+	
+};
+</file>
+
 <file path="WitchPT/Public/Item/Item.h">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -14665,13 +14941,36 @@ protected:
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UIManagerSubsystem.generated.h"
 
+class UWitchPTWidgetController;
 /**
  * 
  */
+USTRUCT()
+struct FWidgetPool
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	TArray<TObjectPtr<UUserWidget>> AvailableWidgets;
+};
+USTRUCT(BlueprintType)
+struct FUIActivationContext
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftClassPtr<UUserWidget> WidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<TSubclassOf<class UWitchPTWidgetController>> RequiredControllers;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UObject> ContextObject = nullptr;
+};
 
 class UWitchPTUILayer;
 struct FGameplayTag;
@@ -14693,7 +14992,10 @@ public:
 	bool UnRegisterLayout(FGameplayTag LayerTag);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, TSoftClassPtr<UUserWidget> WidgetClass);
+	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext);
+
+	void ReleaseWidgetToPool(UUserWidget* Widget);
+	void ClearAllPools();
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void PopContentFromLayer(FGameplayTag LayerTag);
@@ -14715,6 +15017,9 @@ public:
 private:
 	
 	UWitchPTUserWidget* GetPrimaryLayout();
+
+	UPROPERTY()
+	TMap<TSubclassOf<UUserWidget>, FWidgetPool> WidgetPools;
 	
 };
 </file>
@@ -14991,6 +15296,11 @@ class WITCHPT_API AWitchPTHUD : public AHUD
 	GENERATED_BODY()
 public:
 	virtual void BeginPlay() override;
+	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> CreateWidgetsControllers(
+		const TArray<TSubclassOf<UWitchPTWidgetController>>& ControllerClasses,
+		const FWidgetControllerParams& WCParams,
+		UObject* ContextObject
+		);
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<UUserWidget *> GameMenuWidgets;
@@ -15058,6 +15368,8 @@ private:
 
 	// ----------------------- Widget Controllers -----------------------
 	UPROPERTY()
+	TMap<TSubclassOf<UWitchPTWidgetController>, TObjectPtr<UWitchPTWidgetController>> ControllerCache;
+	UPROPERTY()
 	TObjectPtr<UQuickBarWidgetController> QuickBarWidgetController;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UQuickBarWidgetController> QuickBarWidgetControllerClass;
@@ -15091,6 +15403,7 @@ private:
 
 #include "CoreMinimal.h"
 #include "WitchPTWidgetController.h"
+#include "Item/Interfaces/SetContextualObjectInterface.h"
 #include "CauldronWidgetController.generated.h"
 
 class ACauldronAltar;
@@ -15110,6 +15423,7 @@ class WITCHPT_API UCauldronWidgetController : public UWitchPTWidgetController
 {
 	GENERATED_BODY()
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UCauldronWidgetController();
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
@@ -15157,6 +15471,34 @@ protected:
 };
 </file>
 
+<file path="WitchPT/Public/UI/WidgetControllers/GenericContainerWidgetController.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPTWidgetController.h"
+#include "GenericContainerWidgetController.generated.h"
+
+/**
+ * 
+ */
+UCLASS(BlueprintType, Blueprintable)
+class WITCHPT_API UGenericContainerWidgetController : public UWitchPTWidgetController
+{
+	GENERATED_BODY()
+public:
+	void SetControllerPackage(const TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*>& InControllers);
+
+	UFUNCTION(BlueprintCallable, Category = "Controllers", meta = (DeterminesOutputType = "ControllerClass"))
+	UWitchPTWidgetController* GetControllerByClass(TSubclassOf<UWitchPTWidgetController> ControllerClass);
+
+private:
+	UPROPERTY()
+	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage;
+};
+</file>
+
 <file path="WitchPT/Public/UI/WidgetControllers/InventoryWidgetController.h">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -15179,6 +15521,7 @@ class WITCHPT_API UInventoryWidgetController : public UWitchPTWidgetController
 	GENERATED_BODY()
 	
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UFUNCTION(BlueprintCallable)
 	virtual void BindCallbacksToDependencies() override;
 						
@@ -15255,6 +15598,7 @@ public:
 	 *
 	 * @param TagContainer A container of gameplay tags associated with the triggered Gameplay Effect.
 	 */
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	void OnAssetTagReceivedFromGE(const FGameplayTagContainer& TagContainer) const;
 	virtual void BroadcastInitialValues() override;
 
@@ -15314,6 +15658,7 @@ class WITCHPT_API UQuickBarWidgetController : public UWitchPTWidgetController
 {
 	GENERATED_BODY()
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
 
@@ -15351,6 +15696,7 @@ private:
 #include "GameplayTagContainer.h"
 #include "WitchPTWidgetController.h"
 #include "Item/RitualAltar.h"
+#include "Item/Interfaces/SetContextualObjectInterface.h"
 #include "RitualWidgetController.generated.h"
 
 enum class ERitualInput : uint8;
@@ -15388,7 +15734,7 @@ public:
 	
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
-	
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	// Method to set the associated ritual altar
 	UFUNCTION(BlueprintCallable, Category = "Ritual")
 	void SetRitualAltar(ARitualAltar* InRitualAltar);
@@ -15465,6 +15811,7 @@ private:
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Item/Interfaces/SetContextualObjectInterface.h"
 #include "UObject/Object.h"
 #include "WitchPTWidgetController.generated.h"
 
@@ -15511,10 +15858,11 @@ struct FWidgetControllerParams
 	
 };
 UCLASS()
-class WITCHPT_API UWitchPTWidgetController : public UObject
+class WITCHPT_API UWitchPTWidgetController : public UObject, public ISetContextualObjectInterface
 {
 	GENERATED_BODY()
 public:
+	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
 
@@ -15665,7 +16013,7 @@ class WITCHPT_API UWitchPTUILayer : public UWitchPTUserWidget
 public:
 	
 	UFUNCTION(Blueprintable, Category= "UI Layer")
-	UUserWidget* PushContent(TSoftClassPtr<UUserWidget> WidgetClass);
+	UUserWidget* PushContent(UUserWidget* InUserWidget);
 	
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void PopContent();
@@ -15752,6 +16100,7 @@ class WITCHPT_API UQuickBarUserWidget : public UWitchPTUserWidget
 #include "CoreMinimal.h"
 #include "WitchPTUserWidget.h"
 #include "GameplayTagContainer.h"
+#include "Subsystems/UIManagerSubsystem.h"
 #include "WitchPTPrimaryLayout.generated.h"
 
 class UWitchPTUILayer;
@@ -15767,7 +16116,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Layout")
-	TMap<FGameplayTag, TSoftClassPtr<UUserWidget>> InitialScreens;
+	TMap<FGameplayTag, FUIActivationContext> InitialScreens;
 
 	// ------------------------------- Main functions ------------------------------- //
 	UFUNCTION(BlueprintCallable, Category = "UI")
@@ -15777,7 +16126,7 @@ public:
 	bool UnRegisterLayer(FGameplayTag LayerTag);
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, TSoftClassPtr<UUserWidget> WidgetClass);
+	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PopContentFromLayer(FGameplayTag LayerTag);
@@ -15820,11 +16169,20 @@ public:
 	virtual void NativeConstruct() override;
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetController(UObject* InWidgetController);
-	UPROPERTY(BlueprintReadOnly)
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UObject> WidgetController;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnWidgetControllerSet();
+
+	void SetPoolingInfo(const TSubclassOf<UUserWidget>& InPoolKey, UObject* InContextObject);
+
+	UPROPERTY(BlueprintReadOnly, Category="UI Pooling")
+	TSubclassOf<UUserWidget> PoolKey;
+
+	UPROPERTY(BlueprintReadOnly, Category="UI Pooling")
+	TObjectPtr<UObject> LastContextObject;
 };
 </file>
 
