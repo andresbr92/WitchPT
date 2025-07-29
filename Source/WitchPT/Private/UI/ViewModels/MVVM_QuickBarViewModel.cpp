@@ -35,6 +35,5 @@ void UMVVM_QuickBarViewModel::BroadcastInitialValues()
 
 void UMVVM_QuickBarViewModel::SetActiveSlotIndex(int32 NewActiveSlotIndex)
 {
-	UE_LOG(LogTemp, Log, TEXT("Setting Active Slot Index to: %d"), NewActiveSlotIndex);
 	UE_MVVM_SET_PROPERTY_VALUE(ActiveSlotIndex, NewActiveSlotIndex);
 }
