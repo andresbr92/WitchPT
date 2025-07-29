@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UMVVM_OverlayViewModel;
 class UQuickBarUserWidget;
 class UWitchPTPrimaryLayout;
 class UQuickBarWidgetController;
@@ -45,9 +46,14 @@ public:
 	UCauldronWidgetController *SetCauldronWidgetController(const FWidgetControllerParams &WCParams);
 	UQuickBarWidgetController *SetQuickBarWidgetController(const FWidgetControllerParams &WCParams);
 
+	void InitializeViewModels(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
+
 	void InitAllWidgets(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
 	UFUNCTION(BlueprintCallable)
 	void ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass);
+
+
+	
 
 
 	void ShowRitualWidget(class ARitualAltar *RitualAltar);
@@ -124,4 +130,7 @@ private:
 	TObjectPtr<UCauldronWidgetController> CauldronWidgetController;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCauldronWidgetController> CauldronWidgetControllerClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UMVVM_OverlayViewModel> OverlayViewModelClass;
 };

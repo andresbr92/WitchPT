@@ -3,9 +3,12 @@
 
 #include "UI/HUD/WitchPTHUD.h"
 
+#include "MVVMGameSubsystem.h"
+#include "Blueprint/UserWidgetPool.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Item/CauldronAltar.h"
 #include "Player/WitchPTPlayerController.h"
+#include "UI/ViewModels/MVVM_OverlayViewModel.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
@@ -107,6 +110,27 @@ UQuickBarWidgetController* AWitchPTHUD::SetQuickBarWidgetController(const FWidge
 		
 	}
 	return QuickBarWidgetController;
+}
+
+void AWitchPTHUD::InitializeViewModels(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS)
+{
+	if (UMVVM_OverlayViewModel* OverlayViewModelInstance = NewObject<UMVVM_OverlayViewModel>(this, OverlayViewModelClass))
+	{
+		
+		OverlayViewModelInstance->SetViewModelParams(FViewModelParams(PC, PS, ASC, AS));
+		OverlayViewModelInstance->BindCallbacksToDependencies();
+		OverlayViewModelInstance->BroadcastInitialValues();
+		
+		if (UMVVMGameSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMGameSubsystem>())
+		{
+			if (UMVVMViewModelCollectionObject* MVVM_Collection = MVVMSubsystem->GetViewModelCollection())
+			{
+				FMVVMViewModelContext MVVM_Context(OverlayViewModelClass, "OverlayViewModel");
+				MVVM_Collection->AddViewModelInstance(MVVM_Context, OverlayViewModelInstance);
+			}
+		}
+	}
+
 }
 
 UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWidgetControllerParams& WCParams)
