@@ -61,7 +61,6 @@ void UWitchPTQuickBarComponent::OnRep_ActiveSlotIndex()
 
 void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
 {
-	UE_LOG(LogTemp, Log, TEXT("Setting active slot index to %d"), NewIndex);
 	if (Slots.IsValidIndex(NewIndex) && (ActiveSlotIndex != NewIndex))
 	{
 		UnequipItemInSlot();

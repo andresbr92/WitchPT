@@ -8,7 +8,7 @@
 
 
 class UWitchPTInventoryItemInstance;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActiveSlotChangedSignature, int32, NewActiveSlotIndex);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnActiveSlotChangedSignature, int32 /* NewActiveSlotIndex */);
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class WITCHPT_API UWitchPTQuickBarComponent : public UActorComponent
 {
@@ -21,6 +21,7 @@ public:
 
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category="QuickBar")
 	void SetActiveSlotIndex(int32 NewIndex);
+	int32 GetActiveSlotIndex() const { return ActiveSlotIndex; }
 
 	virtual void BeginPlay() override;
 

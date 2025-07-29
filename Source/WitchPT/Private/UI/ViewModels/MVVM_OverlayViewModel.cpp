@@ -80,14 +80,12 @@ void UMVVM_OverlayViewModel::SetAge(int32 NewAge)
 	
 	if (UE_MVVM_SET_PROPERTY_VALUE(Age, NewAge))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Age changed to: %d"), NewAge);
 		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetAgePercent);
 	}
 }
 
 void UMVVM_OverlayViewModel::SetMaxAge(int32 NewMaxAge)
 {
-	UE_LOG(LogTemp, Log, TEXT("Setting MaxAge to: %d"), NewMaxAge);
 	if(UE_MVVM_SET_PROPERTY_VALUE(MaxAge, NewMaxAge))
 	{
 		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetAgePercent);

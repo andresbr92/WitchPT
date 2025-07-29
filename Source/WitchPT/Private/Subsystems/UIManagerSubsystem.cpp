@@ -72,12 +72,10 @@ UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIA
     if (!WidgetClass) return nullptr;
 
     UWitchPTUserWidget* TargetWidget = nullptr;
-
-    // --- FASE 1: ADQUISICIÓN DEL WIDGET (POOL O NUEVO) ---
+	
     FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
     if (Pool && Pool->AvailableWidgets.Num() > 0)
     {
-        // Busca un widget compatible
         for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
         {
             UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
@@ -93,7 +91,6 @@ UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIA
 
     if (!TargetWidget)
     {
-        // No se encontró uno compatible, o el pool está vacío. Creamos uno nuevo.
         TargetWidget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass);
         UE_LOG(LogTemp, Log, TEXT("Creating new widget for class: %s"), *WidgetClass->GetName());
     }
@@ -102,38 +99,9 @@ UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIA
     {
         return nullptr;
     }
-
-    // --- FASE 2: CREACIÓN Y CABLEADO DE CONTROLADORES ---
+	
     AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
-    APlayerController* PC = GetLocalPlayer()->GetPlayerController(GetWorld());
-    if (!WitchPTHUD || !PC) return nullptr;
-
-    AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
-    const FWidgetControllerParams WCParams(PC, PS, PS->GetAbilitySystemComponent(), PS->GetAttributeSet());
-
-    // La fábrica ahora solo crea y prepara los controladores, sin activarlos.
-    TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage =
-        WitchPTHUD->CreateWidgetsControllers(ActivationContext.RequiredControllers, WCParams, ActivationContext.ContextObject);
-
-    // Creamos el contenedor
-    UGenericContainerWidgetController* ContainerController = NewObject<UGenericContainerWidgetController>();
-    ContainerController->SetControllerPackage(ControllerPackage);
-
-    // Cableamos: Inyectamos el contenedor en la View. Esto dispara el OnWidgetControllerSet en BP.
-    TargetWidget->SetPoolingInfo(WidgetClass, ActivationContext.ContextObject);
-    TargetWidget->SetWidgetController(ContainerController);
-    
-    // --- FASE 3: ACTIVACIÓN DE CONTROLADORES ---
-    // Ahora que la UI está completamente conectada, activamos los controladores.
-    for (auto const& [Key, Val] : ControllerPackage)
-    {
-        if (Val)
-        {
-            Val->Activate();
-        }
-    }
-
-    // --- FASE 4: MOSTRAR EN PANTALLA ---
+	
     if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
     {
         PrimaryLayout->PushContentToLayer(LayerTag, TargetWidget);
@@ -146,13 +114,6 @@ void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
 {
 	 if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
     {
-        // Desactivamos los controladores antes de guardarlo.
-        if (UGenericContainerWidgetController* Container = Cast<UGenericContainerWidgetController>(WitchWidget->WidgetController))
-        {
-            // Opcional pero recomendado: un método para obtener el paquete
-            TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage = Container->GetControllerPackage();
-            for(auto const& [Key, Val] : ControllerPackage) { Val->Deactivate(); }
-        }
         
         TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
         if (Key)

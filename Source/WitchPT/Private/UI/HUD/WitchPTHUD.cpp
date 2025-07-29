@@ -114,23 +114,22 @@ UQuickBarWidgetController* AWitchPTHUD::SetQuickBarWidgetController(const FWidge
 
 void AWitchPTHUD::InitializeViewModels(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS)
 {
-	if (UMVVM_OverlayViewModel* OverlayViewModelInstance = NewObject<UMVVM_OverlayViewModel>(this, OverlayViewModelClass))
+	for (auto& ViewModelClass : ViewModelClasses)
 	{
-		
-		OverlayViewModelInstance->SetViewModelParams(FViewModelParams(PC, PS, ASC, AS));
-		OverlayViewModelInstance->BindCallbacksToDependencies();
-		OverlayViewModelInstance->BroadcastInitialValues();
-		
+		UWitchPT_MVVMViewModelBase* ViewModelInstance = NewObject<UWitchPT_MVVMViewModelBase>(this, ViewModelClass.Key);
+		ViewModelInstance->SetViewModelParams(FViewModelParams(PC, PS, ASC, AS));
+		ViewModelInstance->BindCallbacksToDependencies();
+		ViewModelInstance->BroadcastInitialValues();
+
 		if (UMVVMGameSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMGameSubsystem>())
 		{
 			if (UMVVMViewModelCollectionObject* MVVM_Collection = MVVMSubsystem->GetViewModelCollection())
 			{
-				FMVVMViewModelContext MVVM_Context(OverlayViewModelClass, "OverlayViewModel");
-				MVVM_Collection->AddViewModelInstance(MVVM_Context, OverlayViewModelInstance);
+				FMVVMViewModelContext MVVM_Context(ViewModelClass.Key, ViewModelClass.Value);
+				MVVM_Collection->AddViewModelInstance(MVVM_Context, ViewModelInstance);
 			}
 		}
 	}
-
 }
 
 UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWidgetControllerParams& WCParams)
@@ -153,82 +152,83 @@ URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetCon
 	}
 	return RitualWidgetController;
 }
+// TODO: Delete this old code //
 
-void AWitchPTHUD::InitAllWidgets(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
-{
-	// Initialize Overlay Widget
-	if (OverlayWidgetClass && OverlayWidgetControllerClass)
-	{
-		UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
-		OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
-
-		const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-		UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
-
-		OverlayWidget->SetWidgetController(WidgetController);
-		WidgetController->BroadcastInitialValues();
-		GameMenuWidgets.Add(OverlayWidgetInstance);
-	}
-
-	// Initialize Ritual Widget
-	if (RitualWidgetClass)
-	{
-		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
-		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
-		
-		if (RitualWidget)
-		{
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
-			RitualWidget->SetWidgetController(RitualController);
-			GameMenuWidgets.Add(RitualWidgetInstance);
-		}
-	}
-
-	// Initialize Inventory Widget
-	if (InventoryWidgetClass && !InventoryWidget)
-	{
-		UUserWidget* InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
-		InventoryWidget = Cast<UWitchPTUserWidget>(InventoryWidgetInstance);
-        
-		if (InventoryWidget)
-		{
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
-			InventoryWidget->SetWidgetController(Controller);
-			GameMenuWidgets.Add(InventoryWidgetInstance);
-		}
-	}
-
-	// Initialize Cauldron Widget
-	if (CauldronWidgetClass && !CauldronWidget)
-	{
-		UUserWidget* CauldronWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
-		CauldronWidget = Cast<UWitchPTUserWidget>(CauldronWidgetInstance);
-        
-		if (CauldronWidget)
-		{
-			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
-			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
-			CauldronWidget->SetWidgetController(Controller);
-			GameMenuWidgets.Add(CauldronWidgetInstance);
-		}
-	}
-
-	// Initialize QuickBar Widget
-	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
-	{
-		UUserWidget* QuickBarWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
-		QuickBarUserWidget = Cast<UWitchPTUserWidget>(QuickBarWidgetInstance);
-		if (QuickBarUserWidget)
-		{
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
-			QuickBarUserWidget->SetWidgetController(Controller);
-			GameMenuWidgets.Add(QuickBarWidgetInstance);
-		}
-	}
-}
+// void AWitchPTHUD::InitAllWidgets(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+// {
+// 	// Initialize Overlay Widget
+// 	if (OverlayWidgetClass && OverlayWidgetControllerClass)
+// 	{
+// 		UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
+// 		OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
+//
+// 		const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 		UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
+//
+// 		OverlayWidget->SetWidgetController(WidgetController);
+// 		WidgetController->BroadcastInitialValues();
+// 		GameMenuWidgets.Add(OverlayWidgetInstance);
+// 	}
+//
+// 	// Initialize Ritual Widget
+// 	if (RitualWidgetClass)
+// 	{
+// 		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
+// 		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
+// 		
+// 		if (RitualWidget)
+// 		{
+// 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
+// 			RitualWidget->SetWidgetController(RitualController);
+// 			GameMenuWidgets.Add(RitualWidgetInstance);
+// 		}
+// 	}
+//
+// 	// Initialize Inventory Widget
+// 	if (InventoryWidgetClass && !InventoryWidget)
+// 	{
+// 		UUserWidget* InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+// 		InventoryWidget = Cast<UWitchPTUserWidget>(InventoryWidgetInstance);
+//         
+// 		if (InventoryWidget)
+// 		{
+// 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
+// 			InventoryWidget->SetWidgetController(Controller);
+// 			GameMenuWidgets.Add(InventoryWidgetInstance);
+// 		}
+// 	}
+//
+// 	// Initialize Cauldron Widget
+// 	if (CauldronWidgetClass && !CauldronWidget)
+// 	{
+// 		UUserWidget* CauldronWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
+// 		CauldronWidget = Cast<UWitchPTUserWidget>(CauldronWidgetInstance);
+//         
+// 		if (CauldronWidget)
+// 		{
+// 			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
+// 			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
+// 			CauldronWidget->SetWidgetController(Controller);
+// 			GameMenuWidgets.Add(CauldronWidgetInstance);
+// 		}
+// 	}
+//
+// 	// Initialize QuickBar Widget
+// 	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
+// 	{
+// 		UUserWidget* QuickBarWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
+// 		QuickBarUserWidget = Cast<UWitchPTUserWidget>(QuickBarWidgetInstance);
+// 		if (QuickBarUserWidget)
+// 		{
+// 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
+// 			QuickBarUserWidget->SetWidgetController(Controller);
+// 			GameMenuWidgets.Add(QuickBarWidgetInstance);
+// 		}
+// 	}
+// }
 
 void AWitchPTHUD::ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass)
 {

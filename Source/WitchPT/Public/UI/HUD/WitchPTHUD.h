@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UWitchPT_MVVMViewModelBase;
 class UMVVM_OverlayViewModel;
 class UQuickBarUserWidget;
 class UWitchPTPrimaryLayout;
@@ -48,7 +49,6 @@ public:
 
 	void InitializeViewModels(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
 
-	void InitAllWidgets(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
 	UFUNCTION(BlueprintCallable)
 	void ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass);
 
@@ -133,4 +133,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMVVM_OverlayViewModel> OverlayViewModelClass;
+
+	UPROPERTY(EditAnywhere)
+	TMap<TSubclassOf<UWitchPT_MVVMViewModelBase>, FName> ViewModelClasses;
 };
