@@ -22,11 +22,18 @@ private:
 	TArray<UWitchPTInventoryItemInstance*> Items;
 
 public:
-	
-	void AddItem(UWitchPTInventoryItemInstance* ItemInstance);
-	void RemoveItem(UWitchPTInventoryItemInstance* ItemInstance);
-	
+	// -------------------- Getters and Setters ------------------------
 	void SetItems(const TArray<UWitchPTInventoryItemInstance*>& NewItems) { Items = NewItems; }
 	TArray<UWitchPTInventoryItemInstance*> GetItems() const;
+	// -------------------- Callbacks ----------------------------------
+	void AddItem(UWitchPTInventoryItemInstance* ItemInstance);
+	void RemoveItem(UWitchPTInventoryItemInstance* ItemInstance);
+
+	// -------------------- MVVM -> Model Functions --------------------
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void EquipItem(UWitchPTInventoryItemInstance* ItemInstance);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
+	
 	
 };
