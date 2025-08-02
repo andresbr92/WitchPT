@@ -90,8 +90,44 @@ bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
 
 UUserWidget* UUIManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass)
 {
-	return nullptr;
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+	{
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(LocalPlayer))
+		{
+			if (UUserWidget* Widget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass))
+			{
+				return RootLayout->PushContentToLayer(LayerTag, Widget);
+			}
+		}
+	}
 	
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	return nullptr;
 	 // if (!LayerTag.IsValid() || ActivationContext.WidgetClass.IsNull())
   //   {
   //       return nullptr;
@@ -139,6 +175,41 @@ UUserWidget* UUIManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerCont
   //   return TargetWidget;
 }
 
+void UUIManagerSubsystem::AddPlayer(ULocalPlayer* LocalPlayer)
+{
+	NotifyPlayerAdded(LocalPlayer);
+}
+
+void UUIManagerSubsystem::RemovePlayer(ULocalPlayer* LocalPlayer)
+{
+	NotifyPlayerRemoved(LocalPlayer);
+}
+
+void UUIManagerSubsystem::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
+{
+	if (ensure(LocalPlayer) && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerAdded(LocalPlayer);
+	}
+}
+
+void UUIManagerSubsystem::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
+{
+	if (ensure(LocalPlayer) && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerRemoved(LocalPlayer);
+	}
+	
+}
+
+void UUIManagerSubsystem::NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer)
+{
+	if (LocalPlayer && CurrentPolicy)
+	{
+		// CurrentPolicy->NotifyPlayerDestroyed(LocalPlayer);
+	}
+}
+
 void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
 {
 	 if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
@@ -171,18 +242,38 @@ void UUIManagerSubsystem::ClearAllPools()
 	UE_LOG(LogTemp, Log, TEXT("All widget pools have been cleaned."));
 }
 
-void UUIManagerSubsystem::PopContentFromLayer(FGameplayTag LayerTag)
+void UUIManagerSubsystem::PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, FGameplayTag LayerTag, int32 RemainNum)
 {
-	if (LayerTag.IsValid())
+	if (LayerTag.IsValid() && ensure(PlayerController))
 	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+		if (CurrentPolicy)
 		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+			if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 			{
-				PrimaryLayout->PopContentFromLayer(LayerTag);
-				UE_LOG(LogTemp, Log, TEXT("Popping content from layer: %s"), *LayerTag.ToString());
+				// TODO: Implement RemainNum logic if needed
+				RootLayout->PopContentFromLayer(LayerTag);
 			}
 		}
+
+
+
+
+
+
+
+
+
+
+
+		
+		// if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+		// {
+		// 	if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+		// 	{
+		// 		PrimaryLayout->PopContentFromLayer(LayerTag);
+		// 		UE_LOG(LogTemp, Log, TEXT("Popping content from layer: %s"), *LayerTag.ToString());
+		// 	}
+		// }
 	}
 }
 
@@ -228,31 +319,31 @@ void UUIManagerSubsystem::FocusGame()
 	// }
 }
 
-void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
+void UUIManagerSubsystem::FocusModal(APlayerController* PlayerController, UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
 {
-	// if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
-	// {
-	// 	// Check if the widget is valid before trying to focus it
-	// 	if (!IsValid(WidgetToFocus))
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("FocusModal: WidgetToFocus is invalid or null"));
-	// 		return;
-	// 	}
-	//
-	// 	if(bUIOnlyInput)
-	// 	{
-	// 		FInputModeUIOnly InputMode;
-	// 		InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
-	// 		PlayerController->SetInputMode(InputMode);
-	// 		bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
-	// 	}
-	// 	else
-	// 	{
-	// 		FInputModeGameAndUI InputMode;
-	// 		InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
-	// 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	// 		bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
-	// 		PlayerController->SetInputMode(InputMode);
-	// 	}
-	// }
+	if (PlayerController)
+	{
+		// Check if the widget is valid before trying to focus it
+		if (!IsValid(WidgetToFocus))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("FocusModal: WidgetToFocus is invalid or null"));
+			return;
+		}
+	
+		if(bUIOnlyInput)
+		{
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+			PlayerController->SetInputMode(InputMode);
+			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+		}
+		else
+		{
+			FInputModeGameAndUI InputMode;
+			InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+			PlayerController->SetInputMode(InputMode);
+		}
+	}
 }
