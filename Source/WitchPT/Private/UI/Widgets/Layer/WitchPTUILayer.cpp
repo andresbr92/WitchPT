@@ -39,9 +39,9 @@ void UWitchPTUILayer::PopContent()
 			// En lugar de dejar que se destruya, lo devolvemos al pool.
 			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
 			{
-				if (UUIManagerSubsystem* UIManager = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
+				if (UUIManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
 				{
-					UIManager->ReleaseWidgetToPool(TopWidgetToRelease);
+					UIManagerSubsystem->ReleaseWidgetToPool(TopWidgetToRelease);
 				}
 			}
 		}

@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Subsystems/LocalPlayerSubsystem.h"
+#include "Subsystems/GameInstanceSubsystem.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UIManagerSubsystem.generated.h"
 
+class UWitchPT_GameUIPolicy;
 class UWitchPTWidgetController;
 /**
  * 
@@ -40,10 +41,26 @@ class UWitchPTPrimaryLayout;
 class AWitchPTHUD;
 
 UCLASS()
-class WITCHPT_API UUIManagerSubsystem : public ULocalPlayerSubsystem
+class WITCHPT_API UUIManagerSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	AWitchPTHUD* GetWitchPTHUD();
 	
@@ -53,8 +70,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	bool UnRegisterLayout(FGameplayTag LayerTag);
 
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext);
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category="UI Manager", meta=(DynamicOutputParam="ReturnValue", DeterminesOutputType="WidgetClass"))
+	UUserWidget* PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass);
 
 	void ReleaseWidgetToPool(UUserWidget* Widget);
 	void ClearAllPools();
@@ -82,5 +99,8 @@ private:
 
 	UPROPERTY()
 	TMap<TSubclassOf<UUserWidget>, FWidgetPool> WidgetPools;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UWitchPT_GameUIPolicy> CurrentPolicy = nullptr;
 	
 };

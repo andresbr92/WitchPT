@@ -22,14 +22,17 @@
     "UI": {
       "name": "UI",
       "created": "2025-06-21T15:56:29.126Z",
-      "lastUsed": "2025-07-11T14:40:31.643Z",
+      "lastUsed": "2025-08-02T13:13:29.104Z",
       "tags": [],
       "files": [
         "Source/WitchPT/Private/UI",
         "Source/WitchPT/Public/UI",
         "Source/WitchPT/Private/Player/WitchPTPlayerController.cpp",
-        "Source/WitchPT/Public/Player/WitchPTPlayerController.h"
-      ]
+        "Source/WitchPT/Public/Player/WitchPTPlayerController.h",
+        "Source/WitchPT/Public/Subsystems/UIManagerSubsystem.h",
+        "Source/WitchPT/Private/Subsystems/UIManagerSubsystem.cpp"
+      ],
+      "outputPath": "Repomix/"
     },
     "Core": {
       "name": "Core",

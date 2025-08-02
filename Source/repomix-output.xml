@@ -101,6 +101,12 @@ WitchPT/Private/Player/WitchPTPlayerState.cpp
 WitchPT/Private/Subsystems/UIManagerSubsystem.cpp
 WitchPT/Private/Subsystems/WidgetCommunicatorSubsystem.cpp
 WitchPT/Private/UI/HUD/WitchPTHUD.cpp
+WitchPT/Private/UI/ViewModels/MVVM_CauldronViewModel.cpp
+WitchPT/Private/UI/ViewModels/MVVM_InventoryViewModel.cpp
+WitchPT/Private/UI/ViewModels/MVVM_OverlayViewModel.cpp
+WitchPT/Private/UI/ViewModels/MVVM_QuickBarViewModel.cpp
+WitchPT/Private/UI/ViewModels/MVVM_RitualViewModel.cpp
+WitchPT/Private/UI/ViewModels/WitchPT_MVVMViewModelBase.cpp
 WitchPT/Private/UI/WidgetControllers/CauldronWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/GenericContainerWidgetController.cpp
 WitchPT/Private/UI/WidgetControllers/InventoryWidgetController.cpp
@@ -184,6 +190,12 @@ WitchPT/Public/Subsystems/WidgetCommunicatorSubsystem.h
 WitchPT/Public/Systems/GameplayTagStack.cpp
 WitchPT/Public/Systems/GameplayTagStack.h
 WitchPT/Public/UI/HUD/WitchPTHUD.h
+WitchPT/Public/UI/ViewModels/MVVM_CauldronViewModel.h
+WitchPT/Public/UI/ViewModels/MVVM_InventoryViewModel.h
+WitchPT/Public/UI/ViewModels/MVVM_OverlayViewModel.h
+WitchPT/Public/UI/ViewModels/MVVM_QuickBarViewModel.h
+WitchPT/Public/UI/ViewModels/MVVM_RitualViewModel.h
+WitchPT/Public/UI/ViewModels/WitchPT_MVVMViewModelBase.h
 WitchPT/Public/UI/WidgetControllers/CauldronWidgetController.h
 WitchPT/Public/UI/WidgetControllers/GenericContainerWidgetController.h
 WitchPT/Public/UI/WidgetControllers/InventoryWidgetController.h
@@ -2535,7 +2547,7 @@ void AWitchPTCharacter::InitAbilityActorInfo()
 			// WitchPT_HUD->InitInventoryWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitCauldronWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			// WitchPT_HUD->InitQuickBarWidget(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
-			// WitchPT_HUD->InitAllWidgets(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
+			WitchPT_HUD->InitializeViewModels(WitchPT_PC, WitchPtPlayerState, AbilitySystemComponent, AttributeSet);
 			
 		}
 	}
@@ -3229,7 +3241,6 @@ void UWitchPTQuickBarComponent::OnRep_ActiveSlotIndex()
 
 void UWitchPTQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
 {
-	UE_LOG(LogTemp, Log, TEXT("Setting active slot index to %d"), NewIndex);
 	if (Slots.IsValidIndex(NewIndex) && (ActiveSlotIndex != NewIndex))
 	{
 		UnequipItemInSlot();
@@ -8681,105 +8692,66 @@ bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
 
 UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext)
 {
-	if (LayerTag.IsValid() && ActivationContext.WidgetClass.IsValid())
-	{
-		UUserWidget* FoundOrCreatedWidget = nullptr;
-		TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
-		AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
-		UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout();
-		
-		// ----------------------------------- FIND THE WIDGET ------------------------------------
-		FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
-		if (Pool && Pool->AvailableWidgets.Num() > 0)
-		{
-			
-			for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
-			{
-				UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
-				if (PooledWidget)
-				{
-					
-					if (PooledWidget->LastContextObject == ActivationContext.ContextObject)
-					{
-						// ¡Match perfecto! Lo reutilizamos.
-						FoundOrCreatedWidget = PooledWidget;
-						Pool->AvailableWidgets.RemoveAt(i); // Lo sacamos del pool
-						
-						PrimaryLayout->PushContentToLayer(LayerTag, FoundOrCreatedWidget);
-						UE_LOG(LogTemp, Log, TEXT("Reusing widget for class:  %s"), *WidgetClass->GetName());
-						return FoundOrCreatedWidget;
-					}
-				}
-			}
-		}
-		// ----------------------------------- CREATE A NEW WIDGET ------------------------------------
-		if (!FoundOrCreatedWidget)
-		{
-			
-			
-			APlayerController* PC = GetLocalPlayer()->GetPlayerController(GetWorld());
-		
-			if (!WitchPTHUD || !PC) return nullptr;
-		
-			AWitchPTPlayerState* PS = PC->GetPlayerState<AWitchPTPlayerState>();
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-			UAttributeSet* AS = PS->GetAttributeSet();
+	 if (!LayerTag.IsValid() || ActivationContext.WidgetClass.IsNull())
+    {
+        return nullptr;
+    }
 
-			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
-			TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage =
-				WitchPTHUD->CreateWidgetsControllers(ActivationContext.RequiredControllers, WCParams, ActivationContext.ContextObject);
-			if (ControllerPackage.Num() == 0)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("UIManager: No controllers created."));
-			}
-			UGenericContainerWidgetController* ContainerController = NewObject<UGenericContainerWidgetController>();
-			ContainerController->SetControllerPackage(ControllerPackage);
-			FoundOrCreatedWidget = CreateWidget<UUserWidget>(PC, WidgetClass);
-			
-			if (PrimaryLayout)
-			{
-				PrimaryLayout->PushContentToLayer(LayerTag, FoundOrCreatedWidget);
-				
-				UWitchPTUserWidget* WitchPtUserWidget = Cast<UWitchPTUserWidget>(FoundOrCreatedWidget);
-				WitchPtUserWidget->SetPoolingInfo(WidgetClass, ActivationContext.ContextObject);
-				WitchPtUserWidget->SetWidgetController(ContainerController);
-				
-				return FoundOrCreatedWidget;
-			}
-		}
-	}
-	return nullptr;
+    TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
+    if (!WidgetClass) return nullptr;
+
+    UWitchPTUserWidget* TargetWidget = nullptr;
+	
+    FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
+    if (Pool && Pool->AvailableWidgets.Num() > 0)
+    {
+        for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
+        {
+            UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
+            if (PooledWidget && PooledWidget->LastContextObject == ActivationContext.ContextObject)
+            {
+                TargetWidget = PooledWidget;
+                Pool->AvailableWidgets.RemoveAt(i);
+                UE_LOG(LogTemp, Log, TEXT("Reusing widget for class: %s"), *WidgetClass->GetName());
+                break;
+            }
+        }
+    }
+
+    if (!TargetWidget)
+    {
+        TargetWidget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass);
+        UE_LOG(LogTemp, Log, TEXT("Creating new widget for class: %s"), *WidgetClass->GetName());
+    }
+
+    if (!TargetWidget)
+    {
+        return nullptr;
+    }
+	
+    AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
+	
+    if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+    {
+        PrimaryLayout->PushContentToLayer(LayerTag, TargetWidget);
+    }
+    
+    return TargetWidget;
 }
 
 void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
 {
-	if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
-	{
-		TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
-		if (Key)
-		{
-			// Opcional: Lógica de destrucción si el contexto es "sucio"
-			if (WitchWidget->LastContextObject != nullptr)
-			{
-				// Si decidimos que los widgets con contexto NUNCA se reutilizan si el contexto puede cambiar,
-				// los destruimos aquí en lugar de devolverlos al pool.
-				// Esto es una decisión de diseño, el enfoque híbrido es más óptimo.
-				// Para este ejemplo, los devolvemos al pool.
-			}
-
-			FWidgetPool& Pool = WidgetPools.FindOrAdd(Key);
-			Pool.AvailableWidgets.Add(WitchWidget);
-			UE_LOG(LogTemp, Log, TEXT("Devolviendo widget al pool para la clase %s"), *Key->GetName());
-			// Print all available widgets in the pool for debugging
-			for (UUserWidget* AvailableWidget : Pool.AvailableWidgets)
-			{
-				if (AvailableWidget)
-				{
-					UE_LOG(LogTemp, Log, TEXT("Available widget: %s"), *AvailableWidget->GetName());
-				}
-			}
-		}
-	}
+	 if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
+    {
+        
+        TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
+        if (Key)
+        {
+            FWidgetPool& Pool = WidgetPools.FindOrAdd(Key);
+            Pool.AvailableWidgets.Add(WitchWidget);
+            UE_LOG(LogTemp, Log, TEXT("Returning widget to pool for class %s"), *Key->GetName());
+        }
+    }
 }
 
 void UUIManagerSubsystem::ClearAllPools()
@@ -8904,9 +8876,12 @@ void UWidgetCommunicatorSubsystem::OnItemDragged(UWitchPTInventoryItemInstance* 
 
 #include "UI/HUD/WitchPTHUD.h"
 
+#include "MVVMGameSubsystem.h"
+#include "Blueprint/UserWidgetPool.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Item/CauldronAltar.h"
 #include "Player/WitchPTPlayerController.h"
+#include "UI/ViewModels/MVVM_OverlayViewModel.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
@@ -8951,12 +8926,9 @@ TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> AWitchPTH
 			ControllerInstance = NewObject<UWitchPTWidgetController>(this, ControllerClass);
 			ControllerCache.Add(ControllerClass, ControllerInstance);
 		}
-
 		
-		ControllerInstance->SetContextualObject(ContextObject);
 		ControllerInstance->SetWidgetControllerParams(WCParams);
-		ControllerInstance->BindCallbacksToDependencies();
-		ControllerInstance->BroadcastInitialValues();
+		ControllerInstance->SetContextualObject(ContextObject);
 	
 		ResultPackage.Add(ControllerClass, ControllerInstance);
 	}
@@ -9013,6 +8985,26 @@ UQuickBarWidgetController* AWitchPTHUD::SetQuickBarWidgetController(const FWidge
 	return QuickBarWidgetController;
 }
 
+void AWitchPTHUD::InitializeViewModels(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS)
+{
+	for (auto& ViewModelClass : ViewModelClasses)
+	{
+		UWitchPT_MVVMViewModelBase* ViewModelInstance = NewObject<UWitchPT_MVVMViewModelBase>(this, ViewModelClass.Key);
+		ViewModelInstance->SetViewModelParams(FViewModelParams(PC, PS, ASC, AS));
+		ViewModelInstance->BindCallbacksToDependencies();
+		ViewModelInstance->BroadcastInitialValues();
+
+		if (UMVVMGameSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMGameSubsystem>())
+		{
+			if (UMVVMViewModelCollectionObject* MVVM_Collection = MVVMSubsystem->GetViewModelCollection())
+			{
+				FMVVMViewModelContext MVVM_Context(ViewModelClass.Key, ViewModelClass.Value);
+				MVVM_Collection->AddViewModelInstance(MVVM_Context, ViewModelInstance);
+			}
+		}
+	}
+}
+
 UInventoryWidgetController* AWitchPTHUD::SetInventoryWidgetController(const FWidgetControllerParams& WCParams)
 {
 	if (InventoryWidgetController == nullptr)
@@ -9033,82 +9025,83 @@ URitualWidgetController* AWitchPTHUD::SetRitualWidgetController(const FWidgetCon
 	}
 	return RitualWidgetController;
 }
+// TODO: Delete this old code //
 
-void AWitchPTHUD::InitAllWidgets(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
-{
-	// Initialize Overlay Widget
-	if (OverlayWidgetClass && OverlayWidgetControllerClass)
-	{
-		UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
-		OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
-
-		const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-		UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
-
-		OverlayWidget->SetWidgetController(WidgetController);
-		WidgetController->BroadcastInitialValues();
-		GameMenuWidgets.Add(OverlayWidgetInstance);
-	}
-
-	// Initialize Ritual Widget
-	if (RitualWidgetClass)
-	{
-		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
-		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
-		
-		if (RitualWidget)
-		{
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
-			RitualWidget->SetWidgetController(RitualController);
-			GameMenuWidgets.Add(RitualWidgetInstance);
-		}
-	}
-
-	// Initialize Inventory Widget
-	if (InventoryWidgetClass && !InventoryWidget)
-	{
-		UUserWidget* InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
-		InventoryWidget = Cast<UWitchPTUserWidget>(InventoryWidgetInstance);
-        
-		if (InventoryWidget)
-		{
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
-			InventoryWidget->SetWidgetController(Controller);
-			GameMenuWidgets.Add(InventoryWidgetInstance);
-		}
-	}
-
-	// Initialize Cauldron Widget
-	if (CauldronWidgetClass && !CauldronWidget)
-	{
-		UUserWidget* CauldronWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
-		CauldronWidget = Cast<UWitchPTUserWidget>(CauldronWidgetInstance);
-        
-		if (CauldronWidget)
-		{
-			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
-			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
-			CauldronWidget->SetWidgetController(Controller);
-			GameMenuWidgets.Add(CauldronWidgetInstance);
-		}
-	}
-
-	// Initialize QuickBar Widget
-	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
-	{
-		UUserWidget* QuickBarWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
-		QuickBarUserWidget = Cast<UWitchPTUserWidget>(QuickBarWidgetInstance);
-		if (QuickBarUserWidget)
-		{
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
-			QuickBarUserWidget->SetWidgetController(Controller);
-			GameMenuWidgets.Add(QuickBarWidgetInstance);
-		}
-	}
-}
+// void AWitchPTHUD::InitAllWidgets(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+// {
+// 	// Initialize Overlay Widget
+// 	if (OverlayWidgetClass && OverlayWidgetControllerClass)
+// 	{
+// 		UUserWidget* OverlayWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), OverlayWidgetClass);
+// 		OverlayWidget = Cast<UWitchPTUserWidget>(OverlayWidgetInstance);
+//
+// 		const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 		UOverlayWidgetController* WidgetController = SetOverlayWidgetController(WidgetControllerParams);
+//
+// 		OverlayWidget->SetWidgetController(WidgetController);
+// 		WidgetController->BroadcastInitialValues();
+// 		GameMenuWidgets.Add(OverlayWidgetInstance);
+// 	}
+//
+// 	// Initialize Ritual Widget
+// 	if (RitualWidgetClass)
+// 	{
+// 		UUserWidget* RitualWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), RitualWidgetClass);
+// 		RitualWidget = Cast<UWitchPTUserWidget>(RitualWidgetInstance);
+// 		
+// 		if (RitualWidget)
+// 		{
+// 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 			URitualWidgetController* RitualController = SetRitualWidgetController(WidgetControllerParams);
+// 			RitualWidget->SetWidgetController(RitualController);
+// 			GameMenuWidgets.Add(RitualWidgetInstance);
+// 		}
+// 	}
+//
+// 	// Initialize Inventory Widget
+// 	if (InventoryWidgetClass && !InventoryWidget)
+// 	{
+// 		UUserWidget* InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+// 		InventoryWidget = Cast<UWitchPTUserWidget>(InventoryWidgetInstance);
+//         
+// 		if (InventoryWidget)
+// 		{
+// 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 			UInventoryWidgetController* Controller = SetInventoryWidgetController(WidgetControllerParams);
+// 			InventoryWidget->SetWidgetController(Controller);
+// 			GameMenuWidgets.Add(InventoryWidgetInstance);
+// 		}
+// 	}
+//
+// 	// Initialize Cauldron Widget
+// 	if (CauldronWidgetClass && !CauldronWidget)
+// 	{
+// 		UUserWidget* CauldronWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), CauldronWidgetClass);
+// 		CauldronWidget = Cast<UWitchPTUserWidget>(CauldronWidgetInstance);
+//         
+// 		if (CauldronWidget)
+// 		{
+// 			const FWidgetControllerParams WCParams(PC, PS, ASC, AS);
+// 			UCauldronWidgetController* Controller = SetCauldronWidgetController(WCParams);
+// 			CauldronWidget->SetWidgetController(Controller);
+// 			GameMenuWidgets.Add(CauldronWidgetInstance);
+// 		}
+// 	}
+//
+// 	// Initialize QuickBar Widget
+// 	if (QuickBarUserWidgetClass && !QuickBarUserWidget)
+// 	{
+// 		UUserWidget* QuickBarWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), QuickBarUserWidgetClass);
+// 		QuickBarUserWidget = Cast<UWitchPTUserWidget>(QuickBarWidgetInstance);
+// 		if (QuickBarUserWidget)
+// 		{
+// 			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+// 			UQuickBarWidgetController* Controller = SetQuickBarWidgetController(WidgetControllerParams);
+// 			QuickBarUserWidget->SetWidgetController(Controller);
+// 			GameMenuWidgets.Add(QuickBarWidgetInstance);
+// 		}
+// 	}
+// }
 
 void AWitchPTHUD::ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass)
 {
@@ -9328,6 +9321,500 @@ UWitchPTUserWidget* AWitchPTHUD::GetInventoryUserWidget() const
 }
 </file>
 
+<file path="WitchPT/Private/UI/ViewModels/MVVM_CauldronViewModel.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/ViewModels/MVVM_CauldronViewModel.h"
+
+#include "Item/CauldronAltar.h"
+#include "Item/Components/CauldronCraftComponent.h"
+
+void UMVVM_CauldronViewModel::BindCallbacksToDependencies()
+{
+	if (CauldronAltar && CauldronAltar->CauldronCraftComponent)
+	{
+		CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetBaseIngredientIcon);
+		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetPrincipalIngredientIcon);
+		CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetModifierIngredientIcon);
+		
+	}
+}
+
+void UMVVM_CauldronViewModel::BroadcastInitialValues()
+{
+	if (CauldronAltar && CauldronAltar->CauldronCraftComponent)
+	{
+		SetBaseIngredientIcon(CauldronAltar->CauldronCraftComponent->GetBaseIngredientIcon());
+		SetPrincipalIngredientIcon(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredientIcon());
+		SetModifierIngredientIcon(CauldronAltar->CauldronCraftComponent->GetModifierIngredientIcon());
+	}
+	
+
+}
+
+void UMVVM_CauldronViewModel::UnbindCallbacksFromDependencies()
+{
+
+}
+
+void UMVVM_CauldronViewModel::SetCauldronAltar(ACauldronAltar* InCauldronAltar)
+{
+	if (InCauldronAltar)
+	{
+		CauldronAltar = InCauldronAltar;
+		BindCallbacksToDependencies();
+		BroadcastInitialValues();
+	}
+}
+
+void UMVVM_CauldronViewModel::SetBaseIngredient(UWitchPTInventoryItemInstance* InBaseIngredient)
+{
+	if (InBaseIngredient)
+	{
+		UE_MVVM_SET_PROPERTY_VALUE(BaseIngredient, InBaseIngredient);
+	}
+}
+
+void UMVVM_CauldronViewModel::SetBaseIngredientIcon(TSubclassOf<UUserWidget> InBaseIngredientIcon)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(BaseIngredientIcon, InBaseIngredientIcon);
+}
+
+void UMVVM_CauldronViewModel::SetPrincipalIngredientIcon(TSubclassOf<UUserWidget> InPrincipalIngredientIcon)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(PrincipalIngredientIcon, InPrincipalIngredientIcon);
+}
+
+void UMVVM_CauldronViewModel::SetModifierIngredientIcon(TSubclassOf<UUserWidget> InModifierIngredientIcon)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(ModifierIngredientIcon, InModifierIngredientIcon);
+}
+</file>
+
+<file path="WitchPT/Private/UI/ViewModels/MVVM_InventoryViewModel.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/ViewModels/MVVM_InventoryViewModel.h"
+
+#include "Equipment/WitchPTEquipmentManagerComponent.h"
+#include "GameFramework/Character.h"
+#include "Inventory/WitchPTInventoryItemInstance.h"
+#include "Inventory/WitchPTInventoryManagerComponent.h"
+#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+#include "Player/WitchPTPlayerController.h"
+
+void UMVVM_InventoryViewModel::BindCallbacksToDependencies()
+{
+	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	{
+		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+		{
+			InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+			{
+				AddItem(ItemAdded);
+			});
+			InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+			{
+				
+			});
+			InventoryManager->OnItemRemoved.AddLambda([this](UWitchPTInventoryItemInstance* ItemRemoved)
+			{
+				RemoveItem(ItemRemoved);
+			});
+			
+		}
+	}
+}
+
+void UMVVM_InventoryViewModel::BroadcastInitialValues()
+{
+	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	{
+		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+		{
+			SetItems(InventoryManager->GetAllItems());
+		}
+	}
+	
+}
+
+void UMVVM_InventoryViewModel::AddItem(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (ItemInstance)
+	{
+		Items.Add(ItemInstance);
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(Items);
+	}
+}
+
+void UMVVM_InventoryViewModel::RemoveItem(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (ItemInstance)
+	{
+		Items.Remove(ItemInstance);
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(Items);
+	}
+}
+
+TArray<UWitchPTInventoryItemInstance*> UMVVM_InventoryViewModel::GetItems() const
+{
+	return Items;
+}
+
+void UMVVM_InventoryViewModel::EquipItem(UWitchPTInventoryItemInstance* ItemInstance)
+{
+	if (ItemInstance)
+	{
+		if (ACharacter* OwningCharacter = Cast<ACharacter>(PlayerController->GetPawn()))
+		{
+			if (UWitchPTEquipmentManagerComponent* EquipmentManager = OwningCharacter->FindComponentByClass<UWitchPTEquipmentManagerComponent>())
+			{
+				if (UWitchPTEquipmentInstance* EquipmentInstance = EquipmentManager->FindEquipmentByInventoryItem(ItemInstance))
+				{
+					EquipmentManager->UnequipItem(EquipmentInstance);
+				}
+				else
+				{
+					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass());
+					const UWitchPTInventoryItemFragment_EquippableItem* EquipableFragment = Cast<const UWitchPTInventoryItemFragment_EquippableItem>(BaseFragment);
+					EquipmentManager->EquipItem(EquipableFragment->EquipmentDefinition);
+				}
+			}
+		}
+	}
+}
+
+void UMVVM_InventoryViewModel::RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)
+{
+	if (!ItemInstance)
+	{
+		return;
+	}
+
+	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	{
+		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+		{
+			const int32 CurrentStackCount = ItemInstance->GetTotalStackCount();
+	
+			// If we only have 1 item left and trying to remove 1 or more, remove the item completely
+			if (CurrentStackCount <= 1 && AmountToRemove >= 1)
+			{
+				InventoryManager->Server_RemoveItemInstance(ItemInstance);
+			}
+			else
+			{
+				// Otherwise, reduce the stack count by the requested amount
+				InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
+			}
+		}
+	}
+}
+</file>
+
+<file path="WitchPT/Private/UI/ViewModels/MVVM_OverlayViewModel.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/ViewModels/MVVM_OverlayViewModel.h"
+
+#include "AbilitySystem/WitchPTAttributeSet.h"
+
+
+void UMVVM_OverlayViewModel::BindCallbacksToDependencies()
+{
+    
+    if (const UWitchPTAttributeSet* WitchPT_AS = Cast<UWitchPTAttributeSet>(AttributeSet))
+    {
+
+        AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+		{
+    		SetHealth(Data.NewValue);
+		});
+    	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetMaxHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+    	{
+    		SetMaxHealth(Data.NewValue);
+    	});
+
+
+    	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetAgeAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+		{
+    		SetAge(Data.NewValue);
+		});
+    	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetMaxAgeAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+    	{
+    		SetMaxAge(Data.NewValue);
+    	});
+
+        AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetStaminaAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+		{
+    		SetStamina(Data.NewValue);
+		});
+    	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(WitchPT_AS->GetMaxStaminaAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+    	{
+    		SetMaxStamina(Data.NewValue);
+    	});
+    }
+  
+	
+}
+
+void UMVVM_OverlayViewModel::BroadcastInitialValues()
+{
+	if (const UWitchPTAttributeSet* WitchPT_AS = Cast<UWitchPTAttributeSet>(AttributeSet))
+	{
+		SetAge(WitchPT_AS->GetAge());
+		SetMaxAge(WitchPT_AS->GetMaxAge());
+		SetHealth(WitchPT_AS->GetHealth());
+		SetMaxHealth(WitchPT_AS->GetMaxHealth());
+		SetStamina(WitchPT_AS->GetStamina());
+		SetMaxStamina(WitchPT_AS->GetMaxStamina());
+	}
+	
+}
+void UMVVM_OverlayViewModel::SetHealth(int32 NewHealth)
+{
+	if (UE_MVVM_SET_PROPERTY_VALUE(Health, NewHealth))
+	{
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetHealthPercent);
+	}
+}
+
+void UMVVM_OverlayViewModel::SetMaxHealth(int32 NewMaxHealth)
+{
+	if (UE_MVVM_SET_PROPERTY_VALUE(MaxHealth, NewMaxHealth))
+	{
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetHealthPercent);
+	}
+}
+
+
+
+void UMVVM_OverlayViewModel::SetAge(int32 NewAge)
+{
+	
+	if (UE_MVVM_SET_PROPERTY_VALUE(Age, NewAge))
+	{
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetAgePercent);
+	}
+}
+
+void UMVVM_OverlayViewModel::SetMaxAge(int32 NewMaxAge)
+{
+	if(UE_MVVM_SET_PROPERTY_VALUE(MaxAge, NewMaxAge))
+	{
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetAgePercent);
+	}
+}
+
+void UMVVM_OverlayViewModel::SetStamina(int32 NewStamina)
+{
+	if (UE_MVVM_SET_PROPERTY_VALUE(Stamina, NewStamina))
+	{
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetStaminaPercent);
+	}
+}
+
+
+void UMVVM_OverlayViewModel::SetMaxStamina(int32 NewMaxStamina)
+{
+	if (UE_MVVM_SET_PROPERTY_VALUE(MaxStamina, NewMaxStamina))
+	{
+		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetStaminaPercent);
+	}
+}
+</file>
+
+<file path="WitchPT/Private/UI/ViewModels/MVVM_QuickBarViewModel.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/ViewModels/MVVM_QuickBarViewModel.h"
+
+#include "Equipment/WitchPTQuickBarComponent.h"
+#include "Player/WitchPTPlayerController.h"
+
+void UMVVM_QuickBarViewModel::BindCallbacksToDependencies()
+{
+	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	{
+		
+		if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
+		{
+			QuickBarComponent->OnActiveSlotChanged.AddLambda([this](const int32 NewSlotIndex)
+			{
+				SetActiveSlotIndex(NewSlotIndex);
+			});
+		}
+	}
+	
+}
+
+void UMVVM_QuickBarViewModel::BroadcastInitialValues()
+{
+	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	{
+		if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
+		{
+			SetActiveSlotIndex(QuickBarComponent->GetActiveSlotIndex());
+		}
+	}
+}
+
+void UMVVM_QuickBarViewModel::SetActiveSlotIndex(int32 NewActiveSlotIndex)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(ActiveSlotIndex, NewActiveSlotIndex);
+}
+</file>
+
+<file path="WitchPT/Private/UI/ViewModels/MVVM_RitualViewModel.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/ViewModels/MVVM_RitualViewModel.h"
+
+#include "Item/RitualAltar.h"
+
+void UMVVM_RitualViewModel::UnbindCallbacksFromDependencies()
+{
+	
+}
+
+void UMVVM_RitualViewModel::BindCallbacksToDependencies()
+{
+	if (RitualAltar)
+	{
+		RitualAltar->OnRitualStateChangedEvent.AddDynamic(this, &UMVVM_RitualViewModel::HandleRitualStateChanged);
+		RitualAltar->OnReadyPlayersChangedEvent.AddDynamic(this, &UMVVM_RitualViewModel::HandleReadyPlayersChanged);
+		RitualAltar->OnCountdownTickEvent.AddDynamic(this, &UMVVM_RitualViewModel::HandleCountdownTick);
+		RitualAltar->OnTurnDataChangedEvent.AddDynamic(this, &UMVVM_RitualViewModel::HandleTurnDataChanged);
+		RitualAltar->OnCorruptionChangedEvent.AddDynamic(this, &UMVVM_RitualViewModel::HandleCorruptionChanged);
+		RitualAltar->OnSequenceProgressChangedEvent.AddDynamic(this, &UMVVM_RitualViewModel::HandleSequenceProgressChanged);
+		RitualAltar->OnRitualCompletedEvent.AddDynamic(this, &UMVVM_RitualViewModel::HandleRitualCompleted);
+	}
+	
+}
+
+void UMVVM_RitualViewModel::BroadcastInitialValues()
+{
+	if (RitualAltar)
+	{
+		SetCurrentRitualState(RitualAltar->GetCurrentRitualState());
+		SetProgressPercentage(RitualAltar->GetCurrentSequenceProgress());
+		SetCorruptionPercentage(RitualAltar->GetCorruptionPercentage());
+		FUIRitualData CurrentTurnData = RitualAltar->GetCurrentTurnData();
+		SetCurrentInputTimeRemaining(CurrentTurnData.CurrentInputTimeRemaining);
+		
+	}
+	
+}
+
+void UMVVM_RitualViewModel::SetCurrentRitualState(EInteractionState NewState)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(CurrentRitualState, NewState);
+}
+
+void UMVVM_RitualViewModel::SetExpectedInput(const FString& NewExpectedInput)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(ExpectedInput, NewExpectedInput);
+}
+
+void UMVVM_RitualViewModel::SetRitualAltar(ARitualAltar* InRitualAltar)
+{
+	if (InRitualAltar)
+	{
+		RitualAltar = InRitualAltar;
+		
+		UnbindCallbacksFromDependencies();
+		BindCallbacksToDependencies();
+		BroadcastInitialValues();
+	}
+}
+
+void UMVVM_RitualViewModel::HandleRitualStateChanged(const EInteractionState NewState)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(CurrentRitualState, NewState);
+}
+
+void UMVVM_RitualViewModel::HandleTurnDataChanged(FUIRitualData TurnData)
+{
+	
+	UE_MVVM_SET_PROPERTY_VALUE(ProgressPercentage, TurnData.RitualPercentageCompleted);
+	UE_MVVM_SET_PROPERTY_VALUE(CorruptionPercentage, TurnData.CorruptionPercentage);
+	UE_MVVM_SET_PROPERTY_VALUE(CurrentInputTimeRemaining, TurnData.CurrentInputTimeRemaining);
+	if (TurnData.bIsMyTurn)
+	{
+		UE_MVVM_SET_PROPERTY_VALUE(ExpectedInput, TurnData.ExpectedInput.ToString());
+	} else 
+	{
+		UE_MVVM_SET_PROPERTY_VALUE(ExpectedInput, FGameplayTag::EmptyTag.ToString());
+	}
+}
+
+void UMVVM_RitualViewModel::HandleReadyPlayersChanged(FRitualReadyPlayersData InReadyPlayersData)
+{
+	
+	
+}
+
+void UMVVM_RitualViewModel::HandleCountdownTick(int32 InCountdownValue)
+{
+	if (InCountdownValue <= 0)
+	{
+		SetCurrentInputTimeRemaining(0.0f);
+	}
+	else
+	{
+		SetCurrentInputTimeRemaining(static_cast<float>(InCountdownValue));
+	}
+	
+}
+
+void UMVVM_RitualViewModel::HandleCorruptionChanged(float InCorruptionPercentage)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(CorruptionPercentage, InCorruptionPercentage);
+}
+
+void UMVVM_RitualViewModel::HandleSequenceProgressChanged(float InProgressPercentage)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(ProgressPercentage, InProgressPercentage);
+}
+
+void UMVVM_RitualViewModel::HandleRitualCompleted(bool bWasSuccessful)
+{
+	
+}
+</file>
+
+<file path="WitchPT/Private/UI/ViewModels/WitchPT_MVVMViewModelBase.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/ViewModels/WitchPT_MVVMViewModelBase.h"
+
+void UWitchPT_MVVMViewModelBase::SetViewModelParams(const FViewModelParams& Params)
+{
+	PlayerController = Params.PlayerController;
+	PlayerState = Params.PlayerState;
+	AbilitySystemComponent = Params.AbilitySystemComponent;
+	AttributeSet = Params.AttributeSet;
+}
+
+void UWitchPT_MVVMViewModelBase::BindCallbacksToDependencies()
+{
+}
+
+void UWitchPT_MVVMViewModelBase::BroadcastInitialValues()
+{
+}
+
+void UWitchPT_MVVMViewModelBase::UnbindCallbacksFromDependencies()
+{
+}
+</file>
+
 <file path="WitchPT/Private/UI/WidgetControllers/CauldronWidgetController.cpp">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -9489,6 +9976,25 @@ void UInventoryWidgetController::SetContextualObject(UObject* ContextualObject)
 	Super::SetContextualObject(ContextualObject);
 }
 
+void UInventoryWidgetController::BroadcastInitialValues()
+{
+	// if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	// {
+	// 	if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+	// 	{
+	// 		TArray<UWitchPTInventoryItemInstance*> AllItems = InventoryManager->GetAllItems();
+	// 		for (UWitchPTInventoryItemInstance* ItemInstance : AllItems)
+	// 		{
+	// 			if (ItemInstance)
+	// 			{
+	// 				OnItemAddedDelegate.Broadcast(ItemInstance);
+	// 			}
+	// 		}
+	// 	}
+	// 	
+	// }
+}
+
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
 	AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController);
@@ -9511,6 +10017,20 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 			});
 		}
 	}
+}
+
+void UInventoryWidgetController::UnbindCallbacksFromDependencies()
+{
+	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	{
+		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+		{
+			InventoryManager->OnItemAdded.RemoveAll(this);
+			InventoryManager->OnItemStackChanged.RemoveAll(this);
+			InventoryManager->OnItemRemoved.RemoveAll(this);
+		}
+	}
+	
 }
 
 void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)
@@ -9721,7 +10241,7 @@ void UQuickBarWidgetController::BindCallbacksToDependencies()
 		
 		if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
 		{
-			QuickBarComponent->OnActiveSlotChanged.AddDynamic(this, &UQuickBarWidgetController::OnActiveSlotChanged);
+			// QuickBarComponent->OnActiveSlotChanged.AddDynamic(this, &UQuickBarWidgetController::OnActiveSlotChanged);
 		}
 	}
 
@@ -9987,6 +10507,17 @@ void URitualWidgetController::HandleRitualCompleted(bool bWasSuccessful)
 
 #include "UI/WidgetControllers/WitchPTWidgetController.h"
 
+void UWitchPTWidgetController::Activate()
+{
+	BindCallbacksToDependencies();
+	BroadcastInitialValues();
+}
+
+void UWitchPTWidgetController::Deactivate()
+{
+	UnbindCallbacksFromDependencies();
+}
+
 void UWitchPTWidgetController::SetContextualObject(UObject* ContextualObject)
 {
 	ISetContextualObjectInterface::SetContextualObject(ContextualObject);
@@ -10005,6 +10536,10 @@ void UWitchPTWidgetController::BroadcastInitialValues()
 }
 
 void UWitchPTWidgetController::BindCallbacksToDependencies()
+{
+}
+
+void UWitchPTWidgetController::UnbindCallbacksFromDependencies()
 {
 }
 </file>
@@ -10207,6 +10742,23 @@ FText UWitchPTUILayer::GetStackListNames()
 	return FText::FromString(ListNames);
 }
 
+FText UWitchPTUILayer::GetStackWidgetControllerName()
+{
+	FString ListNames;
+	for (int i = Stack.Num() - 1; i >= 0; i--)
+	{
+		UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Stack[i]);
+		// also print his WidgetController name
+		if (WitchWidget && WitchWidget->WidgetController)
+		{
+			ListNames += WitchWidget->WidgetController->GetClass()->GetName() + " - ";
+			
+		}
+		
+	}
+	return FText::FromString(ListNames);
+}
+
 void UWitchPTUILayer::ClearStack()
 {
 	for (auto & Widget : Stack)
@@ -10400,6 +10952,7 @@ void UWitchPTUserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	// SetVisibility(ESlateVisibility::Collapsed);
+	
 }
 
 void UWitchPTUserWidget::SetWidgetController(UObject* InWidgetController)
@@ -11952,7 +12505,7 @@ private:
 
 
 class UWitchPTInventoryItemInstance;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActiveSlotChangedSignature, int32, NewActiveSlotIndex);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnActiveSlotChangedSignature, int32 /* NewActiveSlotIndex */);
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class WITCHPT_API UWitchPTQuickBarComponent : public UActorComponent
 {
@@ -11965,6 +12518,7 @@ public:
 
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category="QuickBar")
 	void SetActiveSlotIndex(int32 NewIndex);
+	int32 GetActiveSlotIndex() const { return ActiveSlotIndex; }
 
 	virtual void BeginPlay() override;
 
@@ -15275,6 +15829,8 @@ struct TStructOpsTypeTraits<FGameplayTagStackContainer> : public TStructOpsTypeT
 #include "GameFramework/HUD.h"
 #include "WitchPTHUD.generated.h"
 
+class UWitchPT_MVVMViewModelBase;
+class UMVVM_OverlayViewModel;
 class UQuickBarUserWidget;
 class UWitchPTPrimaryLayout;
 class UQuickBarWidgetController;
@@ -15314,9 +15870,13 @@ public:
 	UCauldronWidgetController *SetCauldronWidgetController(const FWidgetControllerParams &WCParams);
 	UQuickBarWidgetController *SetQuickBarWidgetController(const FWidgetControllerParams &WCParams);
 
-	void InitAllWidgets(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
+	void InitializeViewModels(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
+
 	UFUNCTION(BlueprintCallable)
 	void ToggleGameMenu(TSubclassOf<UWitchPTUserWidget> WidgetClass);
+
+
+	
 
 
 	void ShowRitualWidget(class ARitualAltar *RitualAltar);
@@ -15393,6 +15953,409 @@ private:
 	TObjectPtr<UCauldronWidgetController> CauldronWidgetController;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCauldronWidgetController> CauldronWidgetControllerClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UMVVM_OverlayViewModel> OverlayViewModelClass;
+
+	UPROPERTY(EditAnywhere)
+	TMap<TSubclassOf<UWitchPT_MVVMViewModelBase>, FName> ViewModelClasses;
+};
+</file>
+
+<file path="WitchPT/Public/UI/ViewModels/MVVM_CauldronViewModel.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPT_MVVMViewModelBase.h"
+#include "Blueprint/UserWidget.h"
+#include "MVVM_CauldronViewModel.generated.h"
+class UWitchPTInventoryItemInstance;
+class ACauldronAltar;
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UMVVM_CauldronViewModel : public UWitchPT_MVVMViewModelBase
+{
+	GENERATED_BODY()
+public:
+	virtual void BindCallbacksToDependencies() override;
+	virtual void BroadcastInitialValues() override;
+	virtual void UnbindCallbacksFromDependencies() override;
+
+private:
+	
+	UPROPERTY()
+	TObjectPtr<ACauldronAltar> CauldronAltar;
+	
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	UWitchPTInventoryItemInstance* BaseIngredient;
+	
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	TSubclassOf<UUserWidget> BaseIngredientIcon;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	TSubclassOf<UUserWidget> PrincipalIngredientIcon;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	TSubclassOf<UUserWidget> ModifierIngredientIcon;
+
+public:
+	// -------------------- Getters and Setters ------------------------
+	
+	void SetCauldronAltar(ACauldronAltar* InCauldronAltar);
+
+	void SetBaseIngredient(UWitchPTInventoryItemInstance* InBaseIngredient);
+	UWitchPTInventoryItemInstance* GetBaseIngredient() const { return BaseIngredient; }
+	
+	void SetBaseIngredientIcon(TSubclassOf<UUserWidget> InBaseIngredientIcon);
+	TSubclassOf<UUserWidget> GetBaseIngredientIcon() const { return BaseIngredientIcon; }
+	
+	
+	void SetPrincipalIngredientIcon(TSubclassOf<UUserWidget> InPrincipalIngredientIcon);
+	TSubclassOf<UUserWidget> GetPrincipalIngredientIcon() const { return PrincipalIngredientIcon; }
+	
+	
+	void SetModifierIngredientIcon(TSubclassOf<UUserWidget> InModifierIngredientIcon);
+	TSubclassOf<UUserWidget> GetModifierIngredientIcon() const { return ModifierIngredientIcon; }
+
+
+
+	
+	// -------------------- Callbacks ----------------------------------
+	// -------------------- MVVM -> Model Functions --------------------
+};
+</file>
+
+<file path="WitchPT/Public/UI/ViewModels/MVVM_InventoryViewModel.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPT_MVVMViewModelBase.h"
+#include "MVVM_InventoryViewModel.generated.h"
+
+class UWitchPTInventoryItemInstance;
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UMVVM_InventoryViewModel : public UWitchPT_MVVMViewModelBase
+{
+	GENERATED_BODY()
+public:
+	virtual void BindCallbacksToDependencies() override;
+	virtual void BroadcastInitialValues() override;
+private:
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	TArray<UWitchPTInventoryItemInstance*> Items;
+
+public:
+	// -------------------- Getters and Setters ------------------------
+	void SetItems(const TArray<UWitchPTInventoryItemInstance*>& NewItems) { Items = NewItems; }
+	TArray<UWitchPTInventoryItemInstance*> GetItems() const;
+	// -------------------- Callbacks ----------------------------------
+	void AddItem(UWitchPTInventoryItemInstance* ItemInstance);
+	void RemoveItem(UWitchPTInventoryItemInstance* ItemInstance);
+
+	// -------------------- MVVM -> Model Functions --------------------
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void EquipItem(UWitchPTInventoryItemInstance* ItemInstance);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove = 1);
+	
+	
+};
+</file>
+
+<file path="WitchPT/Public/UI/ViewModels/MVVM_OverlayViewModel.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPT_MVVMViewModelBase.h"
+#include "MVVM_OverlayViewModel.generated.h"
+
+class UMVVMView;
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UMVVM_OverlayViewModel : public UWitchPT_MVVMViewModelBase
+{
+	GENERATED_BODY()
+	
+public:
+	virtual void BindCallbacksToDependencies() override;
+	virtual void BroadcastInitialValues() override;
+	
+private:
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	int32 Health = 0;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	int32 MaxHealth = 0;
+	
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	int32 Age = 0;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	int32 MaxAge = 0;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	int32 Stamina = 0;
+	
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	int32 MaxStamina = 0;
+
+
+
+public:
+	void SetHealth(int32 NewHealth);
+	void SetMaxHealth(int32 NewMaxHealth);
+	void SetAge(int32 NewAge);
+	void SetMaxAge(int32 NewMaxAge);
+	void SetStamina(int32 NewStamina);
+	void SetMaxStamina(int32 NewMaxStamina);
+
+	int32 GetHealth() const { return Health; }
+	int32 GetMaxHealth() const { return MaxHealth; }
+	int32 GetAge() const { return Age; }
+	int32 GetMaxAge() const { return MaxAge; }
+	int32 GetStamina() const { return Stamina; }
+	int32 GetMaxStamina() const { return MaxStamina; }
+
+
+
+	
+	
+public:
+	UFUNCTION(BlueprintPure, FieldNotify)
+	float GetHealthPercent() const
+	{
+		if (MaxHealth != 0)
+		{
+			return (float) Health / (float) MaxHealth;
+		}
+		else
+			return 0;
+	}
+	
+	UFUNCTION(BlueprintPure, FieldNotify)
+	float GetAgePercent() const
+	{
+		if (MaxAge != 0)
+		{
+			return (float) Age / (float) MaxAge;
+		}
+		else
+			return 0;
+	}
+
+	UFUNCTION(BlueprintPure, FieldNotify)
+	float GetStaminaPercent() const
+	{
+		if (MaxStamina != 0)
+		{
+			return (float) Stamina / (float) MaxStamina;
+		}
+		else
+			return 0;
+	}
+};
+</file>
+
+<file path="WitchPT/Public/UI/ViewModels/MVVM_QuickBarViewModel.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WitchPT_MVVMViewModelBase.h"
+#include "MVVM_QuickBarViewModel.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UMVVM_QuickBarViewModel : public UWitchPT_MVVMViewModelBase
+{
+	GENERATED_BODY()
+public:
+	virtual void BindCallbacksToDependencies() override;
+	virtual void BroadcastInitialValues() override;
+
+private:
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	int32 ActiveSlotIndex = 0;
+
+public:
+	void SetActiveSlotIndex(int32 NewActiveSlotIndex);
+	int32 GetActiveSlotIndex() const { return ActiveSlotIndex; }
+
+	
+};
+</file>
+
+<file path="WitchPT/Public/UI/ViewModels/MVVM_RitualViewModel.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "WitchPT_MVVMViewModelBase.h"
+#include "UI/WidgetControllers/RitualWidgetController.h"
+#include "MVVM_RitualViewModel.generated.h"
+
+class ARitualAltar;
+/**
+ * 
+ */
+UCLASS()
+class WITCHPT_API UMVVM_RitualViewModel : public UWitchPT_MVVMViewModelBase
+{
+	GENERATED_BODY()
+public:
+	virtual void UnbindCallbacksFromDependencies() override;
+	UFUNCTION()
+	void HandleSequenceProgressChanged(float ProgressPercentage);
+	UFUNCTION()
+	void HandleCorruptionChanged(float CorruptionPercentage);
+
+	virtual void BindCallbacksToDependencies() override;
+	virtual void BroadcastInitialValues() override;
+private:
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	EInteractionState CurrentRitualState = EInteractionState::Inactive;
+	
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	FString ExpectedInput;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	float ProgressPercentage = 0.0f;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	float CorruptionPercentage = 0.0f;
+
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	float CurrentInputTimeRemaining = 0.0f;
+
+	UPROPERTY()
+	TObjectPtr<ARitualAltar> RitualAltar = nullptr;
+
+	
+	
+
+public:
+	// -------------------- Getters and Setters ------------------------
+	void SetCurrentRitualState(EInteractionState NewState);
+	EInteractionState GetCurrentRitualState() const { return CurrentRitualState; }
+	
+	void SetExpectedInput(const FString& NewExpectedInput);
+	FString GetExpectedInput() const { return ExpectedInput; }
+
+	void SetProgressPercentage(float NewProgressPercentage) { ProgressPercentage = NewProgressPercentage; }
+	float GetProgressPercentage() const { return ProgressPercentage; }
+
+	void SetCorruptionPercentage(float NewCorruptionPercentage) { CorruptionPercentage = NewCorruptionPercentage; }
+	float GetCorruptionPercentage() const { return CorruptionPercentage; }
+
+	void SetCurrentInputTimeRemaining(float NewTimeRemaining) { CurrentInputTimeRemaining = NewTimeRemaining; }
+	float GetCurrentInputTimeRemaining() const { return CurrentInputTimeRemaining; }
+	
+	UFUNCTION(BlueprintCallable)
+	void SetRitualAltar(ARitualAltar* InRitualAltar);
+	
+	// -------------------- Callbacks ----------------------------------
+	UFUNCTION()
+	void HandleRitualStateChanged(EInteractionState NewState);
+	UFUNCTION()
+	void HandleTurnDataChanged(FUIRitualData TurnData);
+	UFUNCTION()
+	void HandleReadyPlayersChanged(FRitualReadyPlayersData ReadyPlayersData);
+	UFUNCTION()
+	void HandleCountdownTick(int32 CountdownValue);
+	
+
+
+
+
+	
+	UFUNCTION()
+	void HandleRitualCompleted(bool bWasSuccessful);
+
+	// -------------------- MVVM -> Model Functions --------------------
+};
+</file>
+
+<file path="WitchPT/Public/UI/ViewModels/WitchPT_MVVMViewModelBase.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "MVVMViewModelBase.h"
+
+#include "WitchPT_MVVMViewModelBase.generated.h"
+
+class UAttributeSet;
+class UAbilitySystemComponent;
+
+USTRUCT(BlueprintType)
+struct FViewModelParams
+{
+	GENERATED_BODY()
+	FViewModelParams() {};
+	FViewModelParams(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+	:
+	PlayerController(PC),
+	PlayerState(PS),
+	AbilitySystemComponent(ASC),
+	AttributeSet(AS)
+	{}
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<APlayerController> PlayerController = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<APlayerState> PlayerState = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UAttributeSet> AttributeSet = nullptr;
+	
+};
+UCLASS()
+class WITCHPT_API UWitchPT_MVVMViewModelBase : public UMVVMViewModelBase
+{
+	GENERATED_BODY()
+public:
+	void SetViewModelParams(const FViewModelParams& Params);
+	virtual void BindCallbacksToDependencies();
+	virtual void BroadcastInitialValues();
+	virtual void UnbindCallbacksFromDependencies();
+
+
+protected:
+	UPROPERTY(BlueprintReadOnly, Category= "ViewModel")
+	TObjectPtr<APlayerController> PlayerController;
+	
+	UPROPERTY(BlueprintReadOnly, Category= "ViewModel")
+	TObjectPtr<APlayerState> PlayerState;
+
+	UPROPERTY(BlueprintReadOnly, Category= "ViewModel")
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	UPROPERTY(BlueprintReadOnly, Category= "ViewModel")
+	TObjectPtr<UAttributeSet> AttributeSet;
 };
 </file>
 
@@ -15493,6 +16456,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Controllers", meta = (DeterminesOutputType = "ControllerClass"))
 	UWitchPTWidgetController* GetControllerByClass(TSubclassOf<UWitchPTWidgetController> ControllerClass);
 
+	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> GetControllerPackage() const { return ControllerPackage; }
+
 private:
 	UPROPERTY()
 	TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> ControllerPackage;
@@ -15524,6 +16489,9 @@ public:
 	virtual void SetContextualObject(UObject* ContextualObject) override;
 	UFUNCTION(BlueprintCallable)
 	virtual void BindCallbacksToDependencies() override;
+	virtual void UnbindCallbacksFromDependencies() override;
+	
+	virtual void BroadcastInitialValues() override;
 						
 	/**
 	 * Removes a stack or specified amount from an inventory item instance
@@ -15862,14 +16830,19 @@ class WITCHPT_API UWitchPTWidgetController : public UObject, public ISetContextu
 {
 	GENERATED_BODY()
 public:
+	void Activate();
+	void Deactivate();
+	
 	virtual void SetContextualObject(UObject* ContextualObject) override;
-	UFUNCTION(BlueprintCallable)
+	
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
 
-	UFUNCTION(BlueprintCallable)
+	
+protected:
 	virtual void BroadcastInitialValues();
 	virtual void BindCallbacksToDependencies();
-protected:
+	virtual void UnbindCallbacksFromDependencies();
+	
 	UPROPERTY(BlueprintReadOnly, Category= "WidgetController")
 	TObjectPtr<APlayerController> PlayerController;
 	
@@ -16022,6 +16995,8 @@ public:
 	UUserWidget* GetTopScreen() const;
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	FText GetStackListNames();
+	UFUNCTION(BlueprintCallable, Category= "UI Layer")
+	FText GetStackWidgetControllerName();
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void ClearStack();
 	
@@ -16222,9 +17197,9 @@ public class WitchPT : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "UMG"  });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "UMG", "ModelViewViewModel" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "NetCore" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "NetCore", "ModelViewViewModel" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

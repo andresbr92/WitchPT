@@ -7,26 +7,53 @@
 #include "Item/CauldronAltar.h"
 #include "Item/RitualAltar.h"
 #include "Player/WitchPTPlayerState.h"
+#include "UI/GenericUISystemSettings.h"
+#include "UI/WitchPT_GameUIPolicy.h"
 #include "UI/HUD/WitchPTHUD.h"
-#include "UI/WidgetControllers/CauldronWidgetController.h"
-#include "UI/WidgetControllers/GenericContainerWidgetController.h"
-#include "UI/WidgetControllers/RitualWidgetController.h"
-#include "UI/WidgetControllers/WitchPTWidgetController.h"
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 
-AWitchPTHUD* UUIManagerSubsystem::GetWitchPTHUD()
+void UUIManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	if (ULocalPlayer * LocalPlayer = GetLocalPlayer())
+	Super::Initialize(Collection);
+	if (UGenericUISystemSettings::Get()->GameUIPolicyClass.IsNull())
 	{
-		if (APlayerController* PlayerController = LocalPlayer->GetPlayerController(GetWorld()))
+		UE_LOG(LogTemp, Warning, TEXT("No GameUIPolicyClass set in GenericUISystemSettings!"));
+		return;
+	}
+	if (!CurrentPolicy)
+	{
+		if (TSubclassOf<UWitchPT_GameUIPolicy> PolicyClass = UGenericUISystemSettings::Get()->GameUIPolicyClass.LoadSynchronous())
 		{
-			if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PlayerController->GetHUD()))
+			if (UWitchPT_GameUIPolicy* NewPolicy = NewObject<UWitchPT_GameUIPolicy>(this, PolicyClass))
 			{
-				return WitchPTHUD;
+				CurrentPolicy = NewPolicy;
+				UE_LOG(LogTemp, Log, TEXT("UIManagerSubsystem initialized with policy: %s"), *CurrentPolicy->GetName());
 			}
+			
 		}
 	}
+}
+
+void UUIManagerSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+	CurrentPolicy = nullptr;
+	UE_LOG(LogTemp, Log, TEXT("UIManagerSubsystem deinitialized."));
+}
+
+AWitchPTHUD* UUIManagerSubsystem::GetWitchPTHUD()
+{
+	// if (ULocalPlayer * LocalPlayer = GetLocalPlayer())
+	// {
+	// 	if (APlayerController* PlayerController = LocalPlayer->GetPlayerController(GetWorld()))
+	// 	{
+	// 		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PlayerController->GetHUD()))
+	// 		{
+	// 			return WitchPTHUD;
+	// 		}
+	// 	}
+	// }
 	return nullptr;
 }
 
@@ -61,53 +88,55 @@ bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
 	return false;
 }
 
-UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext)
+UUserWidget* UUIManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass)
 {
-	 if (!LayerTag.IsValid() || ActivationContext.WidgetClass.IsNull())
-    {
-        return nullptr;
-    }
-
-    TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
-    if (!WidgetClass) return nullptr;
-
-    UWitchPTUserWidget* TargetWidget = nullptr;
+	return nullptr;
 	
-    FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
-    if (Pool && Pool->AvailableWidgets.Num() > 0)
-    {
-        for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
-        {
-            UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
-            if (PooledWidget && PooledWidget->LastContextObject == ActivationContext.ContextObject)
-            {
-                TargetWidget = PooledWidget;
-                Pool->AvailableWidgets.RemoveAt(i);
-                UE_LOG(LogTemp, Log, TEXT("Reusing widget for class: %s"), *WidgetClass->GetName());
-                break;
-            }
-        }
-    }
-
-    if (!TargetWidget)
-    {
-        TargetWidget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass);
-        UE_LOG(LogTemp, Log, TEXT("Creating new widget for class: %s"), *WidgetClass->GetName());
-    }
-
-    if (!TargetWidget)
-    {
-        return nullptr;
-    }
-	
-    AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
-	
-    if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-    {
-        PrimaryLayout->PushContentToLayer(LayerTag, TargetWidget);
-    }
-    
-    return TargetWidget;
+	 // if (!LayerTag.IsValid() || ActivationContext.WidgetClass.IsNull())
+  //   {
+  //       return nullptr;
+  //   }
+  //
+  //   TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
+  //   if (!WidgetClass) return nullptr;
+  //
+  //   UWitchPTUserWidget* TargetWidget = nullptr;
+	 //
+  //   FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
+  //   if (Pool && Pool->AvailableWidgets.Num() > 0)
+  //   {
+  //       for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
+  //       {
+  //           UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
+  //           if (PooledWidget && PooledWidget->LastContextObject == ActivationContext.ContextObject)
+  //           {
+  //               TargetWidget = PooledWidget;
+  //               Pool->AvailableWidgets.RemoveAt(i);
+  //               UE_LOG(LogTemp, Log, TEXT("Reusing widget for class: %s"), *WidgetClass->GetName());
+  //               break;
+  //           }
+  //       }
+  //   }
+  //
+  //   if (!TargetWidget)
+  //   {
+  //       TargetWidget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass);
+  //       UE_LOG(LogTemp, Log, TEXT("Creating new widget for class: %s"), *WidgetClass->GetName());
+  //   }
+  //
+  //   if (!TargetWidget)
+  //   {
+  //       return nullptr;
+  //   }
+	 //
+  //   AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
+	 //
+  //   if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+  //   {
+  //       PrimaryLayout->PushContentToLayer(LayerTag, TargetWidget);
+  //   }
+  //   
+  //   return TargetWidget;
 }
 
 void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
@@ -189,41 +218,41 @@ UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout()
 
 void UUIManagerSubsystem::FocusGame()
 {
-	// get player controller
-	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
-	{
-		// set input mode to game only
-		PlayerController->SetInputMode(FInputModeGameOnly());
-		// hide mouse cursor
-		PlayerController->bShowMouseCursor = false;
-	}
+	// // get player controller
+	// if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	// {
+	// 	// set input mode to game only
+	// 	PlayerController->SetInputMode(FInputModeGameOnly());
+	// 	// hide mouse cursor
+	// 	PlayerController->bShowMouseCursor = false;
+	// }
 }
 
 void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
 {
-	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
-	{
-		// Check if the widget is valid before trying to focus it
-		if (!IsValid(WidgetToFocus))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("FocusModal: WidgetToFocus is invalid or null"));
-			return;
-		}
-
-		if(bUIOnlyInput)
-		{
-			FInputModeUIOnly InputMode;
-			InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
-			PlayerController->SetInputMode(InputMode);
-			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
-		}
-		else
-		{
-			FInputModeGameAndUI InputMode;
-			InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
-			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
-			PlayerController->SetInputMode(InputMode);
-		}
-	}
+	// if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	// {
+	// 	// Check if the widget is valid before trying to focus it
+	// 	if (!IsValid(WidgetToFocus))
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("FocusModal: WidgetToFocus is invalid or null"));
+	// 		return;
+	// 	}
+	//
+	// 	if(bUIOnlyInput)
+	// 	{
+	// 		FInputModeUIOnly InputMode;
+	// 		InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+	// 		PlayerController->SetInputMode(InputMode);
+	// 		bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+	// 	}
+	// 	else
+	// 	{
+	// 		FInputModeGameAndUI InputMode;
+	// 		InputMode.SetWidgetToFocus(WidgetToFocus->TakeWidget());
+	// 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	// 		bShowCursor ? PlayerController->bShowMouseCursor = true : PlayerController->bShowMouseCursor = false;
+	// 		PlayerController->SetInputMode(InputMode);
+	// 	}
+	// }
 }
