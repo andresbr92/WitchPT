@@ -16,6 +16,7 @@
 #include "Item/Ritual/RitualFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Subsystems/UIManagerSubsystem.h"
 #include "UI/HUD/WitchPTHUD.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
@@ -183,6 +184,14 @@ void AWitchPTPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
 	CreateHUDWidget();
+
+	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
+	{
+		if (UUIManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
+		{
+			UIManagerSubsystem->AddPlayer(LocalPlayer);
+		}
+	}
 }
 
 void AWitchPTPlayerController::SetupInputComponent()
