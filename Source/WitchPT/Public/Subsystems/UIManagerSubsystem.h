@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Blueprint/UserWidgetPool.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UIManagerSubsystem.generated.h"
@@ -13,27 +14,6 @@ class UWitchPTWidgetController;
 /**
  * 
  */
-USTRUCT()
-struct FWidgetPool
-{
-	GENERATED_BODY()
-	UPROPERTY()
-	TArray<TObjectPtr<UUserWidget>> AvailableWidgets;
-};
-USTRUCT(BlueprintType)
-struct FUIActivationContext
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftClassPtr<UUserWidget> WidgetClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<class UWitchPTWidgetController>> RequiredControllers;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UObject> ContextObject = nullptr;
-};
 
 class UWitchPTUILayer;
 struct FGameplayTag;
@@ -66,15 +46,7 @@ public:
 	virtual void NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer);
 
 
-
-
-
-
-
-
-
-
-
+	
 	
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	AWitchPTHUD* GetWitchPTHUD();
@@ -84,11 +56,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	bool UnRegisterLayout(FGameplayTag LayerTag);
-
-
-
-	void ReleaseWidgetToPool(UUserWidget* Widget);
-	void ClearAllPools();
+	
 
 
 
@@ -109,11 +77,7 @@ public:
 private:
 	
 	UWitchPTUserWidget* GetPrimaryLayout();
-
-	UPROPERTY()
-	TMap<TSubclassOf<UUserWidget>, FWidgetPool> WidgetPools;
 	
-
 	UPROPERTY(Transient)
 	TObjectPtr<UWitchPT_GameUIPolicy> CurrentPolicy = nullptr;
 	

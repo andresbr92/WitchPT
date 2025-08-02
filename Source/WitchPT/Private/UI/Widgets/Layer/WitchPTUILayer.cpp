@@ -3,50 +3,49 @@
 
 #include "UI/Widgets/Layer/WitchPTUILayer.h"
 
+#include "Blueprint/UserWidgetPool.h"
 #include "Components/Border.h"
 #include "Subsystems/UIManagerSubsystem.h"
 
-UUserWidget* UWitchPTUILayer::PushContent(UUserWidget* InUserWidget)
+UUserWidget* UWitchPTUILayer::PushContent(TSubclassOf<UUserWidget> WidgetClass)
 {
-	if (IsValid(InUserWidget))
+	if (WidgetClass)
 	{
-		PushedWidget = InUserWidget;
-		CollapseTop();
-		Border->ClearChildren();
-		Stack.Add(InUserWidget);
-		Border->AddChild(InUserWidget);
-		ShowTop();
-		UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *InUserWidget->GetName());
-		return PushedWidget;
+		
+		if (UUserWidget* UserWidgetInstance = WidgetPool.GetOrCreateInstance<UUserWidget>(WidgetClass))
+		{
+			// TODO: Check the creation of this widget by this tutorial: https://unreal-garden.com/tutorials/userwidget-pool/
+			CollapseTop();
+			Border->ClearChildren();
+			Stack.Add(UserWidgetInstance);
+			Border->AddChild(UserWidgetInstance);
+			ShowTop();
+			UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *UserWidgetInstance->GetName());
+			return UserWidgetInstance;
+		}
 		
 	}
 	return nullptr;
 }
 
+void UWitchPTUILayer::ReleaseSlateResources(bool bReleaseChildren)
+{
+	WidgetPool.ReleaseAllSlateResources();
+	Super::ReleaseSlateResources(bReleaseChildren);
+}
 
 
 void UWitchPTUILayer::PopContent()
 {
 	if (!Stack.IsEmpty())
 	{
-		UUserWidget* TopWidgetToRelease = Stack.Last();
-		if (TopWidgetToRelease)
+		if (UUserWidget* WidgetToRelease = Stack.Last())
 		{
-			TopWidgetToRelease->RemoveFromParent();
+			WidgetToRelease->RemoveFromParent();
 			Stack.Pop();
-
-			// --- Cambio Clave ---
-			// En lugar de dejar que se destruya, lo devolvemos al pool.
-			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
-			{
-				if (UUIManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
-				{
-					UIManagerSubsystem->ReleaseWidgetToPool(TopWidgetToRelease);
-				}
-			}
+			WidgetPool.Release(WidgetToRelease);
 		}
-
-		// Mostrar el siguiente widget en el stack si existe
+		
 		if (UUserWidget* NewTopWidget = GetTopScreen())
 		{
 			NewTopWidget->SetVisibility(ESlateVisibility::Visible);

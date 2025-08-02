@@ -54,13 +54,13 @@ bool UWitchPTPrimaryLayout::UnRegisterLayer(FGameplayTag LayerTag)
 	}
 	return false;
 }
-UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget)
+UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag, TSubclassOf<UUserWidget> WidgetClass)
 {
-	if (LayerTag.IsValid() && IsValid(InUserWidget))
+	if (LayerTag.IsValid() && WidgetClass)
 	{
 		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
 		{
-			UUserWidget* PushedWidget = Layer->PushContent(InUserWidget);
+			UUserWidget* PushedWidget = Layer->PushContent(WidgetClass);
 			return PushedWidget;
 		}
 	}

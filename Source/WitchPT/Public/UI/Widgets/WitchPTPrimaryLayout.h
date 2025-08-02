@@ -20,8 +20,8 @@ public:
 	UWitchPTPrimaryLayout();
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Layout")
-	TMap<FGameplayTag, FUIActivationContext> InitialScreens;
+	// UPROPERTY(EditDefaultsOnly, Category = "Layout")
+	// TMap<FGameplayTag, FUIActivationContext> InitialScreens;
 
 	// ------------------------------- Main functions ------------------------------- //
 	UFUNCTION(BlueprintCallable, Category = "UI")
@@ -31,7 +31,7 @@ public:
 	bool UnRegisterLayer(FGameplayTag LayerTag);
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget);
+	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, TSubclassOf<UUserWidget> WidgetClass);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PopContentFromLayer(FGameplayTag LayerTag);

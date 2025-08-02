@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blueprint/UserWidgetPool.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "WitchPTUILayer.generated.h"
 
@@ -18,7 +19,9 @@ class WITCHPT_API UWitchPTUILayer : public UWitchPTUserWidget
 public:
 	
 	UFUNCTION(Blueprintable, Category= "UI Layer")
-	UUserWidget* PushContent(UUserWidget* InUserWidget);
+	UUserWidget* PushContent(TSubclassOf<UUserWidget> WidgetClass);
+
+	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void PopContent();
@@ -41,12 +44,11 @@ private:
 	TArray<TObjectPtr<UUserWidget>> Stack;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UUserWidget> TopWidget = nullptr;
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UUserWidget> PushedWidget = nullptr;
 
 	void ShowTop();
 	void CollapseTop();
-	// HELPER FUNCTIONS
+
+	FUserWidgetPool WidgetPool;
 
 	
 	

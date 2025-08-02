@@ -94,85 +94,13 @@ UUserWidget* UUIManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerCont
 	{
 		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(LocalPlayer))
 		{
-			if (UUserWidget* Widget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass))
-			{
-				return RootLayout->PushContentToLayer(LayerTag, Widget);
-			}
+			
+			return RootLayout->PushContentToLayer(LayerTag, WidgetClass);
+			
 		}
 	}
-	
-
-
-
-
-
-
-
-
-
-
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	return nullptr;
-	 // if (!LayerTag.IsValid() || ActivationContext.WidgetClass.IsNull())
-  //   {
-  //       return nullptr;
-  //   }
-  //
-  //   TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
-  //   if (!WidgetClass) return nullptr;
-  //
-  //   UWitchPTUserWidget* TargetWidget = nullptr;
-	 //
-  //   FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
-  //   if (Pool && Pool->AvailableWidgets.Num() > 0)
-  //   {
-  //       for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
-  //       {
-  //           UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
-  //           if (PooledWidget && PooledWidget->LastContextObject == ActivationContext.ContextObject)
-  //           {
-  //               TargetWidget = PooledWidget;
-  //               Pool->AvailableWidgets.RemoveAt(i);
-  //               UE_LOG(LogTemp, Log, TEXT("Reusing widget for class: %s"), *WidgetClass->GetName());
-  //               break;
-  //           }
-  //       }
-  //   }
-  //
-  //   if (!TargetWidget)
-  //   {
-  //       TargetWidget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass);
-  //       UE_LOG(LogTemp, Log, TEXT("Creating new widget for class: %s"), *WidgetClass->GetName());
-  //   }
-  //
-  //   if (!TargetWidget)
-  //   {
-  //       return nullptr;
-  //   }
-	 //
-  //   AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
-	 //
-  //   if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-  //   {
-  //       PrimaryLayout->PushContentToLayer(LayerTag, TargetWidget);
-  //   }
-  //   
-  //   return TargetWidget;
+
 }
 
 void UUIManagerSubsystem::AddPlayer(ULocalPlayer* LocalPlayer)
@@ -210,37 +138,9 @@ void UUIManagerSubsystem::NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer)
 	}
 }
 
-void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
-{
-	 if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
-    {
-        
-        TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
-        if (Key)
-        {
-            FWidgetPool& Pool = WidgetPools.FindOrAdd(Key);
-            Pool.AvailableWidgets.Add(WitchWidget);
-            UE_LOG(LogTemp, Log, TEXT("Returning widget to pool for class %s"), *Key->GetName());
-        }
-    }
-}
 
-void UUIManagerSubsystem::ClearAllPools()
-{
-	for (auto& Pair : WidgetPools)
-	{
-		for (UUserWidget* Widget : Pair.Value.AvailableWidgets)
-		{
-			if (Widget)
-			{
-				Widget->RemoveFromParent();
-				Widget->MarkAsGarbage();
-			}
-		}
-	}
-	WidgetPools.Empty();
-	UE_LOG(LogTemp, Log, TEXT("All widget pools have been cleaned."));
-}
+
+
 
 void UUIManagerSubsystem::PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, FGameplayTag LayerTag, int32 RemainNum)
 {
@@ -254,26 +154,6 @@ void UUIManagerSubsystem::PopContentFromLayer_ForPlayer(const APlayerController*
 				RootLayout->PopContentFromLayer(LayerTag);
 			}
 		}
-
-
-
-
-
-
-
-
-
-
-
-		
-		// if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
-		// {
-		// 	if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-		// 	{
-		// 		PrimaryLayout->PopContentFromLayer(LayerTag);
-		// 		UE_LOG(LogTemp, Log, TEXT("Popping content from layer: %s"), *LayerTag.ToString());
-		// 	}
-		// }
 	}
 }
 
