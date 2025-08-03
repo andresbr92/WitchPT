@@ -17,6 +17,7 @@ class WITCHPT_API UWitchPTUILayer : public UWitchPTUserWidget
 	GENERATED_BODY()
 	
 public:
+	virtual void NativeConstruct() override;
 	
 	UFUNCTION(Blueprintable, Category= "UI Layer")
 	UUserWidget* PushContent(TSubclassOf<UUserWidget> WidgetClass);

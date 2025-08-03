@@ -7,23 +7,42 @@
 #include "Components/Border.h"
 #include "Subsystems/UIManagerSubsystem.h"
 
+void UWitchPTUILayer::NativeConstruct()
+{
+	Super::NativeConstruct();
+	
+	// Initialize the widget pool with the current world context
+	WidgetPool.SetWorld(GetWorld());
+}
+
 UUserWidget* UWitchPTUILayer::PushContent(TSubclassOf<UUserWidget> WidgetClass)
 {
-	if (WidgetClass)
+	if (!WidgetClass)
 	{
-		
-		if (UUserWidget* UserWidgetInstance = WidgetPool.GetOrCreateInstance<UUserWidget>(WidgetClass))
-		{
-			// TODO: Check the creation of this widget by this tutorial: https://unreal-garden.com/tutorials/userwidget-pool/
-			CollapseTop();
-			Border->ClearChildren();
-			Stack.Add(UserWidgetInstance);
-			Border->AddChild(UserWidgetInstance);
-			ShowTop();
-			UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *UserWidgetInstance->GetName());
-			return UserWidgetInstance;
-		}
-		
+		UE_LOG(LogTemp, Warning, TEXT("PushContent: WidgetClass is null"));
+		return nullptr;
+	}
+
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PushContent: GetWorld() returned null"));
+		return nullptr;
+	}
+	
+	if (UUserWidget* UserWidgetInstance = WidgetPool.GetOrCreateInstance<UUserWidget>(WidgetClass))
+	{
+		// TODO: Check the creation of this widget by this tutorial: https://unreal-garden.com/tutorials/userwidget-pool/
+		CollapseTop();
+		Border->ClearChildren();
+		Stack.Add(UserWidgetInstance);
+		Border->AddChild(UserWidgetInstance);
+		ShowTop();
+		UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *UserWidgetInstance->GetName());
+		return UserWidgetInstance;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PushContent: Failed to create widget instance for class: %s"), WidgetClass ? *WidgetClass->GetName() : TEXT("NULL"));
 	}
 	return nullptr;
 }
