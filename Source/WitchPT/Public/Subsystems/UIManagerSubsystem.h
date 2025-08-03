@@ -18,7 +18,6 @@ class UWitchPTWidgetController;
 class UWitchPTUILayer;
 struct FGameplayTag;
 class UWitchPTPrimaryLayout;
-class AWitchPTHUD;
 
 UCLASS()
 class WITCHPT_API UUIManagerSubsystem : public UGameInstanceSubsystem
@@ -32,8 +31,7 @@ public:
 	UUserWidget* PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer"))
-	FGameplayTag LayerTag, int32 RemainNum = -1);
+	void PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, int32 RemainNum = -1);
 	
 	UFUNCTION(BlueprintCallable, Category="UI Manager")
 	virtual void AddPlayer(ULocalPlayer* LocalPlayer);
@@ -45,17 +43,13 @@ public:
 	virtual void NotifyPlayerRemoved(ULocalPlayer* LocalPlayer);
 	virtual void NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer);
 
-
 	
 	
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	AWitchPTHUD* GetWitchPTHUD();
-	
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	bool RegisterLayout(FGameplayTag LayoutTag, UWitchPTUILayer* InLayer);
+	bool RegisterLayout(APlayerController* PlayerController, FGameplayTag LayoutTag, UWitchPTUILayer* InLayer);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	bool UnRegisterLayout(FGameplayTag LayerTag);
+	bool UnRegisterLayout(APlayerController* PlayerController, FGameplayTag LayerTag);
 	
 
 
@@ -70,13 +64,13 @@ public:
 	void ClearLayer(FGameplayTag LayerTag);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void FocusGame();
+	void FocusGame(APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void FocusModal(APlayerController* PlayerController, UUserWidget* WidgetToFocus, bool bShowCursor = true, bool bUIOnlyInput = false);
 private:
 	
-	UWitchPTUserWidget* GetPrimaryLayout();
+	UWitchPTUserWidget* GetPrimaryLayout(const APlayerController* PlayerController) const;
 	
 	UPROPERTY(Transient)
 	TObjectPtr<UWitchPT_GameUIPolicy> CurrentPolicy = nullptr;

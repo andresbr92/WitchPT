@@ -42,46 +42,30 @@ void UUIManagerSubsystem::Deinitialize()
 	UE_LOG(LogTemp, Log, TEXT("UIManagerSubsystem deinitialized."));
 }
 
-AWitchPTHUD* UUIManagerSubsystem::GetWitchPTHUD()
-{
-	// if (ULocalPlayer * LocalPlayer = GetLocalPlayer())
-	// {
-	// 	if (APlayerController* PlayerController = LocalPlayer->GetPlayerController(GetWorld()))
-	// 	{
-	// 		if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PlayerController->GetHUD()))
-	// 		{
-	// 			return WitchPTHUD;
-	// 		}
-	// 	}
-	// }
-	return nullptr;
-}
 
-bool UUIManagerSubsystem::RegisterLayout(FGameplayTag LayoutTag, UWitchPTUILayer* InLayer)
+
+bool UUIManagerSubsystem::RegisterLayout(APlayerController* PlayerController, FGameplayTag LayoutTag, UWitchPTUILayer* InLayer)
 {
 	if (LayoutTag.IsValid() && InLayer != nullptr)
 	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-			{
-				return PrimaryLayout->RegisterLayer(LayoutTag, InLayer);
-			}
+			return RootLayout->RegisterLayer(LayoutTag, InLayer);
 		}
+		
 	}
 	return false;
 }
 
-bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
+bool UUIManagerSubsystem::UnRegisterLayout(APlayerController* PlayerController, FGameplayTag LayerTag)
 {
 	if (LayerTag.IsValid())
 	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-			{
-				return PrimaryLayout->UnRegisterLayer(LayerTag);
-			}
+			return RootLayout->UnRegisterLayer(LayerTag);
 		}
 		
 	}
@@ -169,34 +153,24 @@ void UUIManagerSubsystem::ClearLayer(FGameplayTag LayerTag)
 {
 }
 
-UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout()
+UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout(const APlayerController* PlayerController) const
 {
-	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 	{
-		if (WitchPTHUD->GetPrimaryLayout())
-		{
-			return WitchPTHUD->GetPrimaryLayout();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Primary Layout is not initialized in WitchPTHUD!"));
-		}
+		return RootLayout;
 	}
 	return nullptr;
 }
 
 
 
-void UUIManagerSubsystem::FocusGame()
+void UUIManagerSubsystem::FocusGame(APlayerController* PlayerController)
 {
-	// // get player controller
-	// if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
-	// {
-	// 	// set input mode to game only
-	// 	PlayerController->SetInputMode(FInputModeGameOnly());
-	// 	// hide mouse cursor
-	// 	PlayerController->bShowMouseCursor = false;
-	// }
+	if (PlayerController)
+	{
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		PlayerController->bShowMouseCursor = false;
+	}
 }
 
 void UUIManagerSubsystem::FocusModal(APlayerController* PlayerController, UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
