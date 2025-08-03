@@ -64,7 +64,7 @@ public:
 	void HideCauldronWithInventory();
 
 	// ----------------------- Getters -----------------------
-	UWitchPTPrimaryLayout *GetPrimaryLayout() const { return PrimaryLayout; }
+
 	UFUNCTION(BlueprintCallable)
 	UQuickBarUserWidget* GetQuickBarUserWidget() const;
 	UFUNCTION(BlueprintCallable)
@@ -72,10 +72,6 @@ public:
 
 private:
 	// ----------------------- User Widgets -----------------------
-	UPROPERTY()
-	TObjectPtr<UWitchPTPrimaryLayout> PrimaryLayout;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UWitchPTUserWidget> PrimaryLayoutClass;
 
 	UPROPERTY()
 	TObjectPtr<UWitchPTUserWidget> QuickBarUserWidget;

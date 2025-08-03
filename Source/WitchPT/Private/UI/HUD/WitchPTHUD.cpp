@@ -23,13 +23,7 @@
 void AWitchPTHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	if (PrimaryLayout == nullptr)
-	{
-		UUserWidget* PrimaryLayoutInstance = CreateWidget<UUserWidget>(GetOwningPlayerController(), PrimaryLayoutClass);
-		PrimaryLayout = Cast<UWitchPTPrimaryLayout>(PrimaryLayoutInstance);
-		PrimaryLayout->AddToViewport();
-		
-	}
+
 }
 
 TMap<TSubclassOf<UWitchPTWidgetController>, UWitchPTWidgetController*> AWitchPTHUD::CreateWidgetsControllers(
