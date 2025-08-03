@@ -90,6 +90,7 @@ protected:
 
 	// --------------------------- GAME UI CONTEXT FUNCTIONS ------------------
 	virtual void AddContext(const ULocalPlayer* LocalPlayer, UWitchPT_GameUIContextBase* NewContext);
+	virtual void RemoveContext(const ULocalPlayer* LocalPlayer, TSubclassOf<UWitchPT_GameUIContextBase> ContextClass);
 	virtual UWitchPT_GameUIContextBase* GetContext(const ULocalPlayer* LocalPlayer, TSubclassOf<UWitchPT_GameUIContextBase> ContextClass);
 
 	

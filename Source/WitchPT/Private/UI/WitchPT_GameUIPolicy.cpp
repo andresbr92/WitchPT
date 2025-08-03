@@ -96,6 +96,25 @@ void UWitchPT_GameUIPolicy::AddContext(const ULocalPlayer* LocalPlayer,
 	
 }
 
+void UWitchPT_GameUIPolicy::RemoveContext(const ULocalPlayer* LocalPlayer,
+	TSubclassOf<UWitchPT_GameUIContextBase> ContextClass)
+{
+	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	{
+		int32 FoundContextIndex = INDEX_NONE;
+		for ( int32 i = 0; i < LayoutInfo->Contexts.Num(); i++)
+		{
+			if (LayoutInfo->Contexts[i] && LayoutInfo->Contexts[i]->GetClass() == ContextClass)
+			{
+				FoundContextIndex = i;
+				UE_LOG(LogTemp, Warning, TEXT("[%s] removed context of type(%s) for %s."), *GetName(), *ContextClass->GetName(), *GetNameSafe(LocalPlayer));
+				break;
+			}
+		}
+		LayoutInfo->Contexts.RemoveAt(FoundContextIndex);
+	}
+}
+
 UWitchPT_GameUIContextBase* UWitchPT_GameUIPolicy::GetContext(const ULocalPlayer* LocalPlayer,
                                                               TSubclassOf<UWitchPT_GameUIContextBase> ContextClass)
 {

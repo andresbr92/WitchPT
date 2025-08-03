@@ -33,22 +33,10 @@ public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void LocalShowRitualWidget(ABaseInteractableAltar* Altar);
-	void LocalHideRitualWidget();
-	bool IsRitualWidgetVisible();
-	void LocalToggleCauldronMenu();
+
 	
 
 
-
-	UFUNCTION(Client, Reliable)
-	void Client_ShowRitualWidget(ABaseInteractableAltar* Altar);
-
-	UFUNCTION(Client, Reliable)
-	void Client_HideRitualWidget();
-
-	UFUNCTION(Client, Reliable)
-	void Client_ToggleCauldronMenu();
 
 
 	UPROPERTY(Replicated, VisibleAnywhere)
@@ -100,12 +88,8 @@ private:
 	
 
 	void CreateHUDWidget();
-	void OpenCauldronMenu();
-	void CloseCauldronMenu();
-	bool bCauldronMenuOpen = false;
 	
-	// Track ritual widget visibility state
-	bool bRitualWidgetVisible = false;
+
 	
 	
 };

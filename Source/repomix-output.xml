@@ -100,6 +100,7 @@ WitchPT/Private/Player/WitchPTPlayerController.cpp
 WitchPT/Private/Player/WitchPTPlayerState.cpp
 WitchPT/Private/Subsystems/UIManagerSubsystem.cpp
 WitchPT/Private/Subsystems/WidgetCommunicatorSubsystem.cpp
+WitchPT/Private/UI/GenericUISystemSettings.cpp
 WitchPT/Private/UI/HUD/WitchPTHUD.cpp
 WitchPT/Private/UI/ViewModels/MVVM_CauldronViewModel.cpp
 WitchPT/Private/UI/ViewModels/MVVM_InventoryViewModel.cpp
@@ -122,6 +123,7 @@ WitchPT/Private/UI/Widgets/PointerWidget.cpp
 WitchPT/Private/UI/Widgets/QuickBarUserWidget.cpp
 WitchPT/Private/UI/Widgets/WitchPTPrimaryLayout.cpp
 WitchPT/Private/UI/Widgets/WitchPTUserWidget.cpp
+WitchPT/Private/UI/WitchPT_GameUIPolicy.cpp
 WitchPT/Private/WitchPTAssetManager.cpp
 WitchPT/Public/AbilitySystem/Cauldron/AT_WaitForPlacementLocation_SLT.h
 WitchPT/Public/AbilitySystem/Cauldron/GA_CauldronPlace.h
@@ -189,6 +191,7 @@ WitchPT/Public/Subsystems/UIManagerSubsystem.h
 WitchPT/Public/Subsystems/WidgetCommunicatorSubsystem.h
 WitchPT/Public/Systems/GameplayTagStack.cpp
 WitchPT/Public/Systems/GameplayTagStack.h
+WitchPT/Public/UI/GenericUISystemSettings.h
 WitchPT/Public/UI/HUD/WitchPTHUD.h
 WitchPT/Public/UI/ViewModels/MVVM_CauldronViewModel.h
 WitchPT/Public/UI/ViewModels/MVVM_InventoryViewModel.h
@@ -211,6 +214,7 @@ WitchPT/Public/UI/Widgets/PointerWidget.h
 WitchPT/Public/UI/Widgets/QuickBarUserWidget.h
 WitchPT/Public/UI/Widgets/WitchPTPrimaryLayout.h
 WitchPT/Public/UI/Widgets/WitchPTUserWidget.h
+WitchPT/Public/UI/WitchPT_GameUIPolicy.h
 WitchPT/Public/WitchPTAssetManager.h
 WitchPT/WitchPT.Build.cs
 WitchPT/WitchPT.cpp
@@ -8342,6 +8346,7 @@ void ARitualPosition::HandleInteraction(ACharacter* InteractingCharacter)
 #include "Item/Ritual/RitualFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Subsystems/UIManagerSubsystem.h"
 #include "UI/HUD/WitchPTHUD.h"
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 #include "UI/WidgetControllers/RitualWidgetController.h"
@@ -8509,6 +8514,14 @@ void AWitchPTPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(WitchPtiInputMappingContext, 1);
 	}
 	CreateHUDWidget();
+
+	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
+	{
+		if (UUIManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
+		{
+			UIManagerSubsystem->AddPlayer(LocalPlayer);
+		}
+	}
 }
 
 void AWitchPTPlayerController::SetupInputComponent()
@@ -8636,151 +8649,135 @@ UAbilitySystemComponent* AWitchPTPlayerState::GetAbilitySystemComponent() const
 #include "Item/CauldronAltar.h"
 #include "Item/RitualAltar.h"
 #include "Player/WitchPTPlayerState.h"
+#include "UI/GenericUISystemSettings.h"
+#include "UI/WitchPT_GameUIPolicy.h"
 #include "UI/HUD/WitchPTHUD.h"
-#include "UI/WidgetControllers/CauldronWidgetController.h"
-#include "UI/WidgetControllers/GenericContainerWidgetController.h"
-#include "UI/WidgetControllers/RitualWidgetController.h"
-#include "UI/WidgetControllers/WitchPTWidgetController.h"
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 
-AWitchPTHUD* UUIManagerSubsystem::GetWitchPTHUD()
+void UUIManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	if (ULocalPlayer * LocalPlayer = GetLocalPlayer())
+	Super::Initialize(Collection);
+	if (UGenericUISystemSettings::Get()->GameUIPolicyClass.IsNull())
 	{
-		if (APlayerController* PlayerController = LocalPlayer->GetPlayerController(GetWorld()))
+		UE_LOG(LogTemp, Warning, TEXT("No GameUIPolicyClass set in GenericUISystemSettings!"));
+		return;
+	}
+	if (!CurrentPolicy)
+	{
+		if (TSubclassOf<UWitchPT_GameUIPolicy> PolicyClass = UGenericUISystemSettings::Get()->GameUIPolicyClass.LoadSynchronous())
 		{
-			if (AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PlayerController->GetHUD()))
+			if (UWitchPT_GameUIPolicy* NewPolicy = NewObject<UWitchPT_GameUIPolicy>(this, PolicyClass))
 			{
-				return WitchPTHUD;
+				CurrentPolicy = NewPolicy;
+				UE_LOG(LogTemp, Log, TEXT("UIManagerSubsystem initialized with policy: %s"), *CurrentPolicy->GetName());
 			}
+			
 		}
 	}
-	return nullptr;
 }
 
-bool UUIManagerSubsystem::RegisterLayout(FGameplayTag LayoutTag, UWitchPTUILayer* InLayer)
+void UUIManagerSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+	CurrentPolicy = nullptr;
+	UE_LOG(LogTemp, Log, TEXT("UIManagerSubsystem deinitialized."));
+}
+
+
+
+bool UUIManagerSubsystem::RegisterLayout(APlayerController* PlayerController, FGameplayTag LayoutTag, UWitchPTUILayer* InLayer)
 {
 	if (LayoutTag.IsValid() && InLayer != nullptr)
 	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-			{
-				return PrimaryLayout->RegisterLayer(LayoutTag, InLayer);
-			}
-		}
-	}
-	return false;
-}
-
-bool UUIManagerSubsystem::UnRegisterLayout(FGameplayTag LayerTag)
-{
-	if (LayerTag.IsValid())
-	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
-		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-			{
-				return PrimaryLayout->UnRegisterLayer(LayerTag);
-			}
+			return RootLayout->RegisterLayer(LayoutTag, InLayer);
 		}
 		
 	}
 	return false;
 }
 
-UUserWidget* UUIManagerSubsystem::PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext)
-{
-	 if (!LayerTag.IsValid() || ActivationContext.WidgetClass.IsNull())
-    {
-        return nullptr;
-    }
-
-    TSubclassOf<UUserWidget> WidgetClass = ActivationContext.WidgetClass.LoadSynchronous();
-    if (!WidgetClass) return nullptr;
-
-    UWitchPTUserWidget* TargetWidget = nullptr;
-	
-    FWidgetPool* Pool = WidgetPools.Find(WidgetClass);
-    if (Pool && Pool->AvailableWidgets.Num() > 0)
-    {
-        for (int32 i = Pool->AvailableWidgets.Num() - 1; i >= 0; --i)
-        {
-            UWitchPTUserWidget* PooledWidget = Cast<UWitchPTUserWidget>(Pool->AvailableWidgets[i]);
-            if (PooledWidget && PooledWidget->LastContextObject == ActivationContext.ContextObject)
-            {
-                TargetWidget = PooledWidget;
-                Pool->AvailableWidgets.RemoveAt(i);
-                UE_LOG(LogTemp, Log, TEXT("Reusing widget for class: %s"), *WidgetClass->GetName());
-                break;
-            }
-        }
-    }
-
-    if (!TargetWidget)
-    {
-        TargetWidget = CreateWidget<UWitchPTUserWidget>(GetWorld(), WidgetClass);
-        UE_LOG(LogTemp, Log, TEXT("Creating new widget for class: %s"), *WidgetClass->GetName());
-    }
-
-    if (!TargetWidget)
-    {
-        return nullptr;
-    }
-	
-    AWitchPTHUD* WitchPTHUD = GetWitchPTHUD();
-	
-    if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
-    {
-        PrimaryLayout->PushContentToLayer(LayerTag, TargetWidget);
-    }
-    
-    return TargetWidget;
-}
-
-void UUIManagerSubsystem::ReleaseWidgetToPool(UUserWidget* Widget)
-{
-	 if (UWitchPTUserWidget* WitchWidget = Cast<UWitchPTUserWidget>(Widget))
-    {
-        
-        TSubclassOf<UUserWidget> Key = WitchWidget->PoolKey;
-        if (Key)
-        {
-            FWidgetPool& Pool = WidgetPools.FindOrAdd(Key);
-            Pool.AvailableWidgets.Add(WitchWidget);
-            UE_LOG(LogTemp, Log, TEXT("Returning widget to pool for class %s"), *Key->GetName());
-        }
-    }
-}
-
-void UUIManagerSubsystem::ClearAllPools()
-{
-	for (auto& Pair : WidgetPools)
-	{
-		for (UUserWidget* Widget : Pair.Value.AvailableWidgets)
-		{
-			if (Widget)
-			{
-				Widget->RemoveFromParent();
-				Widget->MarkAsGarbage();
-			}
-		}
-	}
-	WidgetPools.Empty();
-	UE_LOG(LogTemp, Log, TEXT("All widget pools have been cleaned."));
-}
-
-void UUIManagerSubsystem::PopContentFromLayer(FGameplayTag LayerTag)
+bool UUIManagerSubsystem::UnRegisterLayout(APlayerController* PlayerController, FGameplayTag LayerTag)
 {
 	if (LayerTag.IsValid())
 	{
-		if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 		{
-			if (UWitchPTPrimaryLayout* PrimaryLayout = WitchPTHUD->GetPrimaryLayout())
+			return RootLayout->UnRegisterLayer(LayerTag);
+		}
+		
+	}
+	return false;
+}
+
+UUserWidget* UUIManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass)
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+	{
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(LocalPlayer))
+		{
+			
+			return RootLayout->PushContentToLayer(LayerTag, WidgetClass);
+			
+		}
+	}
+	return nullptr;
+
+}
+
+void UUIManagerSubsystem::AddPlayer(ULocalPlayer* LocalPlayer)
+{
+	NotifyPlayerAdded(LocalPlayer);
+}
+
+void UUIManagerSubsystem::RemovePlayer(ULocalPlayer* LocalPlayer)
+{
+	NotifyPlayerRemoved(LocalPlayer);
+}
+
+void UUIManagerSubsystem::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
+{
+	if (ensure(LocalPlayer) && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerAdded(LocalPlayer);
+	}
+}
+
+void UUIManagerSubsystem::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
+{
+	if (ensure(LocalPlayer) && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerRemoved(LocalPlayer);
+	}
+	
+}
+
+void UUIManagerSubsystem::NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer)
+{
+	if (LocalPlayer && CurrentPolicy)
+	{
+		// CurrentPolicy->NotifyPlayerDestroyed(LocalPlayer);
+	}
+}
+
+
+
+
+
+void UUIManagerSubsystem::PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, FGameplayTag LayerTag, int32 RemainNum)
+{
+	if (LayerTag.IsValid() && ensure(PlayerController))
+	{
+		if (CurrentPolicy)
+		{
+			if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 			{
-				PrimaryLayout->PopContentFromLayer(LayerTag);
-				UE_LOG(LogTemp, Log, TEXT("Popping content from layer: %s"), *LayerTag.ToString());
+				// TODO: Implement RemainNum logic if needed
+				RootLayout->PopContentFromLayer(LayerTag);
 			}
 		}
 	}
@@ -8798,39 +8795,29 @@ void UUIManagerSubsystem::ClearLayer(FGameplayTag LayerTag)
 {
 }
 
-UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout()
+UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout(const APlayerController* PlayerController) const
 {
-	if (AWitchPTHUD* WitchPTHUD = GetWitchPTHUD())
+	if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
 	{
-		if (WitchPTHUD->GetPrimaryLayout())
-		{
-			return WitchPTHUD->GetPrimaryLayout();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Primary Layout is not initialized in WitchPTHUD!"));
-		}
+		return RootLayout;
 	}
 	return nullptr;
 }
 
 
 
-void UUIManagerSubsystem::FocusGame()
+void UUIManagerSubsystem::FocusGame(APlayerController* PlayerController)
 {
-	// get player controller
-	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	if (PlayerController)
 	{
-		// set input mode to game only
 		PlayerController->SetInputMode(FInputModeGameOnly());
-		// hide mouse cursor
 		PlayerController->bShowMouseCursor = false;
 	}
 }
 
-void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
+void UUIManagerSubsystem::FocusModal(APlayerController* PlayerController, UUserWidget* WidgetToFocus, bool bShowCursor, bool bUIOnlyInput)
 {
-	if (APlayerController* PlayerController = GetLocalPlayer()->GetPlayerController(GetWorld()))
+	if (PlayerController)
 	{
 		// Check if the widget is valid before trying to focus it
 		if (!IsValid(WidgetToFocus))
@@ -8838,7 +8825,7 @@ void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCurso
 			UE_LOG(LogTemp, Warning, TEXT("FocusModal: WidgetToFocus is invalid or null"));
 			return;
 		}
-
+	
 		if(bUIOnlyInput)
 		{
 			FInputModeUIOnly InputMode;
@@ -8867,6 +8854,18 @@ void UUIManagerSubsystem::FocusModal(UUserWidget* WidgetToFocus, bool bShowCurso
 void UWidgetCommunicatorSubsystem::OnItemDragged(UWitchPTInventoryItemInstance* ItemInstance)
 {
     OnItemDraggedDelegate.Broadcast(ItemInstance);
+}
+</file>
+
+<file path="WitchPT/Private/UI/GenericUISystemSettings.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/GenericUISystemSettings.h"
+
+const UGenericUISystemSettings* UGenericUISystemSettings::Get()
+{
+	return GetDefault<UGenericUISystemSettings>();
 }
 </file>
 
@@ -10670,50 +10669,68 @@ void URitualUserWidget::ResetWidgetState()
 
 #include "UI/Widgets/Layer/WitchPTUILayer.h"
 
+#include "Blueprint/UserWidgetPool.h"
 #include "Components/Border.h"
 #include "Subsystems/UIManagerSubsystem.h"
 
-UUserWidget* UWitchPTUILayer::PushContent(UUserWidget* InUserWidget)
+void UWitchPTUILayer::NativeConstruct()
 {
-	if (IsValid(InUserWidget))
+	Super::NativeConstruct();
+	
+	// Initialize the widget pool with the current world context
+	WidgetPool.SetWorld(GetWorld());
+}
+
+UUserWidget* UWitchPTUILayer::PushContent(TSubclassOf<UUserWidget> WidgetClass)
+{
+	if (!WidgetClass)
 	{
-		PushedWidget = InUserWidget;
+		UE_LOG(LogTemp, Warning, TEXT("PushContent: WidgetClass is null"));
+		return nullptr;
+	}
+
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PushContent: GetWorld() returned null"));
+		return nullptr;
+	}
+	
+	if (UUserWidget* UserWidgetInstance = WidgetPool.GetOrCreateInstance<UUserWidget>(WidgetClass))
+	{
+		// TODO: Check the creation of this widget by this tutorial: https://unreal-garden.com/tutorials/userwidget-pool/
 		CollapseTop();
 		Border->ClearChildren();
-		Stack.Add(InUserWidget);
-		Border->AddChild(InUserWidget);
+		Stack.Add(UserWidgetInstance);
+		Border->AddChild(UserWidgetInstance);
 		ShowTop();
-		UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *InUserWidget->GetName());
-		return PushedWidget;
-		
+		UE_LOG(LogTemp, Log, TEXT("Pushing widget: %s"), *UserWidgetInstance->GetName());
+		return UserWidgetInstance;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PushContent: Failed to create widget instance for class: %s"), WidgetClass ? *WidgetClass->GetName() : TEXT("NULL"));
 	}
 	return nullptr;
 }
 
+void UWitchPTUILayer::ReleaseSlateResources(bool bReleaseChildren)
+{
+	WidgetPool.ReleaseAllSlateResources();
+	Super::ReleaseSlateResources(bReleaseChildren);
+}
 
 
 void UWitchPTUILayer::PopContent()
 {
 	if (!Stack.IsEmpty())
 	{
-		UUserWidget* TopWidgetToRelease = Stack.Last();
-		if (TopWidgetToRelease)
+		if (UUserWidget* WidgetToRelease = Stack.Last())
 		{
-			TopWidgetToRelease->RemoveFromParent();
+			WidgetToRelease->RemoveFromParent();
 			Stack.Pop();
-
-			// --- Cambio Clave ---
-			// En lugar de dejar que se destruya, lo devolvemos al pool.
-			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
-			{
-				if (UUIManagerSubsystem* UIManager = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
-				{
-					UIManager->ReleaseWidgetToPool(TopWidgetToRelease);
-				}
-			}
+			WidgetPool.Release(WidgetToRelease);
 		}
-
-		// Mostrar el siguiente widget en el stack si existe
+		
 		if (UUserWidget* NewTopWidget = GetTopScreen())
 		{
 			NewTopWidget->SetVisibility(ESlateVisibility::Visible);
@@ -10862,13 +10879,13 @@ bool UWitchPTPrimaryLayout::UnRegisterLayer(FGameplayTag LayerTag)
 	}
 	return false;
 }
-UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget)
+UUserWidget* UWitchPTPrimaryLayout::PushContentToLayer(FGameplayTag LayerTag, TSubclassOf<UUserWidget> WidgetClass)
 {
-	if (LayerTag.IsValid() && IsValid(InUserWidget))
+	if (LayerTag.IsValid() && WidgetClass)
 	{
 		if (UWitchPTUILayer* Layer = Layers.FindRef(LayerTag))
 		{
-			UUserWidget* PushedWidget = Layer->PushContent(InUserWidget);
+			UUserWidget* PushedWidget = Layer->PushContent(WidgetClass);
 			return PushedWidget;
 		}
 	}
@@ -10926,19 +10943,19 @@ void UWitchPTPrimaryLayout::ClearLayer(FGameplayTag LayerTag)
 
 void UWitchPTPrimaryLayout::PushInitialScreens()
 {
-	if (InitialScreens.Num())
-	{
-		for (auto & ScreenPair : InitialScreens)
-		{
-			if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
-			{
-				if (UUIManagerSubsystem* UIManagerSubsystem = LocalPlayer->GetSubsystem<UUIManagerSubsystem>())
-				{
-					UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
-				}
-			}
-		}
-	}
+	// if (InitialScreens.Num())
+	// {
+	// 	for (auto & ScreenPair : InitialScreens)
+	// 	{
+	// 		if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
+	// 		{
+	// 			if (UUIManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
+	// 			{
+	// 				UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 </file>
 
@@ -10968,6 +10985,99 @@ void UWitchPTUserWidget::SetPoolingInfo(const TSubclassOf<UUserWidget>& InPoolKe
 	{
 		LastContextObject = InContextObject;
 	}
+}
+</file>
+
+<file path="WitchPT/Private/UI/WitchPT_GameUIPolicy.cpp">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "UI/WitchPT_GameUIPolicy.h"
+
+#include "UI/Widgets/WitchPTPrimaryLayout.h"
+
+UWitchPTPrimaryLayout* UWitchPT_GameUIPolicy::GetRootLayout(const ULocalPlayer* LocalPlayer) const
+{
+	if (const FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	{
+		return LayoutInfo->RootLayout;
+	}
+	return nullptr;
+}
+
+void UWitchPT_GameUIPolicy::CreateLayoutWidget(ULocalPlayer* LocalPlayer)
+{
+	if (APlayerController* PlayerController = LocalPlayer->GetPlayerController(GetWorld()))
+	{
+		TSubclassOf<UWitchPTPrimaryLayout> LayoutWidgetClass = PrimaryLayoutClass.LoadSynchronous();
+		if (ensure(LayoutWidgetClass && !LayoutWidgetClass->HasAnyClassFlags(CLASS_Abstract)))
+		{
+			UWitchPTPrimaryLayout* NewLayoutObject = CreateWidget<UWitchPTPrimaryLayout>(PlayerController, LayoutWidgetClass);
+			RootViewportLayouts.Emplace(LocalPlayer, NewLayoutObject, true);
+
+			AddLayoutToViewport(LocalPlayer, NewLayoutObject);
+		}
+	}
+	
+}
+
+void UWitchPT_GameUIPolicy::AddLayoutToViewport(ULocalPlayer* LocalPlayer, UWitchPTPrimaryLayout* Layout)
+{
+	UE_LOG(LogTemp, Log, TEXT("[%s] is adding player [%s]'s to the viewport"), *GetName(), *GetNameSafe(LocalPlayer));
+	Layout->SetPlayerContext(LocalPlayer);
+	Layout->AddToPlayerScreen(1000);
+}
+
+void UWitchPT_GameUIPolicy::RemoveLayoutFromViewport(ULocalPlayer* LocalPlayer, UWitchPTPrimaryLayout* Layout)
+{
+	TWeakPtr<SWidget> LayoutSlateWidget = Layout->GetCachedWidget();
+	if (LayoutSlateWidget.IsValid())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] is removing player [%s]'s root layout [%s] from the viewport"), *GetName(), *GetNameSafe(LocalPlayer), *GetNameSafe(Layout));
+
+		Layout->RemoveFromParent();
+		if (LayoutSlateWidget.IsValid())
+		{
+			UE_LOG(LogTemp, Log, TEXT("Player [%s]'s root layout [%s] has been removed from the viewport, but other references to its underlying Slate widget still exist. Noting in case we leak it."),
+				   *GetNameSafe(LocalPlayer), *GetNameSafe(Layout));
+		}
+
+		
+	}
+}
+
+void UWitchPT_GameUIPolicy::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
+{
+	NotifyPlayerRemoved(LocalPlayer);
+
+	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	{
+		AddLayoutToViewport(LocalPlayer, LayoutInfo->RootLayout);
+		LayoutInfo->bIsAddedToViewport = true;
+	} else
+	{
+		CreateLayoutWidget(LocalPlayer);
+	}
+}
+
+void UWitchPT_GameUIPolicy::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
+{
+	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	{
+		RemoveLayoutFromViewport(LocalPlayer, LayoutInfo->RootLayout);
+		LayoutInfo->bIsAddedToViewport = false;
+		
+	}
+}
+
+UUIManagerSubsystem* UWitchPT_GameUIPolicy::GetOwningSubsystem() const
+{
+	return nullptr;
+}
+
+UWorld* UWitchPT_GameUIPolicy::GetWorld() const
+{
+	return UObject::GetWorld();
 }
 </file>
 
@@ -15496,63 +15606,55 @@ protected:
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Subsystems/LocalPlayerSubsystem.h"
+#include "Blueprint/UserWidgetPool.h"
+#include "Subsystems/GameInstanceSubsystem.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "UIManagerSubsystem.generated.h"
 
+class UWitchPT_GameUIPolicy;
 class UWitchPTWidgetController;
 /**
  * 
  */
-USTRUCT()
-struct FWidgetPool
-{
-	GENERATED_BODY()
-	UPROPERTY()
-	TArray<TObjectPtr<UUserWidget>> AvailableWidgets;
-};
-USTRUCT(BlueprintType)
-struct FUIActivationContext
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftClassPtr<UUserWidget> WidgetClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<class UWitchPTWidgetController>> RequiredControllers;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UObject> ContextObject = nullptr;
-};
 
 class UWitchPTUILayer;
 struct FGameplayTag;
 class UWitchPTPrimaryLayout;
-class AWitchPTHUD;
 
 UCLASS()
-class WITCHPT_API UUIManagerSubsystem : public ULocalPlayerSubsystem
+class WITCHPT_API UUIManagerSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
+
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category="UI Manager", meta=(DynamicOutputParam="ReturnValue", DeterminesOutputType="WidgetClass"))
+	UUserWidget* PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass);
+
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	AWitchPTHUD* GetWitchPTHUD();
+	void PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, int32 RemainNum = -1);
+	
+	UFUNCTION(BlueprintCallable, Category="UI Manager")
+	virtual void AddPlayer(ULocalPlayer* LocalPlayer);
+	
+	UFUNCTION(BlueprintCallable, Category="UI Manager")
+	void RemovePlayer(ULocalPlayer* LocalPlayer);
+
+	virtual void NotifyPlayerAdded(ULocalPlayer* LocalPlayer);
+	virtual void NotifyPlayerRemoved(ULocalPlayer* LocalPlayer);
+	virtual void NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer);
+
+	
 	
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	bool RegisterLayout(FGameplayTag LayoutTag, UWitchPTUILayer* InLayer);
+	bool RegisterLayout(APlayerController* PlayerController, FGameplayTag LayoutTag, UWitchPTUILayer* InLayer);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	bool UnRegisterLayout(FGameplayTag LayerTag);
+	bool UnRegisterLayout(APlayerController* PlayerController, FGameplayTag LayerTag);
+	
 
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, FUIActivationContext ActivationContext);
 
-	void ReleaseWidgetToPool(UUserWidget* Widget);
-	void ClearAllPools();
-
-	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void PopContentFromLayer(FGameplayTag LayerTag);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void ClearAllLayers();
@@ -15564,16 +15666,16 @@ public:
 	void ClearLayer(FGameplayTag LayerTag);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void FocusGame();
+	void FocusGame(APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
-	void FocusModal(UUserWidget* WidgetToFocus, bool bShowCursor = true, bool bUIOnlyInput = false);
+	void FocusModal(APlayerController* PlayerController, UUserWidget* WidgetToFocus, bool bShowCursor = true, bool bUIOnlyInput = false);
 private:
 	
-	UWitchPTUserWidget* GetPrimaryLayout();
-
-	UPROPERTY()
-	TMap<TSubclassOf<UUserWidget>, FWidgetPool> WidgetPools;
+	UWitchPTUserWidget* GetPrimaryLayout(const APlayerController* PlayerController) const;
+	
+	UPROPERTY(Transient)
+	TObjectPtr<UWitchPT_GameUIPolicy> CurrentPolicy = nullptr;
 	
 };
 </file>
@@ -15817,6 +15919,39 @@ struct TStructOpsTypeTraits<FGameplayTagStackContainer> : public TStructOpsTypeT
 	{
 		WithNetDeltaSerializer = true,
 	};
+};
+</file>
+
+<file path="WitchPT/Public/UI/GenericUISystemSettings.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Engine/DeveloperSettings.h"
+#include "GenericUISystemSettings.generated.h"
+
+class UWitchPT_GameUIPolicy;
+/**
+ * 
+ */
+UCLASS(Config = Game, defaultconfig, meta = (DisplayName = "Generic UI System Settings"))
+class WITCHPT_API UGenericUISystemSettings : public UDeveloperSettings
+{
+	GENERATED_BODY()
+public:
+	/**
+	 * Retrieves the Generic UI System settings.
+	 * @return The UI system settings.
+	 */
+	UFUNCTION(BlueprintPure, Category="WitchPT|Settings", meta = (DisplayName = "Get Generic UI System Settings"))
+	static const UGenericUISystemSettings* Get();
+
+	/**
+	 * Default UI policy class for the game layout.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="WitchPT|Settings")
+	TSoftClassPtr<UWitchPT_GameUIPolicy> GameUIPolicyClass;
 };
 </file>
 
@@ -16971,6 +17106,7 @@ private:
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blueprint/UserWidgetPool.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
 #include "WitchPTUILayer.generated.h"
 
@@ -16984,9 +17120,12 @@ class WITCHPT_API UWitchPTUILayer : public UWitchPTUserWidget
 	GENERATED_BODY()
 	
 public:
+	virtual void NativeConstruct() override;
 	
 	UFUNCTION(Blueprintable, Category= "UI Layer")
-	UUserWidget* PushContent(UUserWidget* InUserWidget);
+	UUserWidget* PushContent(TSubclassOf<UUserWidget> WidgetClass);
+
+	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	
 	UFUNCTION(BlueprintCallable, Category= "UI Layer")
 	void PopContent();
@@ -17009,12 +17148,11 @@ private:
 	TArray<TObjectPtr<UUserWidget>> Stack;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UUserWidget> TopWidget = nullptr;
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UUserWidget> PushedWidget = nullptr;
 
 	void ShowTop();
 	void CollapseTop();
-	// HELPER FUNCTIONS
+
+	FUserWidgetPool WidgetPool;
 
 	
 	
@@ -17090,8 +17228,8 @@ public:
 	UWitchPTPrimaryLayout();
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Layout")
-	TMap<FGameplayTag, FUIActivationContext> InitialScreens;
+	// UPROPERTY(EditDefaultsOnly, Category = "Layout")
+	// TMap<FGameplayTag, FUIActivationContext> InitialScreens;
 
 	// ------------------------------- Main functions ------------------------------- //
 	UFUNCTION(BlueprintCallable, Category = "UI")
@@ -17101,7 +17239,7 @@ public:
 	bool UnRegisterLayer(FGameplayTag LayerTag);
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, UUserWidget* InUserWidget);
+	UUserWidget* PushContentToLayer(FGameplayTag LayerTag, TSubclassOf<UUserWidget> WidgetClass);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void PopContentFromLayer(FGameplayTag LayerTag);
@@ -17161,6 +17299,103 @@ public:
 };
 </file>
 
+<file path="WitchPT/Public/UI/WitchPT_GameUIPolicy.h">
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Subsystems/UIManagerSubsystem.h"
+#include "UObject/Object.h"
+#include "WitchPT_GameUIPolicy.generated.h"
+
+USTRUCT()
+struct FRootViewportLayoutInfo
+{
+	GENERATED_BODY()
+	/**
+	 * The local player associated with the layout.
+	 */
+	UPROPERTY(Transient)
+	TObjectPtr<ULocalPlayer> LocalPlayer = nullptr;
+	/**
+	 * The root layout for the local player.
+	 */
+	UPROPERTY(Transient)
+	TObjectPtr<class UWitchPTPrimaryLayout> RootLayout = nullptr;
+	/**
+	 * Indicates if the layout is added to the viewport.
+	 */
+	UPROPERTY(Transient)
+	bool bIsAddedToViewport = false;
+	// TODO: Nice to have.
+	/**
+	 * Base class for UI context data shared across multiple UI elements.
+	 * @details Allows subclassing to add custom data for UI interactions.
+	 */
+	// UPROPERTY(Transient)
+	// TArray<TObjectPtr<WitchPT_GameUIContext>> Contexts;
+
+	/**
+	 * Default constructor.
+	 */
+	FRootViewportLayoutInfo(){}
+	/**
+	 * Constructor with parameters.
+	 * @param InLocalPlayer The local player associated with the layout.
+	 * @param InRootLayout The root layout for the local player.
+	 * @param bInIsAddedToViewport Indicates if the layout is added to the viewport.
+	 */
+	FRootViewportLayoutInfo(ULocalPlayer* InLocalPlayer, class UWitchPTPrimaryLayout* InRootLayout, bool bInIsAddedToViewport)
+		: LocalPlayer(InLocalPlayer), RootLayout(InRootLayout), bIsAddedToViewport(bInIsAddedToViewport) {}
+
+	/**
+	 * Equality operator to compare with a local player.
+	 * @param OtherLocalPlayer The local player to compare with.
+	 * @return True if the local players match, false otherwise.
+	 */
+	bool operator==(const ULocalPlayer* OtherLocalPlayer) const { return LocalPlayer == OtherLocalPlayer; }
+
+};
+
+class UWitchPTPrimaryLayout;
+/**
+ * 
+ */
+UCLASS(Abstract, Blueprintable, Within = UIManagerSubsystem)
+class WITCHPT_API UWitchPT_GameUIPolicy : public UObject
+{
+	GENERATED_BODY()
+public:
+	/* Retrieves the root layout for the specified local player.
+	 * @param LocalPlayer The local player for whom to retrieve the root layout.
+	 * @return The root layout for the specified local player.
+	 */
+	UWitchPTPrimaryLayout* GetRootLayout(const ULocalPlayer* LocalPlayer) const;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Layout")
+	TSoftClassPtr<UWitchPTPrimaryLayout> PrimaryLayoutClass;
+
+protected:
+	void CreateLayoutWidget(ULocalPlayer* LocalPlayer);
+	void AddLayoutToViewport(ULocalPlayer* LocalPlayer, UWitchPTPrimaryLayout* Layout);
+	void RemoveLayoutFromViewport(ULocalPlayer* LocalPlayer, UWitchPTPrimaryLayout* Layout);
+	
+	virtual void NotifyPlayerAdded(ULocalPlayer* LocalPlayer);
+	virtual void NotifyPlayerRemoved(ULocalPlayer* LocalPlayer);
+
+	
+	UUIManagerSubsystem* GetOwningSubsystem() const;
+	virtual UWorld* GetWorld() const override;
+
+private:
+	
+	UPROPERTY(Transient)
+	TArray<FRootViewportLayoutInfo> RootViewportLayouts;
+	friend class UUIManagerSubsystem;
+};
+</file>
+
 <file path="WitchPT/Public/WitchPTAssetManager.h">
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -17197,7 +17432,7 @@ public class WitchPT : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "UMG", "ModelViewViewModel" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "UMG", "ModelViewViewModel", "DeveloperSettings", "Slate", "SlateCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "NetCore", "ModelViewViewModel" });
 

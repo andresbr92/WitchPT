@@ -273,9 +273,7 @@ protected:
 	void BroadcastSequenceProgressChanged();
 	void BroadcastRitualCompleted();
 	
-	// ----------------------------------- UI MANAGEMENT HELPER FUNCTIONS ---------------------------------------------- //
-	// Helper function to hide ritual widgets for all participating players
-	void HideRitualWidgetForAllPlayers();
+
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> PrimaryAnimMontage;

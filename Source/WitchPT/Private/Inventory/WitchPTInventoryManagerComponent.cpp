@@ -13,7 +13,6 @@
 #include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/Widgets/Inventory/InventoryUserWidget.h"
-#include "Inventory/InventoryFunctionLibrary.h"
 #include "UI/WidgetControllers/InventoryWidgetController.h"
 
 

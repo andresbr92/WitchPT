@@ -506,7 +506,7 @@ void ACauldronAltar::UnoccupyPosition(ACharacter* Character, ABaseInteractionPos
                 AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(PC->GetHUD());
                 if (WitchPTHUD)
                 {
-                    WitchPTHUD->ToggleGameMenu(UCauldronUserWidget::StaticClass());
+                    // WitchPTHUD->ToggleGameMenu(UCauldronUserWidget::StaticClass());
                 }
             }
         } else if (Character->HasAuthority() && !Character->IsLocallyControlled()) // The call is from the client

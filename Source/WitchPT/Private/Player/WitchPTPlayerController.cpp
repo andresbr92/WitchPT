@@ -12,18 +12,9 @@
 #include "Input/WitchPTInputComponent.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Item/CauldronAltar.h"
-#include "Item/RitualAltar.h"
-#include "Item/Ritual/RitualFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Subsystems/UIManagerSubsystem.h"
-#include "UI/HUD/WitchPTHUD.h"
-#include "UI/WidgetControllers/CauldronWidgetController.h"
-#include "UI/WidgetControllers/RitualWidgetController.h"
-#include "UI/Widgets/CauldronUserWidget.h"
-#include "UI/Widgets/Inventory/InventoryUserWidget.h"
-#include "UI/Widgets/Inventory/RitualUserWidget.h"
-#include "WitchPT/WitchPT.h"
 
 AWitchPTPlayerController::AWitchPTPlayerController()
 {
@@ -60,120 +51,13 @@ void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AWitchPTPlayerController, InventoryManager);
 }
-void AWitchPTPlayerController::LocalToggleCauldronMenu()
-{
-	
-	if (bCauldronMenuOpen)
-	{
-		CloseCauldronMenu();
-	}
-	else
-	{
-		OpenCauldronMenu();
-	}
-}
-
-void AWitchPTPlayerController::LocalShowRitualWidget(ABaseInteractableAltar* Altar)
-{
-	if (!Altar || !IsLocalController())
-	{
-		UE_LOG(LogTemp, Error, TEXT("LocalShowRitualWidget: Invalid altar or not local controller!"));
-		return;
-	}
-	
-	if (Altar->IsA<ARitualAltar>())
-	{
-		// Cast the altar to a ritual altar
-		ARitualAltar* RitualAltar = Cast<ARitualAltar>(Altar);
-		
-		// Get the HUD and show the ritual widget
-		AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-		if (WitchPTHUD)
-		{
-			WitchPTHUD->ShowRitualWidget(RitualAltar);
-			bRitualWidgetVisible = true;
-			UE_LOG(LogTemp, Log, TEXT("LocalShowRitualWidget: Ritual widget shown for altar %s"), *RitualAltar->GetName());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("LocalShowRitualWidget: Failed to get WitchPTHUD!"));
-		}
-	}
-}
-
-void AWitchPTPlayerController::LocalHideRitualWidget()
-{
-	if (!IsLocalController())
-	{
-		UE_LOG(LogTemp, Error, TEXT("LocalHideRitualWidget: Not local controller!"));
-		return;
-	}
-	
-	// Get the HUD and hide the ritual widget
-	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-	if (WitchPTHUD)
-	{
-		WitchPTHUD->HideRitualWidget();
-		bRitualWidgetVisible = false;
-		UE_LOG(LogTemp, Log, TEXT("LocalHideRitualWidget: Ritual widget hidden"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("LocalHideRitualWidget: Failed to get WitchPTHUD!"));
-	}
-}
-
-bool AWitchPTPlayerController::IsRitualWidgetVisible()
-{
-	return bRitualWidgetVisible;
-}
-
-void AWitchPTPlayerController::OpenCauldronMenu()
-{
-	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-	if (WitchPTHUD)
-	{
-		// Find cauldron altar in level (or pass as parameter if available)
-		ACauldronAltar* CauldronAltar = Cast<ACauldronAltar>(
-			UGameplayStatics::GetActorOfClass(this, ACauldronAltar::StaticClass())
-		);
-        
-		if (CauldronAltar)
-		{
-			WitchPTHUD->ShowCauldronWithInventory(CauldronAltar);
-			bCauldronMenuOpen = true;
-		}
-	}
-}
-
-void AWitchPTPlayerController::CloseCauldronMenu()
-{
-	AWitchPTHUD* WitchPTHUD = Cast<AWitchPTHUD>(GetHUD());
-	if (WitchPTHUD)
-	{
-		WitchPTHUD->HideCauldronWithInventory();
-		bCauldronMenuOpen = false;
-	}
-}
-
-void AWitchPTPlayerController::Client_ShowRitualWidget_Implementation(ABaseInteractableAltar* Altar)
-{
-	// Always call LocalShowRitualWidget - it handles the visibility check locally
-	LocalShowRitualWidget(Altar);
-}
-
-void AWitchPTPlayerController::Client_HideRitualWidget_Implementation()
-{
-	// Always call LocalHideRitualWidget - it handles the visibility check locally
-	LocalHideRitualWidget();
-}
 
 
 
-void AWitchPTPlayerController::Client_ToggleCauldronMenu_Implementation()
-{
-	LocalToggleCauldronMenu();
-}
+
+
+
+
 void AWitchPTPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
