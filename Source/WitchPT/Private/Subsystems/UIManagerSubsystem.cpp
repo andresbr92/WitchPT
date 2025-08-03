@@ -9,6 +9,7 @@
 #include "Player/WitchPTPlayerState.h"
 #include "UI/GenericUISystemSettings.h"
 #include "UI/WitchPT_GameUIPolicy.h"
+#include "UI/GameUIContexts/WitchPT_GameUIContextBase.h"
 #include "UI/HUD/WitchPTHUD.h"
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 #include "UI/Widgets/WitchPTUserWidget.h"
@@ -44,34 +45,10 @@ void UUIManagerSubsystem::Deinitialize()
 
 
 
-bool UUIManagerSubsystem::RegisterLayout(APlayerController* PlayerController, FGameplayTag LayoutTag, UWitchPTUILayer* InLayer)
-{
-	if (LayoutTag.IsValid() && InLayer != nullptr)
-	{
-	
-		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
-		{
-			return RootLayout->RegisterLayer(LayoutTag, InLayer);
-		}
-		
-	}
-	return false;
-}
 
-bool UUIManagerSubsystem::UnRegisterLayout(APlayerController* PlayerController, FGameplayTag LayerTag)
-{
-	if (LayerTag.IsValid())
-	{
-	
-		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
-		{
-			return RootLayout->UnRegisterLayer(LayerTag);
-		}
-		
-	}
-	return false;
-}
-
+// ------------------------------------------------------------------
+// ------------------------- MAIN FUNCTIONS -------------------------
+// ------------------------------------------------------------------
 UUserWidget* UUIManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass)
 {
 	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
@@ -87,45 +64,6 @@ UUserWidget* UUIManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerCont
 
 }
 
-void UUIManagerSubsystem::AddPlayer(ULocalPlayer* LocalPlayer)
-{
-	NotifyPlayerAdded(LocalPlayer);
-}
-
-void UUIManagerSubsystem::RemovePlayer(ULocalPlayer* LocalPlayer)
-{
-	NotifyPlayerRemoved(LocalPlayer);
-}
-
-void UUIManagerSubsystem::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
-{
-	if (ensure(LocalPlayer) && CurrentPolicy)
-	{
-		CurrentPolicy->NotifyPlayerAdded(LocalPlayer);
-	}
-}
-
-void UUIManagerSubsystem::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
-{
-	if (ensure(LocalPlayer) && CurrentPolicy)
-	{
-		CurrentPolicy->NotifyPlayerRemoved(LocalPlayer);
-	}
-	
-}
-
-void UUIManagerSubsystem::NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer)
-{
-	if (LocalPlayer && CurrentPolicy)
-	{
-		// CurrentPolicy->NotifyPlayerDestroyed(LocalPlayer);
-	}
-}
-
-
-
-
-
 void UUIManagerSubsystem::PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, FGameplayTag LayerTag, int32 RemainNum)
 {
 	if (LayerTag.IsValid() && ensure(PlayerController))
@@ -140,30 +78,6 @@ void UUIManagerSubsystem::PopContentFromLayer_ForPlayer(const APlayerController*
 		}
 	}
 }
-
-void UUIManagerSubsystem::ClearAllLayers()
-{
-}
-
-void UUIManagerSubsystem::ClearLayerExcept(FGameplayTag LayerTag)
-{
-}
-
-void UUIManagerSubsystem::ClearLayer(FGameplayTag LayerTag)
-{
-}
-
-UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout(const APlayerController* PlayerController) const
-{
-	if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
-	{
-		return RootLayout;
-	}
-	return nullptr;
-}
-
-
-
 void UUIManagerSubsystem::FocusGame(APlayerController* PlayerController)
 {
 	if (PlayerController)
@@ -201,3 +115,135 @@ void UUIManagerSubsystem::FocusModal(APlayerController* PlayerController, UUserW
 		}
 	}
 }
+// ------------------------------------------------------------------
+// ------------------------- PLAYER FUNCTIONS -----------------------
+// ------------------------------------------------------------------
+
+void UUIManagerSubsystem::AddPlayer(ULocalPlayer* LocalPlayer)
+{
+	NotifyPlayerAdded(LocalPlayer);
+}
+
+void UUIManagerSubsystem::RemovePlayer(ULocalPlayer* LocalPlayer)
+{
+	NotifyPlayerRemoved(LocalPlayer);
+}
+// ------------------------------------------------------------------
+// --------------------------- GAME UI CONTEXT FUNCTIONS ------------
+// ------------------------------------------------------------------
+void UUIManagerSubsystem::RegisterUIContext_ForPlayer(APlayerController* PlayerController, UWitchPT_GameUIContextBase* Context)
+{
+	if (PlayerController && CurrentPolicy && Context)
+	{
+		if (const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+		{
+			CurrentPolicy->AddContext(LocalPlayer, Context);
+		}
+
+	}
+}
+
+void UUIManagerSubsystem::RegisterUIContext_ForActor(AActor* Actor, UWitchPT_GameUIContextBase* Context)
+{
+	// TODO: Implement this function
+}
+
+bool UUIManagerSubsystem::FindUIContext_ForPlayer(ULocalPlayer* LocalPlayer,
+	TSubclassOf<UWitchPT_GameUIContextBase> ContextClass, UWitchPT_GameUIContextBase*& OutContext)
+{
+	if (LocalPlayer && CurrentPolicy && ContextClass != nullptr)
+	{
+		if (UWitchPT_GameUIContextBase* Context = CurrentPolicy->GetContext(LocalPlayer, ContextClass))
+		{
+			if (Context->GetClass() == ContextClass)
+			{
+				OutContext = Context;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void UUIManagerSubsystem::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
+{
+	if (ensure(LocalPlayer) && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerAdded(LocalPlayer);
+	}
+}
+
+void UUIManagerSubsystem::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
+{
+	if (ensure(LocalPlayer) && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerRemoved(LocalPlayer);
+	}
+	
+}
+
+void UUIManagerSubsystem::NotifyPlayerDestroyed(ULocalPlayer* LocalPlayer)
+{
+	if (LocalPlayer && CurrentPolicy)
+	{
+		// CurrentPolicy->NotifyPlayerDestroyed(LocalPlayer);
+	}
+}
+
+
+
+
+
+
+
+void UUIManagerSubsystem::ClearAllLayers()
+{
+}
+
+void UUIManagerSubsystem::ClearLayerExcept(FGameplayTag LayerTag)
+{
+}
+
+void UUIManagerSubsystem::ClearLayer(FGameplayTag LayerTag)
+{
+}
+
+UWitchPTUserWidget* UUIManagerSubsystem::GetPrimaryLayout(const APlayerController* PlayerController) const
+{
+	if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
+	{
+		return RootLayout;
+	}
+	return nullptr;
+}
+bool UUIManagerSubsystem::RegisterLayout(APlayerController* PlayerController, FGameplayTag LayoutTag, UWitchPTUILayer* InLayer)
+{
+	if (LayoutTag.IsValid() && InLayer != nullptr)
+	{
+	
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
+		{
+			return RootLayout->RegisterLayer(LayoutTag, InLayer);
+		}
+		
+	}
+	return false;
+}
+
+bool UUIManagerSubsystem::UnRegisterLayout(APlayerController* PlayerController, FGameplayTag LayerTag)
+{
+	if (LayerTag.IsValid())
+	{
+	
+		if (UWitchPTPrimaryLayout* RootLayout = CurrentPolicy->GetRootLayout(PlayerController->GetLocalPlayer()))
+		{
+			return RootLayout->UnRegisterLayer(LayerTag);
+		}
+		
+	}
+	return false;
+}
+
+
+
+

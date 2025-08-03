@@ -7,6 +7,8 @@
 #include "UObject/Object.h"
 #include "WitchPT_GameUIPolicy.generated.h"
 
+class UWitchPT_GameUIContextBase;
+
 USTRUCT()
 struct FRootViewportLayoutInfo
 {
@@ -16,23 +18,25 @@ struct FRootViewportLayoutInfo
 	 */
 	UPROPERTY(Transient)
 	TObjectPtr<ULocalPlayer> LocalPlayer = nullptr;
+	
 	/**
 	 * The root layout for the local player.
 	 */
 	UPROPERTY(Transient)
 	TObjectPtr<class UWitchPTPrimaryLayout> RootLayout = nullptr;
+	
 	/**
 	 * Indicates if the layout is added to the viewport.
 	 */
 	UPROPERTY(Transient)
 	bool bIsAddedToViewport = false;
-	// TODO: Nice to have.
+	
 	/**
 	 * Base class for UI context data shared across multiple UI elements.
 	 * @details Allows subclassing to add custom data for UI interactions.
 	 */
-	// UPROPERTY(Transient)
-	// TArray<TObjectPtr<WitchPT_GameUIContext>> Contexts;
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UWitchPT_GameUIContextBase>> Contexts;
 
 	/**
 	 * Default constructor.
@@ -75,13 +79,20 @@ public:
 	TSoftClassPtr<UWitchPTPrimaryLayout> PrimaryLayoutClass;
 
 protected:
+	// --------------------------- LAYOUT MANAGEMENT --------------------------
 	void CreateLayoutWidget(ULocalPlayer* LocalPlayer);
 	void AddLayoutToViewport(ULocalPlayer* LocalPlayer, UWitchPTPrimaryLayout* Layout);
 	void RemoveLayoutFromViewport(ULocalPlayer* LocalPlayer, UWitchPTPrimaryLayout* Layout);
 	
+	// --------------------------- PLAYER FUNCTIONS ---------------------------
 	virtual void NotifyPlayerAdded(ULocalPlayer* LocalPlayer);
 	virtual void NotifyPlayerRemoved(ULocalPlayer* LocalPlayer);
 
+	// --------------------------- GAME UI CONTEXT FUNCTIONS ------------------
+	virtual void AddContext(const ULocalPlayer* LocalPlayer, UWitchPT_GameUIContextBase* NewContext);
+	virtual UWitchPT_GameUIContextBase* GetContext(const ULocalPlayer* LocalPlayer, TSubclassOf<UWitchPT_GameUIContextBase> ContextClass);
+
+	
 	
 	UUIManagerSubsystem* GetOwningSubsystem() const;
 	virtual UWorld* GetWorld() const override;
@@ -90,5 +101,7 @@ private:
 	
 	UPROPERTY(Transient)
 	TArray<FRootViewportLayoutInfo> RootViewportLayouts;
+
+	
 	friend class UUIManagerSubsystem;
 };
