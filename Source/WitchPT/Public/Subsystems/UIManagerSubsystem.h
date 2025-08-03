@@ -50,9 +50,12 @@ public:
 
 	
 	// --------------------------- GAME UI CONTEXT FUNCTIONS ------------------
-	UFUNCTION(BlueprintCallable, Category = "Game UI Context", meta=(DefaultToSelf="LocalPlayer"))
+	UFUNCTION(BlueprintCallable, Category = "Game UI Context", meta=(DefaultToSelf="PlayerController"))
 	void RegisterUIContext_ForPlayer(APlayerController* PlayerController, UWitchPT_GameUIContextBase* Context);
 
+	UFUNCTION(BlueprintCallable, Category = "Game UI Context", meta=(DefaultToSelf="PlayerController"))
+	void UnRegisterUIContext_ForPlayer(APlayerController* PlayerController, TSubclassOf<UWitchPT_GameUIContextBase> ContextClass);
+	
 	UFUNCTION(BlueprintCallable, Category = "Game UI Context", meta=(DefaultToSelf="Actor"))
 	void RegisterUIContext_ForActor(AActor* Actor, UWitchPT_GameUIContextBase* Context);
 

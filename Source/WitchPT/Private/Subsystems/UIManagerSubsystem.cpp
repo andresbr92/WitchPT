@@ -143,6 +143,19 @@ void UUIManagerSubsystem::RegisterUIContext_ForPlayer(APlayerController* PlayerC
 	}
 }
 
+void UUIManagerSubsystem::UnRegisterUIContext_ForPlayer(APlayerController* PlayerController,
+	TSubclassOf<UWitchPT_GameUIContextBase> ContextClass)
+{
+	if (PlayerController && CurrentPolicy && ContextClass)
+	{
+		if (const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+		{
+			CurrentPolicy->RemoveContext(LocalPlayer, ContextClass);
+		}
+		
+	}
+}
+
 void UUIManagerSubsystem::RegisterUIContext_ForActor(AActor* Actor, UWitchPT_GameUIContextBase* Context)
 {
 	// TODO: Implement this function
