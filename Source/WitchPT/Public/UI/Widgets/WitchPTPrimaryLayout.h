@@ -20,9 +20,6 @@ public:
 	UWitchPTPrimaryLayout();
 	virtual void NativeConstruct() override;
 
-	// UPROPERTY(EditDefaultsOnly, Category = "Layout")
-	// TMap<FGameplayTag, FUIActivationContext> InitialScreens;
-
 	// ------------------------------- Main functions ------------------------------- //
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	bool RegisterLayer(FGameplayTag LayerTag, UWitchPTUILayer* InLayer);
@@ -42,8 +39,6 @@ public:
 	void ClearAllLayersExcept(FGameplayTag LayerTag);
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ClearLayer(FGameplayTag LayerTag);
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void PushInitialScreens();
 	
 
 private:

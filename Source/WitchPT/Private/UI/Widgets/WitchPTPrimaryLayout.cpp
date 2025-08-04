@@ -115,20 +115,3 @@ void UWitchPTPrimaryLayout::ClearLayer(FGameplayTag LayerTag)
 		
 	}
 }
-
-void UWitchPTPrimaryLayout::PushInitialScreens()
-{
-	// if (InitialScreens.Num())
-	// {
-	// 	for (auto & ScreenPair : InitialScreens)
-	// 	{
-	// 		if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
-	// 		{
-	// 			if (UUIManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
-	// 			{
-	// 				UIManagerSubsystem->PushContentToLayer(ScreenPair.Key, ScreenPair.Value);
-	// 			}
-	// 		}
-	// 	}
-	// }
-}

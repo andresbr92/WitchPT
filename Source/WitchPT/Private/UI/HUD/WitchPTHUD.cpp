@@ -4,21 +4,8 @@
 #include "UI/HUD/WitchPTHUD.h"
 
 #include "MVVMGameSubsystem.h"
-#include "Blueprint/UserWidgetPool.h"
-#include "Inventory/WitchPTInventoryManagerComponent.h"
-#include "Item/CauldronAltar.h"
-#include "Player/WitchPTPlayerController.h"
 #include "UI/ViewModels/MVVM_OverlayViewModel.h"
-#include "UI/WidgetControllers/CauldronWidgetController.h"
-#include "UI/WidgetControllers/InventoryWidgetController.h"
-#include "UI/WidgetControllers/OverlayWidgetController.h"
-#include "UI/WidgetControllers/QuickBarWidgetController.h"
-#include "UI/WidgetControllers/RitualWidgetController.h"
-#include "UI/Widgets/QuickBarUserWidget.h"
-#include "UI/Widgets/WitchPTPrimaryLayout.h"
-#include "UI/Widgets/WitchPTUserWidget.h"
-#include "UI/Widgets/Inventory/InventoryUserWidget.h"
-#include "UI/Widgets/Inventory/RitualUserWidget.h"
+
 
 void AWitchPTHUD::BeginPlay()
 {

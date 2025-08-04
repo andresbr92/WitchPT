@@ -8,18 +8,9 @@
 
 class UWitchPT_MVVMViewModelBase;
 class UMVVM_OverlayViewModel;
-class UQuickBarUserWidget;
-class UWitchPTPrimaryLayout;
-class UQuickBarWidgetController;
-class UCauldronWidgetController;
-class UWitchPTWidgetController;
-class URitualWidgetController;
 class UAbilitySystemComponent;
 class UAttributeSet;
-class UWitchPTUserWidget;
-class UInventoryWidgetController;
-struct FWidgetControllerParams;
-class UOverlayWidgetController;
+
 /**
  *
  */
