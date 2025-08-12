@@ -6,6 +6,7 @@
 #include "AbilitySystem/GameplayAbilities/WitchPTGameplayAbility.h"
 #include "GA_Cauldron_Crafting.generated.h"
 
+class ACauldronAltar;
 class ABaseInteractableAltar;
 /**
  * 
@@ -15,15 +16,24 @@ class WITCHPT_API UGA_Cauldron_Crafting : public UWitchPTGameplayAbility
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION()
+	void OnCancelParticipatingInCauldron(FGameplayEventData Payload);
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	UFUNCTION()
 	void OnCharacterPositioned(FGameplayEventData Payload);
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 protected:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<AActor> TargetAltar = nullptr;
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<ACharacter> TargetCharacter;
 	
+
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> CauldronViewWidgetClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UGameplayEffect> StandardBlockedEffectClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UGameplayEffect> CauldronBrewingEffectClass;
+	
+	TArray<FActiveGameplayEffectHandle> ActiveEffectsHandles;
+	const ACauldronAltar* CurrentCauldronAltar;
 	
 };

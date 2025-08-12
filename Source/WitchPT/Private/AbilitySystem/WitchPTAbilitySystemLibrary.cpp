@@ -5,7 +5,7 @@
 
 #include "Item/MechanicsInterface.h"
 
-TScriptInterface<IMechanicsInterface> UWitchPTAbilitySystemLibrary::GetMechanicsInterface(AActor* Actor)
+TScriptInterface<IMechanicsInterface> UWitchPTAbilitySystemLibrary::GetMechanicsInterface(const AActor* Actor)
 {
 	if (!Actor)
 	{

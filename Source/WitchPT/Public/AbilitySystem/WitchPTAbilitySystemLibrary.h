@@ -14,6 +14,7 @@ UCLASS()
 class WITCHPT_API UWitchPTAbilitySystemLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+public:
 	UFUNCTION(BlueprintPure, Category = "Ability|Mechanics", meta = (DisplayName = "Get Mechanics Interface", DeterminesOutputType = "IMechanicsInterface"))
-	static TScriptInterface<IMechanicsInterface> GetMechanicsInterface(AActor* Actor);
+	static TScriptInterface<IMechanicsInterface> GetMechanicsInterface(const AActor* Actor);
 };
