@@ -38,12 +38,12 @@ void UCauldronWidgetController::BroadcastInitialValues()
 	}
 	if(CauldronAltar)
 	{
-		OnBaseIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredient());
-		OnBaseIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredientIcon());
-		OnPrincipalIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredient());
-		OnPrincipalIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredientIcon());
-		OnModifierIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetModifierIngredient());
-		OnModifierIngredientIconSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetModifierIngredientIcon());
+		// OnBaseIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetBaseIngredient());
+		//
+		// OnPrincipalIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredient());
+		//
+		// OnModifierIngredientSet.Broadcast(CauldronAltar->CauldronCraftComponent->GetModifierIngredient());
+		
 	}
 	
 }
@@ -52,12 +52,12 @@ void UCauldronWidgetController::BindCallbacksToDependencies()
 {
 	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
 	{
-		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
-		CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
-		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientSet);
-		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientIconSet);
-		CauldronAltar->CauldronCraftComponent->OnModifierIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientSet);
-		CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientIconSet);
+		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
+		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
+		// CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientSet);
+		// CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientIconSet);
+		// CauldronAltar->CauldronCraftComponent->OnModifierIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientSet);
+		// CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleModifierIngredientIconSet);
 	}
 }
 
@@ -65,12 +65,12 @@ void UCauldronWidgetController::UnbindCallbacksFromDependencies()
 {
 	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
 	{
-		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
-		CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
-		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientSet);
-		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientIconSet);
-		CauldronAltar->CauldronCraftComponent->OnModifierIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleModifierIngredientSet);
-		CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleModifierIngredientIconSet);
+		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
+		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
+		// CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientSet);
+		// CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandlePrincipalIngredientIconSet);
+		// CauldronAltar->CauldronCraftComponent->OnModifierIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleModifierIngredientSet);
+		// CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleModifierIngredientIconSet);
 	}
 }
 void UCauldronWidgetController::SetCauldronAltar(ACauldronAltar* InCauldronAltar)

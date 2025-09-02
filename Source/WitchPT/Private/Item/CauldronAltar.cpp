@@ -656,34 +656,8 @@ bool ACauldronAltar::IsPlacementValid() const
 
 void ACauldronAltar::PrintCauldronDebugData() const
 {
-    UE_LOG(LogTemp, Warning, TEXT("=== CAULDRON ALTAR DEBUG DATA ==="));
-    UE_LOG(LogTemp, Warning, TEXT("Cauldron Name: %s"), *GetName());
-    UE_LOG(LogTemp, Warning, TEXT("Cauldron Location: %s"), *GetActorLocation().ToString());
-    UE_LOG(LogTemp, Warning, TEXT("Cauldron Physics State: %s"), 
-           CauldronPhysicState == ECauldronPhysicState::Static ? TEXT("Static") :
-           CauldronPhysicState == ECauldronPhysicState::Moving ? TEXT("Moving") :
-           CauldronPhysicState == ECauldronPhysicState::Previewing ? TEXT("Previewing") : TEXT("Unknown"));
-    UE_LOG(LogTemp, Warning, TEXT("Carrying Character: %s"), 
-           CarryingCharacter ? *CarryingCharacter->GetName() : TEXT("None"));
-    UE_LOG(LogTemp, Warning, TEXT("Placement State: %s"),
-           CurrentPlacementState == ECauldronPlacementState::Valid ? TEXT("Valid") :
-           CurrentPlacementState == ECauldronPlacementState::Invalid ? TEXT("Invalid") :
-           CurrentPlacementState == ECauldronPlacementState::None ? TEXT("None") : TEXT("Unknown"));
-    UE_LOG(LogTemp, Warning, TEXT("Number of Interaction Positions: %d"), InteractionPositions.Num());
-    UE_LOG(LogTemp, Warning, TEXT("Number of Participating Players: %d"), ParticipatingPlayers.Num());
     
-    // Print CauldronCraftComponent debug data
-    if (CauldronCraftComponent)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("CauldronCraftComponent: Valid"));
-        CauldronCraftComponent->PrintIngredientDebugData();
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("CauldronCraftComponent: NULL - This should not happen!"));
-    }
-    
-    UE_LOG(LogTemp, Warning, TEXT("=== END CAULDRON ALTAR DEBUG DATA ==="));
+ 
 }
 
 

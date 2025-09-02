@@ -92,62 +92,30 @@ void FWitchPTGameplayTags::InitializeGameplayTags()
 	GameplayTags.Cauldron_State_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.Empty"));
 	GameplayTags.Cauldron_State_Full = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.Full"));
 	GameplayTags.Cauldron_State_PotionReady = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cauldron.State.PotionReady"));
+	GameplayTags.Event_Cauldron_Ingredient_Added = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Event.Cauldron.Ingredient.Added"));
 	// test commit 
 
 
 	// Communication Messages
 	GameplayTags.Communication_Message = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Communication.Message"));
 
-	// --- Items Tags ---
-	GameplayTags.Item = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item"));
-	GameplayTags.Item_Consumable = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable"));
-	GameplayTags.Item_Consumable_Potion = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion"));
-	GameplayTags.Item_Consumable_Potion_Tier_0 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_0"));
-	GameplayTags.Item_Consumable_Potion_Tier_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_1"));
-	GameplayTags.Item_Consumable_Potion_Tier_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_2"));
-	GameplayTags.Item_Consumable_Potion_Tier_3 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Potion.Tier_3"));
+	// --- Ingredient Tags ---
+	GameplayTags.Ingredient_Base = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Base"));
+	GameplayTags.Ingredient_Principal = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Principal"));
+	GameplayTags.Ingredient_Modifier = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Modifier"));
 
-	GameplayTags.Item_Consumable_Ingredient = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient"));
-	GameplayTags.Item_Consumable_Ingredient_Tier_0 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_0"));
-	GameplayTags.Item_Consumable_Ingredient_Tier_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_1"));
-	GameplayTags.Item_Consumable_Ingredient_Tier_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_2"));
-	GameplayTags.Item_Consumable_Ingredient_Tier_3 = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Tier_3"));
+	GameplayTags.Ingredient_Base_Water = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Base.Water"));
+	GameplayTags.Ingredient_Base_Vinegar = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Base.Vinegar"));
+	GameplayTags.Ingredient_Base_Blood = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Base.Blood"));
 
+	GameplayTags.Ingredient_Principal_Essence_Restoration = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Principal.Essence.Restoration"));
+	GameplayTags.Ingredient_Principal_Essence_Energy = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Principal.Essence.Energy"));
+	GameplayTags.Ingredient_Principal_Essence_Toxicity = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Principal.Essence.Toxicity"));
+	GameplayTags.Ingredient_Principal_Essence_Combustion = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Principal.Essence.Combustion"));
 
-
-	GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_BaseSlot = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.CanBeUsedIn.BaseSlot"));
-	GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_PrincipalSlot = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.CanBeUsedIn.PrincipalSlot"));
-	GameplayTags.Item_Consumable_Ingredient_CanBeUsedIn_ModifierSlot = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.CanBeUsedIn.ModifierSlot"));
-	
-	// Base Category Tags
-	GameplayTags.Item_Consumable_Ingredient_Category_Base = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Base"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Water = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Base.LiquidSolvent.Water"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Oil = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Base.LiquidSolvent.Oil"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Blood = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Base.LiquidSolvent.Blood"));
-
-	// Principal Category Tags
-	GameplayTags.Item_Consumable_Ingredient_Category_Principal = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Principal"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Principal_Herbal = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Principal.Herbal"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Principal_Mineral = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Principal.Mineral"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Principal_Animal = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Principal.Animal"));
-
-	// Modifier Category Tags
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier"));
-	
-	// Modifier Potency Tags
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Potency_Increase_Float = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Potency.Increase.Float"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Potency_Increase_Percentage = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Potency.Increase.Percentage"));
-	
-	// Modifier Duration Tags
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Duration_Increase_Float = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Duration.Increase.Float"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Duration_Increase_Percentage = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Duration.Increase.Percentage"));
-	
-	// Modifier Charges Tags
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Charges_Increase_Float = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Charges.Increase.Float"));
-	
-	// Modifier Target Tags
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Target_Self = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Target.Self"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Target_Other = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Target.Other"));
-	GameplayTags.Item_Consumable_Ingredient_Category_Modifier_Target_Area = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Item.Consumable.Ingredient.Category.Modifier.Target.Area"));
+	GameplayTags.Ingredient_Modifier = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Modifier"));
+	GameplayTags.Ingredient_Modifier_Effect_Potency = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Modifier.Effect.Potency"));
+	GameplayTags.Ingredient_Modifier_Effect_Duration = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Modifier.Effect.Duration"));
+	GameplayTags.Ingredient_Modifier_Effect_Charges = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ingredient.Modifier.Effect.Charges"));
 
 }

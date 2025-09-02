@@ -124,61 +124,43 @@ public:
 	FGameplayTag Cauldron_State_Full;
 	FGameplayTag Cauldron_State_PotionReady;
 	FGameplayTag Event_Cauldron_CharacterPositioned;
+	FGameplayTag Event_Cauldron_Ingredient_Added;
 
 
 	// Communication tags
 	FGameplayTag Communication_Message;
 
-	// --- Items Tags ---
-	FGameplayTag Item;
-	FGameplayTag Item_Consumable;
-	FGameplayTag Item_Consumable_Potion;
-	FGameplayTag Item_Consumable_Potion_Tier_0;
-	FGameplayTag Item_Consumable_Potion_Tier_1;
-	FGameplayTag Item_Consumable_Potion_Tier_2;
-	FGameplayTag Item_Consumable_Potion_Tier_3;
+	// --- Ingredient tags ---
+	FGameplayTag Ingredient_Base;
+	FGameplayTag Ingredient_Base_Water;
+	FGameplayTag Ingredient_Base_Vinegar;
+	FGameplayTag Ingredient_Base_Blood;
+
+	FGameplayTag Ingredient_Principal;
+	FGameplayTag Ingredient_Principal_Essence_Restoration;
+	FGameplayTag Ingredient_Principal_Essence_Energy;
+	FGameplayTag Ingredient_Principal_Essence_Toxicity;
+	FGameplayTag Ingredient_Principal_Essence_Combustion;
+
+	FGameplayTag Ingredient_Modifier;
+	FGameplayTag Ingredient_Modifier_Effect_Potency;
+	FGameplayTag Ingredient_Modifier_Effect_Duration;
+	FGameplayTag Ingredient_Modifier_Effect_Charges;
 	
-	FGameplayTag Item_Consumable_Ingredient;
-	FGameplayTag Item_Consumable_Ingredient_Tier_0;
-	FGameplayTag Item_Consumable_Ingredient_Tier_1;
-	FGameplayTag Item_Consumable_Ingredient_Tier_2;
-	FGameplayTag Item_Consumable_Ingredient_Tier_3;
+
+	
 
 
-	FGameplayTag Item_Consumable_Ingredient_CanBeUsedIn_BaseSlot;
-	FGameplayTag Item_Consumable_Ingredient_CanBeUsedIn_PrincipalSlot;
-	FGameplayTag Item_Consumable_Ingredient_CanBeUsedIn_ModifierSlot;
-
-	FGameplayTag Item_Consumable_Ingredient_Category_Base;
-	FGameplayTag Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Water;
-	FGameplayTag Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Oil;
-	FGameplayTag Item_Consumable_Ingredient_Category_Base_LiquidSolvent_Blood;
 	
 	
-	FGameplayTag Item_Consumable_Ingredient_Category_Principal;
-	FGameplayTag Item_Consumable_Ingredient_Category_Principal_Herbal;
-	FGameplayTag Item_Consumable_Ingredient_Category_Principal_Mineral;
-	FGameplayTag Item_Consumable_Ingredient_Category_Principal_Animal;
+	
 
 	
 
 
 
 
-	// --------------------------- Modifier Tags ---------------------------
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier;
-	// --------------------------- Modifier Potency Tags ---------------------------
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Potency_Increase_Float;
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Potency_Increase_Percentage;
-	// --------------------------- Modifier Duration Tags ---------------------------
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Duration_Increase_Float;
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Duration_Increase_Percentage;
-	// --------------------------- Modifier Charges Tags ---------------------------
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Charges_Increase_Float;
-	// --------------------------- Modifier Application Tags ---------------------------
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Target_Self;
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Target_Other;
-	FGameplayTag Item_Consumable_Ingredient_Category_Modifier_Target_Area;
+
 	
 
 

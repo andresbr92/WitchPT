@@ -34,6 +34,24 @@
       ],
       "outputPath": "Repomix/"
     },
+    "UI_Inventory_Items_Models": {
+      "name": "UI_Inventory_Items_Models",
+      "created": "2025-06-21T15:56:29.126Z",
+      "lastUsed": "2025-08-21T18:00:52.737Z",
+      "tags": [],
+      "files": [
+        "Source/WitchPT/Private/UI",
+        "Source/WitchPT/Public/UI",
+        "Source/WitchPT/Public/Subsystems/UIManagerSubsystem.h",
+        "Source/WitchPT/Private/Subsystems/UIManagerSubsystem.cpp",
+        "Source/WitchPT/Public/Item/CauldronAltar.h",
+        "Source/WitchPT/Private/Item/CauldronAltar.cpp",
+        "Source/WitchPT/Public/Item/Components/CauldronCraftComponent.h",
+        "Source/WitchPT/Private/Item/Components/CauldronCraftComponent.cpp",
+        "Source/WitchPT/Public/Inventory",
+        "Source/WitchPT/Private/Inventory"
+      ]
+    },
     "Core": {
       "name": "Core",
       "created": "2025-06-24T18:45:10.123Z",

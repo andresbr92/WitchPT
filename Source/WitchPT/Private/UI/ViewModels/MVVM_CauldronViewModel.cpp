@@ -3,16 +3,21 @@
 
 #include "UI/ViewModels/MVVM_CauldronViewModel.h"
 
+#include "GameFramework/Character.h"
 #include "Item/CauldronAltar.h"
 #include "Item/Components/CauldronCraftComponent.h"
+#include "Subsystems/UIManagerSubsystem.h"
+#include "UI/GameUIContexts/CauldronUIContext.h"
+#include "UI/GameUIContexts/WitchPT_GameUIContextBase.h"
 
 void UMVVM_CauldronViewModel::BindCallbacksToDependencies()
 {
 	if (CauldronAltar && CauldronAltar->CauldronCraftComponent)
 	{
-		CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetBaseIngredientIcon);
-		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientIconSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetPrincipalIngredientIcon);
-		CauldronAltar->CauldronCraftComponent->OnModifierIngredientIconSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetModifierIngredientIcon);
+		CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetBaseIngredient);
+		CauldronAltar->CauldronCraftComponent->OnPrincipalIngredientSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetPrincipalIngredient);
+		CauldronAltar->CauldronCraftComponent->OnModifierIngredientSetDelegate.AddDynamic(this, &UMVVM_CauldronViewModel::SetModifierIngredient);
+		
 		
 	}
 }
@@ -21,9 +26,10 @@ void UMVVM_CauldronViewModel::BroadcastInitialValues()
 {
 	if (CauldronAltar && CauldronAltar->CauldronCraftComponent)
 	{
-		SetBaseIngredientIcon(CauldronAltar->CauldronCraftComponent->GetBaseIngredientIcon());
-		SetPrincipalIngredientIcon(CauldronAltar->CauldronCraftComponent->GetPrincipalIngredientIcon());
-		SetModifierIngredientIcon(CauldronAltar->CauldronCraftComponent->GetModifierIngredientIcon());
+		SetBaseIngredient(CauldronAltar->CauldronCraftComponent->IngredientList.GetIngredientAtSlot(0));
+		SetPrincipalIngredient(CauldronAltar->CauldronCraftComponent->IngredientList.GetIngredientAtSlot(1));
+		SetModifierIngredient(CauldronAltar->CauldronCraftComponent->IngredientList.GetIngredientAtSlot(2));
+	
 	}
 	
 
@@ -52,17 +58,43 @@ void UMVVM_CauldronViewModel::SetBaseIngredient(UWitchPTInventoryItemInstance* I
 	}
 }
 
-void UMVVM_CauldronViewModel::SetBaseIngredientIcon(TSubclassOf<UUserWidget> InBaseIngredientIcon)
+void UMVVM_CauldronViewModel::SetPrincipalIngredient(UWitchPTInventoryItemInstance* InPrincipalIngredient)
 {
-	UE_MVVM_SET_PROPERTY_VALUE(BaseIngredientIcon, InBaseIngredientIcon);
+	UE_MVVM_SET_PROPERTY_VALUE(PrincipalIngredient, InPrincipalIngredient);
 }
 
-void UMVVM_CauldronViewModel::SetPrincipalIngredientIcon(TSubclassOf<UUserWidget> InPrincipalIngredientIcon)
+void UMVVM_CauldronViewModel::SetModifierIngredient(UWitchPTInventoryItemInstance* InModifierIngredient)
 {
-	UE_MVVM_SET_PROPERTY_VALUE(PrincipalIngredientIcon, InPrincipalIngredientIcon);
+	UE_MVVM_SET_PROPERTY_VALUE(ModifierIngredient, InModifierIngredient);
 }
 
-void UMVVM_CauldronViewModel::SetModifierIngredientIcon(TSubclassOf<UUserWidget> InModifierIngredientIcon)
+void UMVVM_CauldronViewModel::TrySetIngredientInSlot(const ACharacter* RequestingCharacter,
+	const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef)
 {
-	UE_MVVM_SET_PROPERTY_VALUE(ModifierIngredientIcon, InModifierIngredientIcon);
+	if (!CauldronAltar)
+	{
+		if (UUIManagerSubsystem* UIManagerSubsystem =GetWorld()->GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
+		{
+			UWitchPT_GameUIContextBase* GameUIContext = nullptr;
+			APlayerController* InPlayerController = RequestingCharacter ? RequestingCharacter->GetController<APlayerController>() : nullptr;
+			ULocalPlayer* InLocalPlayer = InPlayerController ? Cast<ULocalPlayer>(InPlayerController->GetLocalPlayer()) : nullptr;
+			UIManagerSubsystem->FindUIContext_ForPlayer(InLocalPlayer, UCauldronUIContext::StaticClass(), GameUIContext);
+			if (GameUIContext)
+			{
+				if (UCauldronUIContext* CauldronUIContext = Cast<UCauldronUIContext>(GameUIContext))
+				{
+					CauldronAltar = CauldronUIContext->CauldronAltar;
+				}
+			}
+		}
+		
+	}
+	if (CauldronAltar && CauldronAltar->CauldronCraftComponent)
+	{
+		CauldronAltar->CauldronCraftComponent->TrySetIngredientInSlot(RequestingCharacter, IngredientItemDef);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UMVVM_CauldronViewModel::TrySetIngredientInSlot: CauldronCraftComponent is not valid."));
+	}
 }

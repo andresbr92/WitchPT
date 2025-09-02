@@ -6,6 +6,7 @@
 #include "WitchPT_MVVMViewModelBase.h"
 #include "Blueprint/UserWidget.h"
 #include "MVVM_CauldronViewModel.generated.h"
+class UWitchPTInventoryItemDefinition;
 class UWitchPTInventoryItemInstance;
 class ACauldronAltar;
 /**
@@ -27,15 +28,15 @@ private:
 	
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
 	UWitchPTInventoryItemInstance* BaseIngredient;
-	
-	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
-	TSubclassOf<UUserWidget> BaseIngredientIcon;
 
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
-	TSubclassOf<UUserWidget> PrincipalIngredientIcon;
+	UWitchPTInventoryItemInstance* PrincipalIngredient;
 
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
-	TSubclassOf<UUserWidget> ModifierIngredientIcon;
+	UWitchPTInventoryItemInstance* ModifierIngredient;
+
+
+
 
 public:
 	// -------------------- Getters and Setters ------------------------
@@ -44,21 +45,24 @@ public:
 
 	void SetBaseIngredient(UWitchPTInventoryItemInstance* InBaseIngredient);
 	UWitchPTInventoryItemInstance* GetBaseIngredient() const { return BaseIngredient; }
+
+	void SetPrincipalIngredient(UWitchPTInventoryItemInstance* InPrincipalIngredient);
+	UWitchPTInventoryItemInstance* GetPrincipalIngredient() const { return PrincipalIngredient; }
+
+	void SetModifierIngredient(UWitchPTInventoryItemInstance* InModifierIngredient);
+	UWitchPTInventoryItemInstance* GetModifierIngredient() const { return ModifierIngredient; }
 	
-	void SetBaseIngredientIcon(TSubclassOf<UUserWidget> InBaseIngredientIcon);
-	TSubclassOf<UUserWidget> GetBaseIngredientIcon() const { return BaseIngredientIcon; }
+
 	
 	
-	void SetPrincipalIngredientIcon(TSubclassOf<UUserWidget> InPrincipalIngredientIcon);
-	TSubclassOf<UUserWidget> GetPrincipalIngredientIcon() const { return PrincipalIngredientIcon; }
-	
-	
-	void SetModifierIngredientIcon(TSubclassOf<UUserWidget> InModifierIngredientIcon);
-	TSubclassOf<UUserWidget> GetModifierIngredientIcon() const { return ModifierIngredientIcon; }
+
 
 
 
 	
 	// -------------------- Callbacks ----------------------------------
 	// -------------------- MVVM -> Model Functions --------------------
+	UFUNCTION(BlueprintCallable, Category = "Cauldron|ViewModel", CallInEditor, meta = (DisplayName = "Try Set Ingredient In Slot"))
+	void TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
+	
 };

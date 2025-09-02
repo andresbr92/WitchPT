@@ -167,8 +167,7 @@ void UWitchPTMechanicComponent::RequestPrintDebugData_Implementation(ACauldronAl
 	
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		FVector SpawnLocation = TargetAltar->GetActorLocation();
-		FPotionResult Result = TargetAltar->CauldronCraftComponent->CraftPotion(false, nullptr, SpawnLocation);
+	
 	}
 }
 
@@ -178,7 +177,7 @@ void UWitchPTMechanicComponent::RequestCraftPotion_Implementation(ACauldronAltar
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		TargetAltar->CauldronCraftComponent->CraftPotion(false, Character, TargetAltar->GetActorLocation());
+		
 	}
 	else
 	{
@@ -226,7 +225,7 @@ void UWitchPTMechanicComponent::Server_RequestCraftPotion_Implementation(ACauldr
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
-	TargetAltar->CauldronCraftComponent->CraftPotion(false, Character, TargetAltar->GetActorLocation());
+	
 }
 
 void UWitchPTMechanicComponent::RequestStartRitual_Implementation(ARitualAltar* TargetAltar)

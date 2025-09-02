@@ -21,6 +21,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnWidgetControllerSet();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnModelViewSet();
 	
 	UPROPERTY(BlueprintReadOnly, Category="UI Pooling")
 	TSubclassOf<UUserWidget> PoolKey;
