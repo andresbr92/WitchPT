@@ -8,7 +8,7 @@
 #include "Equipment/WitchPTQuickBarComponent.h"
 #include "GameFramework/Character.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
-#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+#include "Inventory/Fragments/InventoryFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
 #include "Subsystems/WidgetCommunicatorSubsystem.h"
 
@@ -70,9 +70,9 @@ void UQuickBarWidgetController::OnEquipableItemDragStart(const UWitchPTInventory
 	if (ItemInstance != nullptr)
 	{
 		// Find the equipable fragment in the item instance
-		const UWitchPTInventoryItemFragment_EquippableItem* EquipableFragment = 
-			Cast<UWitchPTInventoryItemFragment_EquippableItem>(
-				ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass()));
+		const UInventoryFragment_EquippableItem* EquipableFragment = 
+			Cast<UInventoryFragment_EquippableItem>(
+				ItemInstance->FindFragmentByClass(UInventoryFragment_EquippableItem::StaticClass()));
 		if (EquipableFragment)
 		{
 			OnEquipableItemDragStartDelegate.Broadcast();

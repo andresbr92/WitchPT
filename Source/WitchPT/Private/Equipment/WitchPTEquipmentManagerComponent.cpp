@@ -10,7 +10,7 @@
 #include "Equipment/WitchPTEquipmentInstance.h"
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
-#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+#include "Inventory/Fragments/InventoryFragment_EquippableItem.h"
 #include "Net/UnrealNetwork.h"
 
 

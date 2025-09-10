@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "WitchPTInventoryItemFragment.h"
-#include "WitchPTInventoryItemFragment_EquippableItem.generated.h"
+#include "InventoryFragment_EquippableItem.generated.h"
 
 class UWitchPTEquipmentDefinition;
 /**
  * 
  */
 UCLASS()
-class WITCHPT_API UWitchPTInventoryItemFragment_EquippableItem : public UWitchPTInventoryItemFragment
+class WITCHPT_API UInventoryFragment_EquippableItem : public UWitchPTInventoryItemFragment
 {
 	GENERATED_BODY()
 public:

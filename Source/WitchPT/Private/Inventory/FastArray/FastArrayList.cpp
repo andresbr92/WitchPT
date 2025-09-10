@@ -73,7 +73,7 @@ UWitchPTInventoryItemInstance* FWitchPTInventoryList::AddEntry(TSubclassOf<UWitc
 
 	FWitchPTInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.Instance = NewObject<UWitchPTInventoryItemInstance>(OwnerComponent->GetOwner());
-	NewEntry.Instance->SetItemDef(ItemDef);
+	NewEntry.Instance->SetItemManifest(ItemDef);
 	// ------ Stack stuff
 	const UWitchPTInventoryItemFragment* BaseFragment = NewEntry.Instance->FindFragmentByClass(UWitchPTInventoryFragment_Stackable::StaticClass());
 	const UWitchPTInventoryFragment_Stackable* StackableFragment = Cast<UWitchPTInventoryFragment_Stackable>(BaseFragment);

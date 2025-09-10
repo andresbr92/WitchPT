@@ -7,7 +7,7 @@
 #include "Templates/SubclassOf.h"
 #include "UObject/Interface.h"
 #include "UObject/ObjectPtr.h"
-#include "Collectable.generated.h"
+#include "IPickupable.generated.h"
 template <typename InterfaceType> class TScriptInterface;
 // This class does not need to be modified.
 
@@ -19,18 +19,42 @@ class UObject;
 struct FFrame;
 // ------------------------- STRUCTS ---------------------- //
 USTRUCT(BlueprintType)
-struct FItemManifest
+struct FPickupTemplate
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere)
+	int32 StackCount = 1;
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UWitchPTInventoryItemDefinition> ItemDef;
+};
+USTRUCT(BlueprintType)
+struct FPickupInstance
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UWitchPTInventoryItemInstance> Item = nullptr;
+};
+
+USTRUCT(BlueprintType)
+struct FInventoryPickup
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPickupInstance> Instances;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPickupTemplate> Templates;
 };
 
 
 UINTERFACE(MinimalAPI, BlueprintType, meta = (CannotImplementInterfaceInBlueprint))
-class UCollectable : public UInterface
+class UIPickupable : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -38,16 +62,14 @@ class UCollectable : public UInterface
 /**
  * 
  */
-class WITCHPT_API ICollectable
+class WITCHPT_API IIPickupable
 {
 	GENERATED_BODY()
 
 public:
-	/**
-	 * This is the functions you call from the GA_Interact_Collect
-	 */
+
 	UFUNCTION(BlueprintCallable)
-	virtual FItemManifest GetPickupInventory() const = 0;
+	virtual FInventoryPickup GetPickupInventory() const = 0;
 };
 
 UCLASS()
@@ -59,8 +81,8 @@ public:
 	UCollectableStatics();
 	
 	UFUNCTION(BlueprintPure)
-	static TScriptInterface<ICollectable> GetFirstPickupableFromActor(AActor* Actor);
+	static TScriptInterface<IIPickupable> GetFirstPickupableFromActor(AActor* Actor);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, meta = (WorldContext = "Ability"))
-	static void AddPickupToInventory(UWitchPTInventoryManagerComponent* InventoryComponent, TScriptInterface<ICollectable> Collectable);
+	static void AddPickupToInventory(UWitchPTInventoryManagerComponent* InventoryComponent, TScriptInterface<IIPickupable> Collectable);
 };

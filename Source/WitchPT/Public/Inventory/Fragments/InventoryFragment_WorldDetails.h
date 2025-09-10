@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
-#include "WitchPTInventoryItemFragment_WorldDetails.generated.h"
+#include "InventoryFragment_WorldDetails.generated.h"
 
 /**
  * Fragment that defines how items appear in the world
  * This stores mesh and visual information for world representation
  */
 UCLASS()
-class WITCHPT_API UWitchPTInventoryItemFragment_WorldDetails : public UWitchPTInventoryItemFragment
+class WITCHPT_API UInventoryFragment_WorldDetails : public UWitchPTInventoryItemFragment
 {
 	GENERATED_BODY()
 

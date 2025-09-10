@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Inventory/Fragments/WitchPTInventoryItemFragment.h"
-#include "WitchPTInventoryItemFragment_PotionProperties.generated.h"
+#include "InventoryFragment_PotionProperties.generated.h"
 
 class UGameplayAbility;
 /**
@@ -13,7 +13,7 @@ class UGameplayAbility;
  * This stores the calculated properties from the cauldron crafting system
  */
 UCLASS()
-class WITCHPT_API UWitchPTInventoryItemFragment_PotionProperties : public UWitchPTInventoryItemFragment
+class WITCHPT_API UInventoryFragment_PotionProperties : public UWitchPTInventoryItemFragment
 {
 	GENERATED_BODY()
 
@@ -44,26 +44,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Potion Effects")
 	FGameplayTagContainer GrantedEffectTags;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Potion Effects")
-	FGameplayTagContainer GrantedPropertyTags;
 
-	// Helper functions
-	UFUNCTION(BlueprintPure, Category = "Potion Properties")
-	bool IsValidPotion() const;
-
-	UFUNCTION(BlueprintPure, Category = "Potion Properties")
-	FString GetPotionDescription() const;
-
-	// Function to set properties from crafting system
-	UFUNCTION(BlueprintCallable, Category = "Potion Properties")
-	void SetPotionProperties(const FGameplayTag& InPotionEssence,
-							const FGameplayTag& InBaseLiquidType,
-							float InPotency,
-							float InDuration,
-							int32 InCharges,
-							const FGameplayTag& InTierTag,
-							const FGameplayTagContainer& InEffectTags,
-							const FGameplayTagContainer& InPropertyTags);
 
 	virtual void OnInstanceCreated(UWitchPTInventoryItemInstance* Instance) const override;
 }; 

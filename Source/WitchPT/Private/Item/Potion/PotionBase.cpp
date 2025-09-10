@@ -32,10 +32,12 @@ void APotionBase::GatherInteractionOptions(const FInteractionQuery& InteractQuer
 	Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
 }
 
-FItemManifest APotionBase::GetPickupInventory() const
+FInventoryPickup APotionBase::GetPickupInventory() const
 {
 	return StaticInventory;
 }
+
+
 
 
 

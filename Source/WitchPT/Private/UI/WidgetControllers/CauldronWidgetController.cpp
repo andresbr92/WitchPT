@@ -4,7 +4,7 @@
 #include "UI/WidgetControllers/CauldronWidgetController.h"
 
 #include "Item/CauldronAltar.h"
-#include "Item/Components/CauldronCraftComponent.h"
+#include "Item/Components/CraftComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 void UCauldronWidgetController::SetContextualObject(UObject* ContextualObject)
@@ -50,7 +50,7 @@ void UCauldronWidgetController::BroadcastInitialValues()
 
 void UCauldronWidgetController::BindCallbacksToDependencies()
 {
-	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
+	if(CauldronAltar && CauldronAltar->CraftComponent)
 	{
 		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
 		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.AddDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);
@@ -63,7 +63,7 @@ void UCauldronWidgetController::BindCallbacksToDependencies()
 
 void UCauldronWidgetController::UnbindCallbacksFromDependencies()
 {
-	if(CauldronAltar && CauldronAltar->CauldronCraftComponent)
+	if(CauldronAltar && CauldronAltar->CraftComponent)
 	{
 		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientSet);
 		// CauldronAltar->CauldronCraftComponent->OnBaseIngredientIconSetDelegate.RemoveDynamic(this, &UCauldronWidgetController::HandleBaseIngredientIconSet);

@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "WitchPTInventoryItemFragment.h"
-#include "WitchPTInventoryFragment_UIDetails.generated.h"
+#include "InventoryFragment_UIDetails.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class WITCHPT_API UWitchPTInventoryFragment_UIDetails : public UWitchPTInventoryItemFragment
+class WITCHPT_API UInventoryFragment_UIDetails : public UWitchPTInventoryItemFragment
 {
 	GENERATED_BODY()
 public:

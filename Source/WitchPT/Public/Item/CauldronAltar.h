@@ -9,8 +9,8 @@
 #include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
-class UCauldronCraftComponent;
-class UWitchPTInventoryItemFragment_IngredientCraftingProperties;
+class UCraftComponent;
+class UInventoryFragment_IngredientCraftingProperties;
 class UWitchPTInventoryItemFragment;
 class UCauldronUserWidget;
 class ACauldronPosition;
@@ -84,8 +84,8 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
-    UPROPERTY(EditAnywhere, Replicated)
-    TObjectPtr<UCauldronCraftComponent> CauldronCraftComponent;
+    UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite)
+    TObjectPtr<UCraftComponent> CraftComponent;
 
     // Base potion definition template used for generating crafted potions
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Potion Crafting")
@@ -121,7 +121,7 @@ public:
     
     void StartBrewingPotion(ACharacter* InteractingCharacter);
    
-    void TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
+    void TryAddIngredient(const ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
     
     // ----------------------------------- ON REP FUNCTIONS ---------------------------------------------- //
     

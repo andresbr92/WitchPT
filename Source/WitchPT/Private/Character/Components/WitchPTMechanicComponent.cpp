@@ -6,7 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
 #include "Item/RitualAltar.h"
-#include "Item/Components/CauldronCraftComponent.h"
+#include "Item/Components/CraftComponent.h"
 
 // Sets default values for this component's properties
 UWitchPTMechanicComponent::UWitchPTMechanicComponent()
@@ -141,7 +141,7 @@ void UWitchPTMechanicComponent::RequestUnOccupyPositionInCauldron_Implementation
 }
 
 void UWitchPTMechanicComponent::RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
-	TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
+	UWitchPTInventoryItemInstance* IngredientInstance)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
@@ -149,11 +149,11 @@ void UWitchPTMechanicComponent::RequestSetIngredientInSlot_Implementation(ACauld
 	
 	if(GetOwnerRole() == ROLE_Authority)
 	{
-		TargetAltar->TrySetIngredientInSlot(Character, IngredientItemDef);
+		TargetAltar->TryAddIngredient(Character, IngredientInstance);
 	}
 	else
 	{
-		Server_RequestSetIngredientInSlot(TargetAltar, IngredientItemDef);
+		Server_RequestSetIngredientInSlot(TargetAltar, IngredientInstance);
 	}
 
 	
@@ -187,12 +187,12 @@ void UWitchPTMechanicComponent::RequestCraftPotion_Implementation(ACauldronAltar
 }
 
 void UWitchPTMechanicComponent::Server_RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
-                                                                                 TSubclassOf<UWitchPTInventoryItemDefinition> IngredientItemDef)
+                                                                                 UWitchPTInventoryItemInstance* IngredientInstance)
 {
 	if (!TargetAltar) return;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	
-	TargetAltar->TrySetIngredientInSlot(Character, IngredientItemDef);
+	TargetAltar->TryAddIngredient(Character, IngredientInstance);
 	
 }
 

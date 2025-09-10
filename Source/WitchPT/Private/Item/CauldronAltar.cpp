@@ -16,9 +16,9 @@
 #include "Inventory/WitchPTInventoryItemDefinition.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
-#include "Inventory/Fragments/WitchPTInventoryFragment_UIDetails.h"
-#include "Inventory/Fragments/WitchPTInventoryItemFragment_IngredientCraftingProperties.h"
-#include "Item/Components/CauldronCraftComponent.h"
+#include "Inventory/Fragments/InventoryFragment_UIDetails.h"
+#include "Inventory/Fragments/InventoryFragment_IngredientCraftingProperties.h"
+#include "Item/Components/CraftComponent.h"
 #include "Player/WitchPTPlayerController.h"
 #include "UI/HUD/WitchPTHUD.h"
 #include "UI/Widgets/CauldronUserWidget.h"
@@ -37,8 +37,9 @@ ACauldronAltar::ACauldronAltar()
     CurrentPlacementState = ECauldronPlacementState::None;
     bReplicateUsingRegisteredSubObjectList = true;
     
-    // Initialize the cauldron craft component in constructor
-    CauldronCraftComponent = CreateDefaultSubobject<UCauldronCraftComponent>(TEXT("CauldronCraftComponent"));
+    // Get the craft component that is attached to the cauldron
+    
+    
 }
 
 void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
@@ -60,7 +61,7 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
     DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
     DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
-    DOREPLIFETIME(ACauldronAltar, CauldronCraftComponent);
+    DOREPLIFETIME(ACauldronAltar, CraftComponent);
 }
 
 void ACauldronAltar::OnRep_CauldronPhysicState()
@@ -99,9 +100,9 @@ void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
     PositionCharacterForBrewing(InteractingCharacter);
 }
 
-void ACauldronAltar::TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef)
+void ACauldronAltar::TryAddIngredient(const ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance)
 {
-    if (!CauldronCraftComponent)
+    if (!CraftComponent)
     {
         UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::TrySetIngredientInSlot: CauldronCraftComponent is null"));
         return;
@@ -114,12 +115,13 @@ void ACauldronAltar::TrySetIngredientInSlot(const ACharacter* RequestingCharacte
     }
 
     // Delegate to the craft component
-    CauldronCraftComponent->TrySetIngredientInSlot(RequestingCharacter, IngredientItemDef);
+    CraftComponent->TryAddIngredient(RequestingCharacter, IngredientInstance);
 }
 
 void ACauldronAltar::BeginPlay()
 {
     Super::BeginPlay();
+    CraftComponent = GetComponentByClass<UCraftComponent>();
     SetReplicateMovement(true);
 }
 
@@ -129,9 +131,9 @@ bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOu
     bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
     
     // Replicate the CauldronCraftComponent
-    if (CauldronCraftComponent)
+    if (CraftComponent)
     {
-        bWroteSomething |= Channel->ReplicateSubobject(CauldronCraftComponent, *Bunch, *RepFlags);
+        bWroteSomething |= Channel->ReplicateSubobject(CraftComponent, *Bunch, *RepFlags);
     }
     
     return bWroteSomething;

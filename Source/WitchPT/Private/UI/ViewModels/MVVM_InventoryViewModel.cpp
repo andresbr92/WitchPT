@@ -7,7 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
-#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+#include "Inventory/Fragments/InventoryFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
 
 void UMVVM_InventoryViewModel::BindCallbacksToDependencies()
@@ -82,8 +82,8 @@ void UMVVM_InventoryViewModel::EquipItem(UWitchPTInventoryItemInstance* ItemInst
 				}
 				else
 				{
-					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass());
-					const UWitchPTInventoryItemFragment_EquippableItem* EquipableFragment = Cast<const UWitchPTInventoryItemFragment_EquippableItem>(BaseFragment);
+					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UInventoryFragment_EquippableItem::StaticClass());
+					const UInventoryFragment_EquippableItem* EquipableFragment = Cast<const UInventoryFragment_EquippableItem>(BaseFragment);
 					EquipmentManager->EquipItem(EquipableFragment->EquipmentDefinition);
 				}
 			}

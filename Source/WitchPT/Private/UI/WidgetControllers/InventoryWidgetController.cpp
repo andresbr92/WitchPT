@@ -7,7 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/WitchPTInventoryManagerComponent.h"
-#include "Inventory/Fragments/WitchPTInventoryItemFragment_EquippableItem.h"
+#include "Inventory/Fragments/InventoryFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
 #include "Subsystems/WidgetCommunicatorSubsystem.h"
 
@@ -40,38 +40,38 @@ void UInventoryWidgetController::BroadcastInitialValues()
 
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
-	AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController);
-	if (WitchPtPlayerController)
-	{
-		UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager();
-		if (InventoryManager)
-		{
-			InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
-			{
-				OnItemAddedDelegate.Broadcast(ItemAdded);
-			});
-			InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
-			{
-				OnItemStackChangedDelegate.Broadcast(ItemAdded);
-			});
-			InventoryManager->OnItemRemoved.AddLambda([this](UWitchPTInventoryItemInstance* ItemRemoved)
-			{
-				OnItemRemovedDelegate.Broadcast(ItemRemoved);
-			});
-		}
-	}
+	// AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController);
+	// if (WitchPtPlayerController)
+	// {
+	// 	UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager();
+	// 	if (InventoryManager)
+	// 	{
+	// 		InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+	// 		{
+	// 			OnItemAddedDelegate.Broadcast(ItemAdded);
+	// 		});
+	// 		InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+	// 		{
+	// 			OnItemStackChangedDelegate.Broadcast(ItemAdded);
+	// 		});
+	// 		InventoryManager->OnItemRemoved.AddLambda([this](UWitchPTInventoryItemInstance* ItemRemoved)
+	// 		{
+	// 			OnItemRemovedDelegate.Broadcast(ItemRemoved);
+	// 		});
+	// 	}
+	// }
 }
 
 void UInventoryWidgetController::UnbindCallbacksFromDependencies()
 {
 	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
 	{
-		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
-		{
-			InventoryManager->OnItemAdded.RemoveAll(this);
-			InventoryManager->OnItemStackChanged.RemoveAll(this);
-			InventoryManager->OnItemRemoved.RemoveAll(this);
-		}
+		// if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+		// {
+		// 	InventoryManager->OnItemAdded.RemoveAll(this);
+		// 	InventoryManager->OnItemStackChanged.RemoveAll(this);
+		// 	InventoryManager->OnItemRemoved.RemoveAll(this);
+		// }
 	}
 	
 }
@@ -95,18 +95,18 @@ void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* 
 		return;
 	}
 
-	const int32 CurrentStackCount = ItemInstance->GetTotalStackCount();
-	
-	// If we only have 1 item left and trying to remove 1 or more, remove the item completely
-	if (CurrentStackCount <= 1 && AmountToRemove >= 1)
-	{
-		InventoryManager->Server_RemoveItemInstance(ItemInstance);
-	}
-	else
-	{
-		// Otherwise, reduce the stack count by the requested amount
-		InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
-	}
+	// const int32 CurrentStackCount = ItemInstance->GetTotalStackCount();
+	//
+	// // If we only have 1 item left and trying to remove 1 or more, remove the item completely
+	// if (CurrentStackCount <= 1 && AmountToRemove >= 1)
+	// {
+	// 	InventoryManager->Server_RemoveItemInstance(ItemInstance);
+	// }
+	// else
+	// {
+	// 	// Otherwise, reduce the stack count by the requested amount
+	// 	InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
+	// }
 }
 
 void UInventoryWidgetController::OnItemDragStart(UWitchPTInventoryItemInstance* ItemInstance)
@@ -142,8 +142,8 @@ void UInventoryWidgetController::EquipItem(UWitchPTInventoryItemInstance* ItemIn
 				}
 				else
 				{
-					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UWitchPTInventoryItemFragment_EquippableItem::StaticClass());
-					const UWitchPTInventoryItemFragment_EquippableItem* EquippableFragment = Cast<const UWitchPTInventoryItemFragment_EquippableItem>(BaseFragment);
+					const UWitchPTInventoryItemFragment* BaseFragment = ItemInstance->FindFragmentByClass(UInventoryFragment_EquippableItem::StaticClass());
+					const UInventoryFragment_EquippableItem* EquippableFragment = Cast<const UInventoryFragment_EquippableItem>(BaseFragment);
 					EquipmentManager->EquipItem(EquippableFragment->EquipmentDefinition);
 				}
 			}

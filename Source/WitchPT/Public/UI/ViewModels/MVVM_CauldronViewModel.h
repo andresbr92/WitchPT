@@ -63,6 +63,8 @@ public:
 	// -------------------- Callbacks ----------------------------------
 	// -------------------- MVVM -> Model Functions --------------------
 	UFUNCTION(BlueprintCallable, Category = "Cauldron|ViewModel", CallInEditor, meta = (DisplayName = "Try Set Ingredient In Slot"))
-	void TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
+	void TryAddIngredient(const ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
+	UFUNCTION(BlueprintCallable, Category = "Cauldron|ViewModel", CallInEditor, meta = (DisplayName = "Craft Potion"))
+	void CraftPotion(const ACharacter* RequestingCharacter);
 	
 };

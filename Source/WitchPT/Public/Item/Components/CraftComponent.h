@@ -7,18 +7,14 @@
 #include "Net/UnrealNetwork.h"
 #include "GameplayTagContainer.h"
 #include "Net/Serialization/FastArraySerializer.h"
-#include "CauldronCraftComponent.generated.h"
+#include "CraftComponent.generated.h"
 
-class UCauldronCraftComponent;
+class APotionBase;
+class UCraftComponent;
 class UWitchPTInventoryItemDefinition;
 class UWitchPTInventoryItemInstance;
 class ACharacter;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPrincipalIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModifierIngredientSetSignature, UWitchPTInventoryItemInstance*, IngredientInstance);
 USTRUCT(BlueprintType)
 struct FIngredientSetPayload
 {
@@ -26,7 +22,7 @@ struct FIngredientSetPayload
 
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Payload")
-	TSubclassOf<UWitchPTInventoryItemDefinition> ItemInstance;
+	TObjectPtr<UWitchPTInventoryItemInstance> ItemInstance;
 
 
 };
@@ -68,25 +64,36 @@ struct FCauldronIngredientList : public FFastArraySerializer
 	void SetIngredientAtSlot(int32 SlotIndex, UWitchPTInventoryItemInstance* Instance);
 	UWitchPTInventoryItemInstance* GetIngredientAtSlot(int32 SlotIndex) const;
 
-private:
+public:
 	UPROPERTY()
 	TArray<FCauldronIngredientEntry> Entries;
 
+private:
 	UPROPERTY(NotReplicated)
 	TObjectPtr<UActorComponent> OwnerComponent;
 
-	friend UCauldronCraftComponent;
+	friend UCraftComponent;
+};
+
+/**
+ * Trait specification for FCauldronIngredientList
+ * Enables network delta serialization for efficient replication
+ */
+template<>
+struct TStructOpsTypeTraits<FCauldronIngredientList> : public TStructOpsTypeTraitsBase2<FCauldronIngredientList>
+{
+	enum { WithNetDeltaSerializer = true };
 };
 
 
 UCLASS(Blueprintable)
-class WITCHPT_API UCauldronCraftComponent : public UActorComponent
+class WITCHPT_API UCraftComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UCauldronCraftComponent();
+	UCraftComponent();
 
 protected:
 	// Called when the game starts
@@ -104,31 +111,15 @@ public:
 	
 	UPROPERTY(Replicated, VisibleAnywhere)
 	FCauldronIngredientList IngredientList;
+	UPROPERTY(EditDefaultsOnly, Category="Config")
+	TSubclassOf<UWitchPTInventoryItemDefinition> PotionItemDefinitionClass;
+	UPROPERTY(EditDefaultsOnly, Category="Config")
+	TSubclassOf<APotionBase> PotionActorClass;
 
-
-
-
-	// Delegates
-	FOnBaseIngredientSetSignature OnBaseIngredientSetDelegate;
-	FOnPrincipalIngredientSetSignature OnPrincipalIngredientSetDelegate;
-	FOnModifierIngredientSetSignature OnModifierIngredientSetDelegate;
-
-
-	// Ingredient Functions
-	
-	void TrySetIngredientInSlot(const ACharacter* RequestingCharacter, const TSubclassOf<UWitchPTInventoryItemDefinition>& IngredientItemDef);
+	void TryAddIngredient(const ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
+	void CraftPotion(const ACharacter* RequestingCharacter) const;
 	
 	void GetIngredientAtSlot(int32 SlotIndex, UWitchPTInventoryItemInstance*& OutIngredientInstance) const;
-
-protected:
-	// Broadcast Helper Functions
-	void BroadcastBaseIngredientDropped() const;
-	void BroadcastBaseIngredientIconSet() const;
-	void BroadcastPrincipalIngredientDropped() const;
-	void BroadcastPrincipalIngredientIconSet() const;
-	void BroadcastModifierIngredientDropped() const;
-	void BroadcastModifierIngredientIconSet() const;
-
-private:
+	
 
 };

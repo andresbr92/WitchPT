@@ -46,10 +46,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "ABR_InteractionSystem",
-			"Enabled": false
-		},
-		{
 			"Name": "ABR_CameraSystem",
 			"Enabled": false
 		},
@@ -67,12 +63,13 @@
 			"Enabled": true
 		},
 		{
-			"Name": "ABR_InventorySystem",
+			"Name": "ABR_CameraPositionSystem",
 			"Enabled": false
 		},
 		{
-			"Name": "ABR_CameraPositionSystem",
-			"Enabled": false
+			"Name": "GenericGameSystem",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/6904d4d1-c7af-4973-b10e-a88c4436dab5"
 		}
 	],
 	"AdditionalPluginDirectories": [
