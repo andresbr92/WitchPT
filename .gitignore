@@ -3,7 +3,9 @@ DerivedDataCache
 Intermediate
 Saved
 Build
-Plugins
+Plugins/*
+!/Plugins/AndresD3v_InventorySystem
+!/Plugins/AndresD3v_InteractionSystem
 Content/WitchHag
 Content/BattleWitch
 Content/UltraDynamicSky
