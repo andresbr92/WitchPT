@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class ANDRESD3V_INVENTORYSYSTEM_API UInt_InteractionDefinition : public UDataAsset
+class ANDRESD3V_INTERACTIONSYSTEM_API UInt_InteractionDefinition : public UDataAsset
 {
 	GENERATED_BODY()
 public:

@@ -16,7 +16,7 @@ struct FInt_SmartObjectInteractionEntranceData : public FSmartObjectDefinitionDa
 	TSoftObjectPtr<UInt_InteractionDefinition> DefinitionDA{nullptr};
 };
 USTRUCT(BlueprintType)
-struct ANDRESD3V_INVENTORYSYSTEM_API FInt_InteractionOption
+struct ANDRESD3V_INTERACTIONSYSTEM_API FInt_InteractionOption
 {
 	GENERATED_BODY()
 	

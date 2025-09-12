@@ -2,7 +2,7 @@
 
 #include "AndresD3v_InventorySystem.h"
 
-#define LOCTEXT_NAMESPACE "FAndresD3v_InventorySystemModule"
+#define LOCTEXT_NAMESPACE "FAndresD3v_InteractionSystemModule"
 
 void FAndresD3v_InventorySystemModule::StartupModule()
 {
@@ -17,4 +17,4 @@ void FAndresD3v_InventorySystemModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FAndresD3v_InventorySystemModule, AndresD3v_InventorySystem)
+IMPLEMENT_MODULE(FAndresD3v_InventorySystemModule, AndresD3v_InteractionSystem)

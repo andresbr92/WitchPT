@@ -57,6 +57,10 @@
 		{
 			"Name": "GameplayStateTree",
 			"Enabled": true
+		},
+		{
+			"Name": "EventManagerSubsystem",
+			"Enabled": false
 		}
 	]
 }
