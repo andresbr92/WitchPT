@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "AndresD3v_InventorySystem.h"
+#include "AndresD3v_InteractionSystem.h"
 
 #define LOCTEXT_NAMESPACE "FAndresD3v_InteractionSystemModule"
 
@@ -17,4 +17,4 @@ void FAndresD3v_InteractionSystemModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FAndresD3v_InteractionSystemModule, AndresD3v_InventorySystem)
+IMPLEMENT_MODULE(FAndresD3v_InteractionSystemModule, AndresD3v_InteractionSystem)
