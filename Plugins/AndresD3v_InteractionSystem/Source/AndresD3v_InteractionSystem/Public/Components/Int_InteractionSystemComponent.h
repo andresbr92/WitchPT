@@ -118,7 +118,7 @@ protected:
 	UFUNCTION()
 	virtual void OnInteractableActorsNumChanged();
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent, Category="AndresD3v|InteractionSystem")
 	void OnInteractingOptionChanged(int32 PrevOptionIndex);
 
 	UFUNCTION()
@@ -129,7 +129,7 @@ protected:
 	/**
 	 * Called when the potential interactable actors change.
 	 */
-	UFUNCTION(BlueprintNativeEvent, Category="GGS|InteractionSystem")
+	UFUNCTION(BlueprintNativeEvent, Category="AndresD3v|InteractionSystem")
 	void OnInteractableActorsChanged();
 	// ================================= PROPERTIES
 	/**

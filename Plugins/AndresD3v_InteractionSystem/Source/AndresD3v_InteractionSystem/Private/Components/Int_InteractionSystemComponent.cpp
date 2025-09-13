@@ -4,6 +4,7 @@
 #include "Components/Int_InteractionSystemComponent.h"
 
 #include "InterchangeResult.h"
+#include "Int_InteractableInterface.h"
 #include "Int_SmartObjectFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -154,11 +155,29 @@ void UInt_InteractionSystemComponent::OnInteractableActorsNumChanged()
 {
 }
 
-void UInt_InteractionSystemComponent::OnInteractingOptionChanged(int32 PrevOptionIndex)
+void UInt_InteractionSystemComponent::OnInteractingOptionChanged_Implementation(int32 PrevOptionIndex)
 {
+	bool bPrevInteracting = bIsInteracting;
+	bIsInteracting = InteractingOption != INDEX_NONE;
+	
+	if (IsValid(CurrentInteractableActor) && CurrentInteractableActor->GetClass()->ImplementsInterface(UInt_InteractableInterface::StaticClass()))
+	{
+		if (!bPrevInteracting && bIsInteracting)
+		{
+			IInt_InteractableInterface::Execute_OnInteractionStarted(CurrentInteractableActor, GetOwner(), InteractingOption);
+		}
+		if (bPrevInteracting && !bIsInteracting)
+		{
+			IInt_InteractableInterface::Execute_OnInteractionEnded(CurrentInteractableActor, GetOwner(), InteractingOption);
+		}
+	}
+	// TODO: implement event broadcast interacting
 }
+
+
 void UInt_InteractionSystemComponent::OnInteractionOptionsChanged()
 {
+	// TODO: implement event broadcast
 }
 
 void UInt_InteractionSystemComponent::RefreshOptionsForActor()
@@ -188,12 +207,42 @@ void UInt_InteractionSystemComponent::RefreshOptionsForActor()
 					Option.BehaviorDefinition = SO_Subsystem->GetBehaviorDefinitionByRequestResult(Results[i], USmartObjectBehaviorDefinition::StaticClass());
 					NewOptions.Add(Option);
 				}
-				
 			}
-			
 		}
-		// PRINT THE OPTIONS
+	}
+	// check any options changed.
+	bool bOptionsChanged = false;
+	{
+		if (NewOptions.Num() == InteractionOptions.Num())
+		{
+			NewOptions.Sort();
+
+			for (int OptionIndex = 0; OptionIndex < NewOptions.Num(); OptionIndex++)
+			{
+				const FInt_InteractionOption& NewOption = NewOptions[OptionIndex];
+				const FInt_InteractionOption& CurrentOption = InteractionOptions[OptionIndex];
+
+				if (NewOption != CurrentOption)
+				{
+					bOptionsChanged = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			bOptionsChanged = true;
+		}
+	}
+	if (bOptionsChanged)
+	{
+		// TODO: Unregister callbacks.
 		
+		InteractionOptions = NewOptions;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, InteractionOptions, this);
+		UE_LOG(LogTemp, Warning, TEXT("Interaction options changed, new count: %d"), InteractionOptions.Num());
+		
+		OnInteractionOptionsChanged();
 		
 	}
 }
