@@ -54,7 +54,7 @@ struct ANDRESD3V_INTERACTIONSYSTEM_API FInt_InteractionOption
 	friend bool operator==(const FInt_InteractionOption& Lhs, const FInt_InteractionOption& RHS);
 
 	/**
-	 * Inequality operator for comparing interaction options.
+	 * NOT operator for comparing interaction options.
 	 */
 	friend bool operator!=(const FInt_InteractionOption& Lhs, const FInt_InteractionOption& RHS);
 
