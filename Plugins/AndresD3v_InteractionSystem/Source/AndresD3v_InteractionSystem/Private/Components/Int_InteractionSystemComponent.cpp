@@ -163,8 +163,8 @@ void UInt_InteractionSystemComponent::OnInteractionOptionsChanged()
 
 void UInt_InteractionSystemComponent::RefreshOptionsForActor()
 {
-	USmartObjectSubsystem* Subsystem = USmartObjectSubsystem::GetCurrent(GetWorld());
-	if (!Subsystem)
+	USmartObjectSubsystem* SO_Subsystem = USmartObjectSubsystem::GetCurrent(GetWorld());
+	if (!SO_Subsystem)
 	{
 		return;
 	}
@@ -175,9 +175,25 @@ void UInt_InteractionSystemComponent::RefreshOptionsForActor()
 		if (IsValid(CurrentInteractableActor) && UInt_SmartObjectFunctionLibrary::FindSmartObjectsWithInteractionEntranceInActor(GetSmartObjectRequestFilter(), CurrentInteractableActor, Results, GetOwner()))
 		{
 			
-			UE_LOG(LogTemp, Warning, TEXT("Found %d smart object(s) with interaction entrance in actor in component %s"), Results.Num(), *CurrentInteractableActor->GetName());
+			for (int32 i = 0; i < Results.Num(); i++)
+			{
+				FInt_InteractionOption Option;
+				UInt_InteractionDefinition* FoundDefinition;
+				if (UInt_SmartObjectFunctionLibrary::FindInteractionDefinitionFromSmartObjectSlot(this, Results[i].SlotHandle, FoundDefinition))
+				{
+					Option.Definition = FoundDefinition;
+					Option.RequestResult = Results[i];
+					Option.SlotState = SO_Subsystem->GetSlotState(Results[i].SlotHandle);
+					Option.SlotIndex = i;
+					Option.BehaviorDefinition = SO_Subsystem->GetBehaviorDefinitionByRequestResult(Results[i], USmartObjectBehaviorDefinition::StaticClass());
+					NewOptions.Add(Option);
+				}
+				
+			}
 			
 		}
+		// PRINT THE OPTIONS
+		
 		
 	}
 }
