@@ -180,6 +180,23 @@ void UInt_InteractionSystemComponent::OnInteractionOptionsChanged()
 	// TODO: implement event broadcast
 }
 
+void UInt_InteractionSystemComponent::OnSmartObjectEventCallback(const FSmartObjectEventData& EventData)
+{
+	check(CurrentInteractableActor != nullptr);
+
+	for (int32 i = 0; i < InteractionOptions.Num(); i++)
+	{
+		const FInt_InteractionOption& Option = InteractionOptions[i];
+		if (EventData.SmartObjectHandle == Option.RequestResult.SmartObjectHandle && EventData.SlotHandle == Option.RequestResult.SlotHandle)
+		{
+			if (EventData.Reason == ESmartObjectChangeReason::OnOccupied || EventData.Reason == ESmartObjectChangeReason::OnReleased || EventData.Reason == ESmartObjectChangeReason::OnClaimed)
+			{
+				RefreshOptionsForActor();
+			}
+		}
+	}
+}
+
 void UInt_InteractionSystemComponent::RefreshOptionsForActor()
 {
 	USmartObjectSubsystem* SO_Subsystem = USmartObjectSubsystem::GetCurrent(GetWorld());
@@ -237,10 +254,42 @@ void UInt_InteractionSystemComponent::RefreshOptionsForActor()
 	if (bOptionsChanged)
 	{
 		// TODO: Unregister callbacks.
+		for (int32 i = 0; i < InteractionOptions.Num(); i++)
+		{
+			auto& Handle = InteractionOptions[i].RequestResult.SlotHandle;
+			if (SlotCallbacks.Contains(Handle))
+			{
+				if (FOnSmartObjectEvent* OnEventDelegate = SO_Subsystem->GetSlotEventDelegate(Handle))
+				{
+					OnEventDelegate->Remove(SlotCallbacks[Handle]);
+					SlotCallbacks.Remove(Handle);
+				}
+			}
+		}
+		for (FInt_InteractionOption& Option : InteractionOptions)
+		{
+			if (SlotCallbacks.Contains(Option.RequestResult.SlotHandle))
+			{
+				if (FOnSmartObjectEvent* OnEventDelegate = SO_Subsystem->GetSlotEventDelegate(Option.RequestResult.SlotHandle))
+				{
+					OnEventDelegate->Remove(SlotCallbacks[Option.RequestResult.SlotHandle]);
+					SlotCallbacks.Remove(Option.RequestResult.SlotHandle);
+				}
+			}
+		}
 		
 		InteractionOptions = NewOptions;
 		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, InteractionOptions, this);
 		UE_LOG(LogTemp, Warning, TEXT("Interaction options changed, new count: %d"), InteractionOptions.Num());
+		for (int32 i = 0; i < InteractionOptions.Num(); i++)
+		{
+			auto& Handle = InteractionOptions[i].RequestResult.SlotHandle;
+			if (FOnSmartObjectEvent* OnEventDelegate = SO_Subsystem->GetSlotEventDelegate(Handle))
+			{
+				FDelegateHandle DelegateHandle = OnEventDelegate->AddUObject(this, &ThisClass::OnSmartObjectEventCallback);
+				SlotCallbacks.Emplace(Handle, DelegateHandle);
+			}
+		}
 		
 		OnInteractionOptionsChanged();
 		
@@ -249,6 +298,11 @@ void UInt_InteractionSystemComponent::RefreshOptionsForActor()
 
 void UInt_InteractionSystemComponent::OnInteractableActorsChanged_Implementation()
 {
+	if (!bIsInteracting)
+	{
+		// TODO: implement auto select first actor
+	}
+	
 }
 
 

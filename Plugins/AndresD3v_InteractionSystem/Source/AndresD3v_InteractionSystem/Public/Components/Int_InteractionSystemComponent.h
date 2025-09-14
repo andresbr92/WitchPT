@@ -123,6 +123,12 @@ protected:
 
 	UFUNCTION()
 	virtual void OnInteractionOptionsChanged();
+	/**
+	 * Called when a smart object event occurs.
+	 * @param EventData The smart object event data.
+	 */
+	UFUNCTION()
+	virtual void OnSmartObjectEventCallback(const FSmartObjectEventData& EventData);
 	// ================================= PROTECTED FUNCTIONS
 	virtual void RefreshOptionsForActor();
 
