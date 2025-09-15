@@ -3,7 +3,9 @@
 
 #include "Behaviour/Int_GameplayBehaviourConfig_InteractionWithAbility.h"
 
+#include "Behaviour/Int_GameplayBehaviour_InteractionWithAbility.h"
+
 UInt_GameplayBehaviourConfig_InteractionWithAbility::UInt_GameplayBehaviourConfig_InteractionWithAbility()
 {
-	// BehaviorClass = UInt_GameplayBehaviour_InteractionWithAbility::StaticClass();
+	BehaviorClass = UInt_GameplayBehaviour_InteractionWithAbility::StaticClass();
 }

@@ -12,6 +12,7 @@
 /**
  * Delegate for interaction events.
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractionEventSignature);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), ClassGroup=(AndresD3v), meta=(BlueprintSpawnableComponent))
 class ANDRESD3V_INTERACTIONSYSTEM_API UInt_InteractionSystemComponent : public UActorComponent
@@ -81,6 +82,8 @@ public:
 	 */
 	AActor* GetInteractableActor() const { return CurrentInteractableActor; }
 
+	const TArray<FInt_InteractionOption>& GetInteractionOptions() const { return InteractionOptions; }
+
 	/**
 	 * Retrieves de smart objet request filter.
 	 * @return The smart object request filter.
@@ -109,6 +112,8 @@ public:
 	void InstantInteraction(int32 NewIndex = 0);
 	
 	// ================================= DELEGATES
+	UPROPERTY(BlueprintAssignable)
+	FInteractionEventSignature OnSearchInteractableActorsEvent;
 	
 protected:
 	// ================================= ONREP FUNCTIONS

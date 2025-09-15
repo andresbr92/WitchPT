@@ -19,7 +19,7 @@ void UWitchPTAbilitySystemComponent::GrantStartupAbilities(
 			}
 			
 			// Obtener la clase de habilidad para acceder a la propiedad StartupInputTag
-			UWitchPTGameplayAbility* AbilityCDO = AbilityClass->GetDefaultObject<UWitchPTGameplayAbility>();
+			UGameplayAbility* AbilityCDO = AbilityClass->GetDefaultObject<UGameplayAbility>();
 			if (!AbilityCDO)
 			{
 				continue;
@@ -29,7 +29,15 @@ void UWitchPTAbilitySystemComponent::GrantStartupAbilities(
 			// Source of the ability is the ASC
 			AbilitySpec.SourceObject = this;
 			// Add the startup input tag to the ability spec
-			AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityCDO->StartupInputTag);
+			if (AbilityCDO)
+			{
+				UWitchPTGameplayAbility * PTAbility = Cast<UWitchPTGameplayAbility>(AbilityCDO);
+				if (PTAbility)
+				{
+					AbilitySpec.GetDynamicSpecSourceTags().AddTag(PTAbility->StartupInputTag);
+				}
+			}
+			
 			// Give the ability to the ASC
 			FGameplayAbilitySpecHandle AbilitySpecHandle = GiveAbility(AbilitySpec);
 			// Store the handle of the ability
