@@ -54,14 +54,13 @@ void UInt_InteractionSystemComponent::Server_CycleInteractableActors_Implementat
 	if (InteractableActors.IsValidIndex(Index) && InteractableActors[Index] != nullptr && InteractableActors[Index] !=
 		CurrentInteractableActor)
 	{
-		// SetCurrent(InteractableActors[Index]);
+		SetCurrentInteractableActor(InteractableActors[Index]);
 	}
 }
 
 void UInt_InteractionSystemComponent::SearchInteractableActors()
 {
-	//TODO: pending implementation
-	// OnSearchInteractableActorsEvent.Broadcast();
+	OnSearchInteractableActorsEvent.Broadcast();
 }
 
 void UInt_InteractionSystemComponent::SetCurrentInteractableActor(AActor* InActor)
@@ -143,16 +142,38 @@ void UInt_InteractionSystemComponent::InstantInteraction(int32 NewIndex)
 	OnInteractingOptionChanged(Prev2);
 }
 
+bool UInt_InteractionSystemComponent::IsInteracting() const
+{
+	return bIsInteracting;
+}
+
+int32 UInt_InteractionSystemComponent::GetInteractingOption() const
+{
+	return InteractingOption;
+}
+
 void UInt_InteractionSystemComponent::OnInteractableActorChanged(AActor* OldActor)
 {
 	if (GetOwner()->GetLocalRole() >= ROLE_Authority)
 	{
 		RefreshOptionsForActor();
 	}
+	if (IsValid(OldActor) && OldActor->GetClass()->ImplementsInterface(UInt_InteractableInterface::StaticClass()))
+	{
+		IInt_InteractableInterface::Execute_OnInteractionDeselected(OldActor, GetOwner());
+	}
+
+	if (IsValid(CurrentInteractableActor) && CurrentInteractableActor->GetClass()->ImplementsInterface(UInt_InteractableInterface::StaticClass()))
+	{
+		IInt_InteractableInterface::Execute_OnInteractionSelected(CurrentInteractableActor, GetOwner());
+	}
+
+	OnInteractableActorChangedEvent.Broadcast(OldActor, CurrentInteractableActor);
 }
 
 void UInt_InteractionSystemComponent::OnInteractableActorsNumChanged()
 {
+	OnInteractableActorNumChangedEvent.Broadcast(NumOfInteractableActors);
 }
 
 void UInt_InteractionSystemComponent::OnInteractingOptionChanged_Implementation(int32 PrevOptionIndex)
@@ -171,13 +192,13 @@ void UInt_InteractionSystemComponent::OnInteractingOptionChanged_Implementation(
 			IInt_InteractableInterface::Execute_OnInteractionEnded(CurrentInteractableActor, GetOwner(), InteractingOption);
 		}
 	}
-	// TODO: implement event broadcast interacting
+	OnInteractingStateChangedEvent.Broadcast(bIsInteracting);
 }
 
 
 void UInt_InteractionSystemComponent::OnInteractionOptionsChanged()
 {
-	// TODO: implement event broadcast
+	OnInteractionOptionsChangedEvent.Broadcast();
 }
 
 void UInt_InteractionSystemComponent::OnSmartObjectEventCallback(const FSmartObjectEventData& EventData)
@@ -300,7 +321,26 @@ void UInt_InteractionSystemComponent::OnInteractableActorsChanged_Implementation
 {
 	if (!bIsInteracting)
 	{
-		// TODO: implement auto select first actor
+		// update potential actor.
+		if (!IsValid(CurrentInteractableActor) || !InteractableActors.Contains(CurrentInteractableActor))
+		{
+			if (InteractableActors.IsValidIndex(0) && IsValid(InteractableActors[0]))
+			{
+				SetCurrentInteractableActor(InteractableActors[0]);
+			}
+			else
+			{
+				SetCurrentInteractableActor(nullptr);
+			}
+		}
+
+		if (bNewActorHasPriority)
+		{
+			if (IsValid(CurrentInteractableActor) && InteractableActors.IsValidIndex(0) && InteractableActors[0] != CurrentInteractableActor)
+			{
+				SetCurrentInteractableActor(InteractableActors[0]);
+			}
+		}
 	}
 	
 }
