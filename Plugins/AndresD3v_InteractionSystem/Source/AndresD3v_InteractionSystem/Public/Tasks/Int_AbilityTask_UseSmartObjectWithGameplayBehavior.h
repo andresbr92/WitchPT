@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTask.h"
+#include "Abilities/Tasks/AbilityTask.h"
 #include "SmartObjectRuntime.h"
 #include "SmartObjectTypes.h"
 #include "Abilities/GameplayAbility.h"
-#include "Int_GameplayTask_UseSmartObjectWithGameplayBehaviour.generated.h"
+#include "Int_AbilityTask_UseSmartObjectWithGameplayBehavior.generated.h"
 
 class UGameplayBehavior;
 struct FSmartObjectClaimHandle;
@@ -15,14 +16,21 @@ struct FSmartObjectClaimHandle;
  * 
  */
 UCLASS()
-class ANDRESD3V_INTERACTIONSYSTEM_API UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour : public UGameplayTask
+class ANDRESD3V_INTERACTIONSYSTEM_API UInt_AbilityTask_UseSmartObjectWithGameplayBehavior : public UAbilityTask
 {
 	GENERATED_BODY()
 public:
-	UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UInt_AbilityTask_UseSmartObjectWithGameplayBehavior(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	/**
+	 * Creates an ability task to use a smart object with gameplay behavior.
+	 * @param OwningAbility The owning gameplay ability.
+	 * @param ClaimHandle The smart object claim handle.
+	 * @param ClaimPriority The claim priority.
+	 * @return The created ability task.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AndresD3v|Interaction", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour* UseSmartObjectWithGameplayBehavior(UGameplayAbility* OwningAbility, FSmartObjectClaimHandle ClaimHandle,
+	static UInt_AbilityTask_UseSmartObjectWithGameplayBehavior* UseSmartObjectWithGameplayBehavior(UGameplayAbility* OwningAbility, FSmartObjectClaimHandle ClaimHandle,
 																								   ESmartObjectClaimPriority ClaimPriority = ESmartObjectClaimPriority::Normal);
 	/**
 	 * Sets the smart object claim handle
@@ -45,7 +53,7 @@ protected:
 	 * @param Avatar The avatar actor
 	 * @param bInterrupted Whether the behavior was interrupted.
 	 */
-	void OnSmartObjectBehaviorFinished(UGameplayBehavior* Behavior, AActor* Avatar, const bool bInterrupted);
+	void OnSmartObjectBehaviorFinished(UGameplayBehavior& Behavior, AActor& Avatar, const bool bInterrupted);
 
 	/**
 	 * Called when the smart object slot is invalidated.
@@ -80,7 +88,7 @@ protected:
 	/**
 	 * Delegate handle for behavior-finished notification.
 	 */
-	FDelegateHandle OnBehaviourFinishedNotifyHandle;
+	FDelegateHandle OnBehaviorFinishedNotifyHandle;
 	
 	/**
 	 * Indicates if the behavior has finished.

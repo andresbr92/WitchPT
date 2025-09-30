@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Tasks/Int_GameplayTask_UseSmartObjectWithGameplayBehaviour.h"
+#include "Tasks/Int_AbilityTask_UseSmartObjectWithGameplayBehavior.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "Abilities/GameplayAbility.h"
@@ -12,25 +12,26 @@
 #include "SmartObjectComponent.h"
 #include "SmartObjectSubsystem.h"
 
-UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour(
+UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::UInt_AbilityTask_UseSmartObjectWithGameplayBehavior(
 const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
 	bBehaviorFinished = false;
 }
 
-UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour* UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::
+UInt_AbilityTask_UseSmartObjectWithGameplayBehavior* UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::
 UseSmartObjectWithGameplayBehavior(UGameplayAbility* OwningAbility, FSmartObjectClaimHandle ClaimHandle,
 	ESmartObjectClaimPriority ClaimPriority)
 {
 	if (OwningAbility == nullptr) return nullptr;
+	
 	// Create the task
-	UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour* MyTask = NewTask<UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour>(OwningAbility);
+	UInt_AbilityTask_UseSmartObjectWithGameplayBehavior* MyTask = NewAbilityTask<UInt_AbilityTask_UseSmartObjectWithGameplayBehavior>(OwningAbility);
 	if (MyTask == nullptr) return nullptr;
 	MyTask->SetClaimHandle(ClaimHandle);
 	return MyTask;
 }
 
-void UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::Activate()
+void UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::Activate()
 {
 	Super::Activate();
 	bool bSuccess = false;
@@ -62,12 +63,12 @@ void UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::Activate()
 		return;
 	}
 	// Register a callback to be notified if the claimed slot became unavailable
-	SO_Subsystem->RegisterSlotInvalidationCallback(ClaimedHandle, FOnSlotInvalidated::CreateUObject(this, &UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::OnSlotInvalidated));
+	SO_Subsystem->RegisterSlotInvalidationCallback(ClaimedHandle, FOnSlotInvalidated::CreateUObject(this, &UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::OnSlotInvalidated));
 
 	bSuccess = StartInteraction();
 }
 
-void UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::OnDestroy(bool bInOwnerFinished)
+void UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::OnDestroy(bool bInOwnerFinished)
 {
 	if (ClaimedHandle.IsValid())
 	{
@@ -93,11 +94,11 @@ void UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::OnDestroy(bool bInOw
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::StartInteraction()
+bool UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::StartInteraction()
 {
 	UWorld* World = GetWorld();
 	USmartObjectSubsystem* SO_Subsystem = USmartObjectSubsystem::GetCurrent(World);
-	if (ensure(SO_Subsystem)) return false;
+	if (!ensure(SO_Subsystem)) return false;
 	//Mark the slot as occupied
 	const UGameplayBehaviorSmartObjectBehaviorDefinition* SmartObjectGameplayBehaviorDefinition = SO_Subsystem->MarkSlotAsOccupied<UGameplayBehaviorSmartObjectBehaviorDefinition>(ClaimedHandle);
 	// Get the behavior config
@@ -113,37 +114,34 @@ bool UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::StartInteraction()
 	const bool bBehaviorActive = UGameplayBehaviorSubsystem::TriggerBehavior(*GameplayBehavior, InteractorActor, GameplayBehaviorConfig, InteractedActor);
 	if (bBehaviorActive)
 	{
-		// TODO: Set delegate
-		
-		// OnBehaviorFinishedNotifyHandle = GameplayBehavior->GetOnBehaviorFinishedDelegate().AddUObject(this, &UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::OnSmartObjectBehaviorFinished);
+		OnBehaviorFinishedNotifyHandle = GameplayBehavior->GetOnBehaviorFinishedDelegate().AddUObject(this, &UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::OnSmartObjectBehaviorFinished);
 	}
 	return bBehaviorActive;
 	
 }
 
-void UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::OnSmartObjectBehaviorFinished(UGameplayBehavior* Behavior,
-	AActor* Avatar, const bool bInterrupted)
+void UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::OnSmartObjectBehaviorFinished(UGameplayBehavior& Behavior, AActor& Avatar, const bool bInterrupted)
 {
 	// Adding an ensure in case the assumptions change in the future.
 	ensure(GetAvatarActor() != nullptr);
 
 	// // make sure we handle the right pawn - we can get this notify for a different
 	// // Avatar if the behavior sending it out is not instanced (CDO is being used to perform actions)
-	// if (GetAvatarActor() == &Avatar)
-	// {
-	// 	// Behavior.GetOnBehaviorFinishedDelegate().Remove(OnBehaviorFinishedNotifyHandle);
-	// 	bBehaviorFinished = true;
-	// 	EndTask();
-	// }
+	if (GetAvatarActor() == &Avatar)
+	{
+		Behavior.GetOnBehaviorFinishedDelegate().Remove(OnBehaviorFinishedNotifyHandle);
+		bBehaviorFinished = true;
+		EndTask();
+	}
 }
 
-void UInt_GameplayTask_UseSmartObjectWithGameplayBehaviour::OnSlotInvalidated(
+void UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::OnSlotInvalidated(
 	const FSmartObjectClaimHandle& ClaimHandle, const ESmartObjectSlotState State)
 {
 	if (!bBehaviorFinished && GameplayBehavior != nullptr)
 	{
 		check(GetAvatarActor());
-		// GameplayBehavior->GetOnBehaviorFinishedDelegate().Remove(OnBehaviorFinishedNotifyHandle);
+		GameplayBehavior->GetOnBehaviorFinishedDelegate().Remove(OnBehaviorFinishedNotifyHandle);
 		GameplayBehavior->AbortBehavior(*GetAvatarActor());
 	}
 	EndTask();
