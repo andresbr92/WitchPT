@@ -9,6 +9,7 @@
 #include "Components/ActorComponent.h"
 #include "Runtime/Engine/Classes/Components/ActorComponent.h"
 #include "Int_InteractionSystemComponent.generated.h"
+class UGameplayAbility;
 /**
  * Delegate for interaction events.
  */
@@ -42,6 +43,7 @@ public:
 	UInt_InteractionSystemComponent();
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void BeginPlay() override;
 	
 	// ================================= FUNCTIONS
 	
@@ -277,4 +279,11 @@ protected:
 	 * Map of smart object slog handles to delegate handles.
 	 */
 	TMap<FSmartObjectSlotHandle, FDelegateHandle> SlotCallbacks;
+	/**
+	 * Default interaction ability class to use if.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AndresD3v|InteractionSystem")
+	TSubclassOf<UGameplayAbility> DefaultInteractionAbilityClass;
+
+	void GrantAndActivateInteractionAbility();
 };

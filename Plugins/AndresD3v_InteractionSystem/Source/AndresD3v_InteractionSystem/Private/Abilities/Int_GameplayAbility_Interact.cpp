@@ -22,16 +22,20 @@ void UInt_GameplayAbility_Interact::ActivateAbility(const FGameplayAbilitySpecHa
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 	}
-	// TODO: IMPLEMENT EVENT
 	
-	// InteractionSystem->OnInteractableActorChangedEvent.AddDynamic...
+	
+	InteractionSystem->OnInteractableActorChangedEvent.AddDynamic(this, &ThisClass::OnInteractActorChanged);
+	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UInt_GameplayAbility_Interact::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// TODO: REMOVE EVENT
+	if (UInt_InteractionSystemComponent* UserComponent = UInt_InteractionSystemComponent::GetInteractionSystemComponent(ActorInfo->AvatarActor.Get()))
+	{
+		UserComponent->OnInteractableActorChangedEvent.RemoveDynamic(this, &ThisClass::OnInteractActorChanged);
+	}
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 

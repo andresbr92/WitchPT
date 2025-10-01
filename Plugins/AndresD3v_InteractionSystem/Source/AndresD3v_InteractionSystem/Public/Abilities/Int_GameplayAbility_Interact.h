@@ -7,6 +7,7 @@
 #include "Components/Int_InteractionSystemComponent.h"
 
 #include "Int_GameplayAbility_Interact.generated.h"
+
 struct FSmartObjectClaimHandle;
 /**
  * 

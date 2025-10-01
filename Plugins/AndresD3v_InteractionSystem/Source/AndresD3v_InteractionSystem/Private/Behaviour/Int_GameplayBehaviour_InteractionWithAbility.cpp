@@ -48,6 +48,7 @@ bool UInt_GameplayBehaviour_InteractionWithAbility::Trigger(AActor& Avatar, cons
 	GrantedAbilityClass = AbilityClass;
 
 	AbilityEndedDelegateHandle = Asc->OnAbilityEnded.AddUObject(this, &ThisClass::OnAbilityEndedCallback);
+	
 
 	//Ability trigger by event when activation polciy=ServerInitied won't work.
 	AbilitySpecHandle = Asc->K2_GiveAbilityAndActivateOnce(AbilityClass, AbilityLevel);

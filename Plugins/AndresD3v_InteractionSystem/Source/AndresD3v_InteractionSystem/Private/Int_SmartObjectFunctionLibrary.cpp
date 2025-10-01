@@ -21,7 +21,7 @@ bool UInt_SmartObjectFunctionLibrary::FindSmartObjectsWithInteractionEntranceInA
 	USmartObjectBlueprintFunctionLibrary::FindSmartObjectsInActor(Filter, SearchActor, Results, UserActor);
 	if (Results.IsEmpty())
 	{
-		UE_LOG( LogTemp, Warning, TEXT("No smart objects found in actor %s"), *SearchActor->GetName());
+		
 		return false;
 	}
 
@@ -54,7 +54,7 @@ bool UInt_SmartObjectFunctionLibrary::FindInteractionDefinitionFromSmartObjectSl
 					{
 						if (!Entry->DefinitionDA.IsNull())
 						{
-							UE_LOG(LogTemp, Warning, TEXT("Loading interaction definition from data asset"));
+							
 							OutDefinition = Entry->DefinitionDA.LoadSynchronous();
 							bFound = true;
 						}

@@ -3,9 +3,12 @@
 
 #include "Components/Int_InteractionSystemComponent.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "InterchangeResult.h"
 #include "Int_InteractableInterface.h"
 #include "Int_SmartObjectFunctionLibrary.h"
+#include "Abilities/GameplayAbility.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -29,6 +32,15 @@ void UInt_InteractionSystemComponent::GetLifetimeReplicatedProps(
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, NumOfInteractableActors, Params);
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, InteractingOption, Params);
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, InteractionOptions, Params);
+}
+
+void UInt_InteractionSystemComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	if (GetOwner()->HasAuthority())
+	{
+		GrantAndActivateInteractionAbility();
+	}
 }
 
 UInt_InteractionSystemComponent* UInt_InteractionSystemComponent::GetInteractionSystemComponent(const AActor* Actor)
@@ -315,6 +327,56 @@ void UInt_InteractionSystemComponent::RefreshOptionsForActor()
 		OnInteractionOptionsChanged();
 		
 	}
+}
+
+void UInt_InteractionSystemComponent::GrantAndActivateInteractionAbility()
+{
+	if (!DefaultInteractionAbilityClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DefaultInteractionAbilityClass is not set."));
+		return;
+	}
+	AActor* Owner = GetOwner();
+	if (!IsValid(Owner))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Owner is not valid."));
+		return;
+	}
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Owner);
+	if (!ASC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AbilitySystemComponent is not valid."));
+		return;
+	}
+	if (FGameplayAbilitySpec* FoundHandle = ASC->FindAbilitySpecFromClass(DefaultInteractionAbilityClass))
+	{
+		if (FoundHandle->IsActive())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Ability %s is already active."), *DefaultInteractionAbilityClass->GetName());
+			return;
+		}
+	}
+	// Grant the ability.
+	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(DefaultInteractionAbilityClass, 1);
+	// Source of the ability is the ASC
+	AbilitySpec.SourceObject = this;
+	FGameplayAbilitySpecHandle AbilitySpecHandle = ASC->GiveAbilityAndActivateOnce(AbilitySpec);
+	if (AbilitySpecHandle.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Granted and activated ability %s."), *DefaultInteractionAbilityClass->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to grant and activate ability %s."), *DefaultInteractionAbilityClass->GetName());
+
+	}
+	
+	
+	
+	
+	
+	
+	
 }
 
 void UInt_InteractionSystemComponent::OnInteractableActorsChanged_Implementation()
