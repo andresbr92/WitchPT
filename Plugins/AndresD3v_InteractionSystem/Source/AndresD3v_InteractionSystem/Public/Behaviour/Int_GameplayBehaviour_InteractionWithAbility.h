@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayBehavior.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "Tasks/Int_AbilityTask_UseSmartObjectWithGameplayBehavior.h"
 #include "Int_GameplayBehaviour_InteractionWithAbility.generated.h"
 
 /**
@@ -50,10 +51,15 @@ public:
 	UPROPERTY()
 	TSubclassOf<UGameplayAbility> GrantedAbilityClass{nullptr};
 
+	UPROPERTY()
+	TSubclassOf<UGameplayAbility> GrantedAbilityDurationClass{nullptr};
+
 	/**
 	 * Handle for the granted ability spec.
 	 */
 	FGameplayAbilitySpecHandle AbilitySpecHandle;
+
+	
 
 	/**
 	 * Indicates if the behavior was interrupted.
@@ -69,6 +75,11 @@ public:
 	 * Indicates if the ability was cancelled.
 	 */
 	bool bAbilityWasCancelled = false;
+
+	/**
+	 * The type of interaction.
+	 */
+	EInteractionType InteractionType = EInteractionType::Instant;
 
 	/**
 	 * Delegate handle for ability end notification.

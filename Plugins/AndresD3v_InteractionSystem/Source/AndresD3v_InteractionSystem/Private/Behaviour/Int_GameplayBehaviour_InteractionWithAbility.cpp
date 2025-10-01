@@ -129,7 +129,20 @@ bool UInt_GameplayBehaviour_InteractionWithAbility::CheckValidAbilitySetting(con
 		UE_LOG(LogTemp, Warning, TEXT("InteractionConfig is not valid"));
 		return false;
 	}
-
+	if (InteractionType == EInteractionType::Duration)
+	{
+		const TSubclassOf<UGameplayAbility> AbilityClass = InteractionConfig->DurationAbilityToGrant.LoadSynchronous();
+		if (!AbilityClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AbilityClass is not valid"));
+			return false;
+		}
+		OutAbilityClass = AbilityClass;
+		OutAbilityLevel = InteractionConfig->AbilityLevel;
+		return true;
+		
+	} 
+	
 	const TSubclassOf<UGameplayAbility> AbilityClass = InteractionConfig->AbilityToGrant.LoadSynchronous();
 	if (!AbilityClass)
 	{
@@ -139,6 +152,7 @@ bool UInt_GameplayBehaviour_InteractionWithAbility::CheckValidAbilitySetting(con
 	OutAbilityClass = AbilityClass;
 	OutAbilityLevel = InteractionConfig->AbilityLevel;
 	return true;
+
 	
 }
 

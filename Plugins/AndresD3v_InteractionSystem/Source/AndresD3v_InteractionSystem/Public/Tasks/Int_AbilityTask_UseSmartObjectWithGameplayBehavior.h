@@ -15,6 +15,14 @@ struct FSmartObjectClaimHandle;
 /**
  * 
  */
+UENUM(BlueprintType)
+enum EInteractionType
+{
+	None,
+	Instant,
+	Duration
+};
+
 UCLASS()
 class ANDRESD3V_INTERACTIONSYSTEM_API UInt_AbilityTask_UseSmartObjectWithGameplayBehavior : public UAbilityTask
 {
@@ -31,7 +39,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AndresD3v|Interaction", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
 	static UInt_AbilityTask_UseSmartObjectWithGameplayBehavior* UseSmartObjectWithGameplayBehavior(UGameplayAbility* OwningAbility, FSmartObjectClaimHandle ClaimHandle,
-																								   ESmartObjectClaimPriority ClaimPriority = ESmartObjectClaimPriority::Normal);
+																								   ESmartObjectClaimPriority ClaimPriority = ESmartObjectClaimPriority::Normal, EInteractionType InInteractionType = EInteractionType::Instant);
 	/**
 	 * Sets the smart object claim handle
 	 * @param Handle The claim handle
@@ -94,4 +102,7 @@ protected:
 	 * Indicates if the behavior has finished.
 	 */
 	bool bBehaviorFinished;
+
+	
+	EInteractionType InteractionType;
 };

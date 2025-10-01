@@ -24,6 +24,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Interaction")
 	TSoftClassPtr<UGameplayAbility> AbilityToGrant;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Interaction")
+	TSoftClassPtr<UGameplayAbility> DurationAbilityToGrant;
+
+	
+
 	/**
 	 * Ability level
 	 */

@@ -11,6 +11,7 @@
 #include "GameplayBehaviorSubsystem.h"
 #include "SmartObjectComponent.h"
 #include "SmartObjectSubsystem.h"
+#include "Behaviour/Int_GameplayBehaviour_InteractionWithAbility.h"
 
 UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::UInt_AbilityTask_UseSmartObjectWithGameplayBehavior(
 const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
@@ -20,13 +21,14 @@ const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 
 UInt_AbilityTask_UseSmartObjectWithGameplayBehavior* UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::
 UseSmartObjectWithGameplayBehavior(UGameplayAbility* OwningAbility, FSmartObjectClaimHandle ClaimHandle,
-	ESmartObjectClaimPriority ClaimPriority)
+	ESmartObjectClaimPriority ClaimPriority, EInteractionType InInteractionType)
 {
 	if (OwningAbility == nullptr) return nullptr;
 	
 	// Create the task
 	UInt_AbilityTask_UseSmartObjectWithGameplayBehavior* MyTask = NewAbilityTask<UInt_AbilityTask_UseSmartObjectWithGameplayBehavior>(OwningAbility);
 	if (MyTask == nullptr) return nullptr;
+	MyTask->InteractionType = InInteractionType;
 	MyTask->SetClaimHandle(ClaimHandle);
 	return MyTask;
 }
@@ -106,12 +108,17 @@ bool UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::StartInteraction()
 	// Set the GameplayBehavior from the config
 	GameplayBehavior = GameplayBehaviorConfig != nullptr ? GameplayBehaviorConfig->GetBehavior(*World) : nullptr;
 	
+	
 	if (GameplayBehavior == nullptr) return false;
+	UInt_GameplayBehaviour_InteractionWithAbility* InteractionBehavior = Cast<UInt_GameplayBehaviour_InteractionWithAbility>(GameplayBehavior);
+	if (InteractionBehavior == nullptr) return false;
+	
+	InteractionBehavior->InteractionType = InteractionType;
 
 	const USmartObjectComponent* SmartObjectComponent = SO_Subsystem->GetSmartObjectComponent(ClaimedHandle);
 	AActor& InteractorActor = *GetAvatarActor();
 	AActor* InteractedActor = SmartObjectComponent ? SmartObjectComponent->GetOwner() : nullptr;
-	const bool bBehaviorActive = UGameplayBehaviorSubsystem::TriggerBehavior(*GameplayBehavior, InteractorActor, GameplayBehaviorConfig, InteractedActor);
+	const bool bBehaviorActive = UGameplayBehaviorSubsystem::TriggerBehavior(*InteractionBehavior, InteractorActor, GameplayBehaviorConfig, InteractedActor);
 	if (bBehaviorActive)
 	{
 		OnBehaviorFinishedNotifyHandle = GameplayBehavior->GetOnBehaviorFinishedDelegate().AddUObject(this, &UInt_AbilityTask_UseSmartObjectWithGameplayBehavior::OnSmartObjectBehaviorFinished);
