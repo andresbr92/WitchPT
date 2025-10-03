@@ -17,4 +17,4 @@ void FAndresD3v_InventorySystemModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FAndresD3v_InventorySystemModule, AndresD3v_InteractionSystem)
+IMPLEMENT_MODULE(FAndresD3v_InventorySystemModule, AndresD3v_InventorySystem)
