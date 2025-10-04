@@ -4,7 +4,6 @@
 #include "UI/Widgets/WitchPTPrimaryLayout.h"
 
 #include "FWitchPTGameplayTags.h"
-#include "Subsystems/UIManagerSubsystem.h"
 #include "UI/Widgets/Layer/WitchPTUILayer.h"
 
 UWitchPTPrimaryLayout::UWitchPTPrimaryLayout()
