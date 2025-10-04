@@ -19,10 +19,7 @@
 AWitchPTPlayerController::AWitchPTPlayerController()
 {
 	bReplicates = true;
-	InventoryManager = CreateDefaultSubobject<UWitchPTInventoryManagerComponent>("InventoryManager");
-	InventoryManager->SetIsReplicated(true);
-	QuickBarComponent = CreateDefaultSubobject<UWitchPTQuickBarComponent>("QuickBarComponent");
-	QuickBarComponent->SetIsReplicated(true);
+	
 	
 	
 }
@@ -49,7 +46,7 @@ void AWitchPTPlayerController::PostProcessInput(const float DeltaTime, const boo
 void AWitchPTPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AWitchPTPlayerController, InventoryManager);
+	
 }
 
 
@@ -76,6 +73,8 @@ void AWitchPTPlayerController::BeginPlay()
 			UIManagerSubsystem->AddPlayer(LocalPlayer);
 		}
 	}
+	// Initialize Inventory Component
+	
 }
 
 void AWitchPTPlayerController::SetupInputComponent()

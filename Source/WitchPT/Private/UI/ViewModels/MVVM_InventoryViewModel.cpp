@@ -12,35 +12,35 @@
 
 void UMVVM_InventoryViewModel::BindCallbacksToDependencies()
 {
-	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
-	{
-		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
-		{
-			InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
-			{
-				AddItem(ItemAdded);
-			});
-			InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
-			{
-				
-			});
-			InventoryManager->OnItemRemoved.AddLambda([this](UWitchPTInventoryItemInstance* ItemRemoved)
-			{
-				RemoveItem(ItemRemoved);
-			});
-			
-		}
-	}
+	// if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	// {
+	// 	if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+	// 	{
+	// 		InventoryManager->OnItemAdded.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+	// 		{
+	// 			AddItem(ItemAdded);
+	// 		});
+	// 		InventoryManager->OnItemStackChanged.AddLambda([this](UWitchPTInventoryItemInstance* ItemAdded)
+	// 		{
+	// 			
+	// 		});
+	// 		InventoryManager->OnItemRemoved.AddLambda([this](UWitchPTInventoryItemInstance* ItemRemoved)
+	// 		{
+	// 			RemoveItem(ItemRemoved);
+	// 		});
+	// 		
+	// 	}
+	// }
 }
 
 void UMVVM_InventoryViewModel::BroadcastInitialValues()
 {
 	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
 	{
-		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
-		{
-			SetItems(InventoryManager->GetAllItems());
-		}
+		// if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+		// {
+		// 	SetItems(InventoryManager->GetAllItems());
+		// }
 	}
 	
 }
@@ -93,27 +93,27 @@ void UMVVM_InventoryViewModel::EquipItem(UWitchPTInventoryItemInstance* ItemInst
 
 void UMVVM_InventoryViewModel::RemoveItemStack(UWitchPTInventoryItemInstance* ItemInstance, int32 AmountToRemove)
 {
-	if (!ItemInstance)
-	{
-		return;
-	}
-
-	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
-	{
-		if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
-		{
-			const int32 CurrentStackCount = ItemInstance->GetTotalStackCount();
-	
-			// If we only have 1 item left and trying to remove 1 or more, remove the item completely
-			if (CurrentStackCount <= 1 && AmountToRemove >= 1)
-			{
-				InventoryManager->Server_RemoveItemInstance(ItemInstance);
-			}
-			else
-			{
-				// Otherwise, reduce the stack count by the requested amount
-				InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
-			}
-		}
-	}
+	// if (!ItemInstance)
+	// {
+	// 	return;
+	// }
+	//
+	// if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
+	// {
+	// 	if (UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager())
+	// 	{
+	// 		const int32 CurrentStackCount = ItemInstance->GetTotalStackCount();
+	//
+	// 		// If we only have 1 item left and trying to remove 1 or more, remove the item completely
+	// 		if (CurrentStackCount <= 1 && AmountToRemove >= 1)
+	// 		{
+	// 			InventoryManager->Server_RemoveItemInstance(ItemInstance);
+	// 		}
+	// 		else
+	// 		{
+	// 			// Otherwise, reduce the stack count by the requested amount
+	// 			InventoryManager->Server_RemoveItemStacks(ItemInstance, AmountToRemove);
+	// 		}
+	// 	}
+	// }
 }

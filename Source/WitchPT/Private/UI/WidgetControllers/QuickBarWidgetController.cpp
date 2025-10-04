@@ -28,10 +28,10 @@ void UQuickBarWidgetController::BindCallbacksToDependencies()
 	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
 	{
 		
-		if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
-		{
-			// QuickBarComponent->OnActiveSlotChanged.AddDynamic(this, &UQuickBarWidgetController::OnActiveSlotChanged);
-		}
+		// if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
+		// {
+		// 	// QuickBarComponent->OnActiveSlotChanged.AddDynamic(this, &UQuickBarWidgetController::OnActiveSlotChanged);
+		// }
 	}
 
 	// Bind UI changes from WidgetCommunicatorSubsystem
@@ -52,7 +52,7 @@ void UQuickBarWidgetController::AddItemToQuickBarSlot(int32 SlotIndex, UWitchPTI
 	{
 		if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
 		{
-			WitchPtPlayerController->GetQuickBarComponent()->AddItemToSlot(SlotIndex, ItemInstance);
+			// WitchPtPlayerController->GetQuickBarComponent()->AddItemToSlot(SlotIndex, ItemInstance);
 			
 			
 		}

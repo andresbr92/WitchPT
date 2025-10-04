@@ -89,11 +89,11 @@ void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* 
 		return;
 	}
 
-	UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager();
-	if (!InventoryManager)
-	{
-		return;
-	}
+	// UWitchPTInventoryManagerComponent* InventoryManager = WitchPtPlayerController->GetInventoryManager();
+	// if (!InventoryManager)
+	// {
+	// 	return;
+	// }
 
 	// const int32 CurrentStackCount = ItemInstance->GetTotalStackCount();
 	//

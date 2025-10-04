@@ -11,13 +11,13 @@ void UMVVM_QuickBarViewModel::BindCallbacksToDependencies()
 	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
 	{
 		
-		if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
-		{
-			QuickBarComponent->OnActiveSlotChanged.AddLambda([this](const int32 NewSlotIndex)
-			{
-				SetActiveSlotIndex(NewSlotIndex);
-			});
-		}
+		// if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
+		// {
+		// 	QuickBarComponent->OnActiveSlotChanged.AddLambda([this](const int32 NewSlotIndex)
+		// 	{
+		// 		SetActiveSlotIndex(NewSlotIndex);
+		// 	});
+		// }
 	}
 	
 }
@@ -26,10 +26,10 @@ void UMVVM_QuickBarViewModel::BroadcastInitialValues()
 {
 	if (AWitchPTPlayerController* WitchPtPlayerController = Cast<AWitchPTPlayerController>(PlayerController))
 	{
-		if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
-		{
-			SetActiveSlotIndex(QuickBarComponent->GetActiveSlotIndex());
-		}
+		// if (UWitchPTQuickBarComponent* QuickBarComponent = WitchPtPlayerController->GetQuickBarComponent())
+		// {
+		// 	SetActiveSlotIndex(QuickBarComponent->GetActiveSlotIndex());
+		// }
 	}
 }
 

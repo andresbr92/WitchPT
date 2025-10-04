@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "UI/Widgets/PointerWidget.h"
 #include "WitchPTPlayerController.generated.h"
 
@@ -34,19 +35,15 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 
-	
-
-
-
-
-	UPROPERTY(Replicated, VisibleAnywhere)
-	TObjectPtr<UWitchPTInventoryManagerComponent> InventoryManager;
 	UPROPERTY()
 	TObjectPtr<UPointerWidget> HUDWidget;
-	UWitchPTInventoryManagerComponent* GetInventoryManager() { return InventoryManager; }
-	UWitchPTQuickBarComponent* GetQuickBarComponent() { return QuickBarComponent; }
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "QuickBar")
-	TObjectPtr<UWitchPTQuickBarComponent> QuickBarComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category="AndresD3v|Inventory System")
+	TSubclassOf<UActorComponent> InventoryComponentClass;
+	UPROPERTY()
+	TObjectPtr<UInv_InventoryComponent> InventoryComponent;
+
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -71,22 +68,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TSubclassOf<UPointerWidget> HUDWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	TSubclassOf<UCauldronUserWidget> CauldronAltarWidgetClass;
+
 
 	
 
 private:
 
 	void Move(const FInputActionValue& InputActionValue);
-
 	void Look(const FInputActionValue& Value);
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
 	
-
 	void CreateHUDWidget();
 	
 

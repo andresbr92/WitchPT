@@ -189,12 +189,12 @@ void UCraftComponent::TryAddIngredient(const ACharacter* RequestingCharacter, UW
         return;
     }
 
-    UWitchPTInventoryManagerComponent* InventoryManager = PC->GetInventoryManager();
-    if (!InventoryManager)
-    {
-        UE_LOG(LogTemp, Error, TEXT("UCauldronCraftComponent::TrySetIngredientInSlot: Could not get InventoryManager from PlayerController."));
-        return;
-    }
+    // UWitchPTInventoryManagerComponent* InventoryManager = PC->GetInventoryManager();
+    // if (!InventoryManager)
+    // {
+    //     UE_LOG(LogTemp, Error, TEXT("UCauldronCraftComponent::TrySetIngredientInSlot: Could not get InventoryManager from PlayerController."));
+    //     return;
+    // }
     
     
 

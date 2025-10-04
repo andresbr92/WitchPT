@@ -8,7 +8,7 @@ public class WitchPT : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "UMG", "ModelViewViewModel", "DeveloperSettings", "Slate", "SlateCore", "AsyncMessageSystem" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "UMG", "ModelViewViewModel", "DeveloperSettings", "Slate", "SlateCore", "AsyncMessageSystem", "AndresD3v_InventorySystem", "AndresD3v_InteractionSystem" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "NetCore", "ModelViewViewModel", "AITestSuite", "AITestSuite" });
 
