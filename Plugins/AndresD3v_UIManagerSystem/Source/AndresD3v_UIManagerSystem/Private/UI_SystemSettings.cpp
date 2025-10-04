@@ -2,3 +2,8 @@
 
 
 #include "UI_SystemSettings.h"
+
+const UUI_SystemSettings* UUI_SystemSettings::Get()
+{
+	return GetDefault<UUI_SystemSettings>();
+}
