@@ -9,7 +9,7 @@
 #include "Inventory/WitchPTInventoryManagerComponent.h"
 #include "Inventory/Fragments/InventoryFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
-#include "Subsystems/WidgetCommunicatorSubsystem.h"
+
 
 class UWitchPTEquipmentInstance;
 class UWitchPTEquipmentManagerComponent;
@@ -109,21 +109,7 @@ void UInventoryWidgetController::RemoveItemStack(UWitchPTInventoryItemInstance* 
 	// }
 }
 
-void UInventoryWidgetController::OnItemDragStart(UWitchPTInventoryItemInstance* ItemInstance)
-{
-	
-	if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
-	{
-		if (UWidgetCommunicatorSubsystem* WidgetCommunicator = LocalPlayer->GetSubsystem<UWidgetCommunicatorSubsystem>())
-		{
-			WidgetCommunicator->OnItemDragged(ItemInstance);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("WidgetCommunicatorSubsystem not found in the world!"));
-	}
-}
+
 
 void UInventoryWidgetController::EquipItem(UWitchPTInventoryItemInstance* ItemInstance)
 {

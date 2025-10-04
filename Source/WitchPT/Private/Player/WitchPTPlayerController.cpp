@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "UI_ManagerSubsystem.h"
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Equipment/WitchPTQuickBarComponent.h"
@@ -14,7 +15,6 @@
 #include "Item/CauldronAltar.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-#include "Subsystems/UIManagerSubsystem.h"
 
 AWitchPTPlayerController::AWitchPTPlayerController()
 {
@@ -68,7 +68,7 @@ void AWitchPTPlayerController::BeginPlay()
 
 	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
 	{
-		if (UUIManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
+		if (UUI_ManagerSubsystem* UIManagerSubsystem = GetGameInstance()->GetSubsystem<UUI_ManagerSubsystem>())
 		{
 			UIManagerSubsystem->AddPlayer(LocalPlayer);
 		}

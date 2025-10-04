@@ -10,7 +10,7 @@
 #include "Inventory/WitchPTInventoryItemInstance.h"
 #include "Inventory/Fragments/InventoryFragment_EquippableItem.h"
 #include "Player/WitchPTPlayerController.h"
-#include "Subsystems/WidgetCommunicatorSubsystem.h"
+
 
 void UQuickBarWidgetController::SetContextualObject(UObject* ContextualObject)
 {
@@ -36,13 +36,13 @@ void UQuickBarWidgetController::BindCallbacksToDependencies()
 
 	// Bind UI changes from WidgetCommunicatorSubsystem
 	
-	if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
-	{
-		if (UWidgetCommunicatorSubsystem* WidgetCommunicator = LocalPlayer->GetSubsystem<UWidgetCommunicatorSubsystem>())
-		{
-			WidgetCommunicator->OnItemDraggedDelegate.AddDynamic(this, &UQuickBarWidgetController::OnEquipableItemDragStart);
-		}
-	}
+	// if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+	// {
+	// 	if (UWidgetCommunicatorSubsystem* WidgetCommunicator = LocalPlayer->GetSubsystem<UWidgetCommunicatorSubsystem>())
+	// 	{
+	// 		WidgetCommunicator->OnItemDraggedDelegate.AddDynamic(this, &UQuickBarWidgetController::OnEquipableItemDragStart);
+	// 	}
+	// }
 	
 }
 

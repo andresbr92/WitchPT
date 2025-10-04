@@ -3,10 +3,10 @@
 
 #include "UI/ViewModels/MVVM_CauldronViewModel.h"
 
+#include "UI_ManagerSubsystem.h"
 #include "GameFramework/Character.h"
 #include "Item/CauldronAltar.h"
 #include "Item/Components/CraftComponent.h"
-#include "Subsystems/UIManagerSubsystem.h"
 #include "UI/GameUIContexts/CauldronUIContext.h"
 #include "UI/GameUIContexts/WitchPT_GameUIContextBase.h"
 
@@ -71,32 +71,32 @@ void UMVVM_CauldronViewModel::SetModifierIngredient(UWitchPTInventoryItemInstanc
 void UMVVM_CauldronViewModel::TryAddIngredient(const ACharacter* RequestingCharacter,
 	 UWitchPTInventoryItemInstance* IngredientInstance)
 {
-	if (!CauldronAltar)
-	{
-		if (UUIManagerSubsystem* UIManagerSubsystem =GetWorld()->GetGameInstance()->GetSubsystem<UUIManagerSubsystem>())
-		{
-			UWitchPT_GameUIContextBase* GameUIContext = nullptr;
-			APlayerController* InPlayerController = RequestingCharacter ? RequestingCharacter->GetController<APlayerController>() : nullptr;
-			ULocalPlayer* InLocalPlayer = InPlayerController ? Cast<ULocalPlayer>(InPlayerController->GetLocalPlayer()) : nullptr;
-			UIManagerSubsystem->FindUIContext_ForPlayer(InLocalPlayer, UCauldronUIContext::StaticClass(), GameUIContext);
-			if (GameUIContext)
-			{
-				if (UCauldronUIContext* CauldronUIContext = Cast<UCauldronUIContext>(GameUIContext))
-				{
-					CauldronAltar = CauldronUIContext->CauldronAltar;
-				}
-			}
-		}
-		
-	}
-	if (CauldronAltar && CauldronAltar->CraftComponent)
-	{
-		CauldronAltar->CraftComponent->TryAddIngredient(RequestingCharacter, IngredientInstance);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UMVVM_CauldronViewModel::TrySetIngredientInSlot: CauldronCraftComponent is not valid."));
-	}
+	// if (!CauldronAltar)
+	// {
+	// 	if (UUI_ManagerSubsystem* UIManagerSubsystem =GetWorld()->GetGameInstance()->GetSubsystem<UUI_ManagerSubsystem>())
+	// 	{
+	// 		UWitchPT_GameUIContextBase* GameUIContext = nullptr;
+	// 		APlayerController* InPlayerController = RequestingCharacter ? RequestingCharacter->GetController<APlayerController>() : nullptr;
+	// 		ULocalPlayer* InLocalPlayer = InPlayerController ? Cast<ULocalPlayer>(InPlayerController->GetLocalPlayer()) : nullptr;
+	// 		UIManagerSubsystem->FindUIContext_ForPlayer(InLocalPlayer, UCauldronUIContext::StaticClass(), GameUIContext);
+	// 		if (GameUIContext)
+	// 		{
+	// 			if (UCauldronUIContext* CauldronUIContext = Cast<UCauldronUIContext>(GameUIContext))
+	// 			{
+	// 				CauldronAltar = CauldronUIContext->CauldronAltar;
+	// 			}
+	// 		}
+	// 	}
+	// 	
+	// }
+	// if (CauldronAltar && CauldronAltar->CraftComponent)
+	// {
+	// 	CauldronAltar->CraftComponent->TryAddIngredient(RequestingCharacter, IngredientInstance);
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("UMVVM_CauldronViewModel::TrySetIngredientInSlot: CauldronCraftComponent is not valid."));
+	// }
 }
 
 void UMVVM_CauldronViewModel::CraftPotion(const ACharacter* RequestingCharacter)
