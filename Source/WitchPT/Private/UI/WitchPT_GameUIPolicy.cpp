@@ -8,7 +8,7 @@
 
 UWitchPTPrimaryLayout* UWitchPT_GameUIPolicy::GetRootLayout(const ULocalPlayer* LocalPlayer) const
 {
-	if (const FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	if (const FRootViewportLayoutInfoLegacy* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
 	{
 		return LayoutInfo->RootLayout;
 	}
@@ -60,7 +60,7 @@ void UWitchPT_GameUIPolicy::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
 {
 	NotifyPlayerRemoved(LocalPlayer);
 
-	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	if (FRootViewportLayoutInfoLegacy* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
 	{
 		AddLayoutToViewport(LocalPlayer, LayoutInfo->RootLayout);
 		LayoutInfo->bIsAddedToViewport = true;
@@ -72,7 +72,7 @@ void UWitchPT_GameUIPolicy::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
 
 void UWitchPT_GameUIPolicy::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
 {
-	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	if (FRootViewportLayoutInfoLegacy* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
 	{
 		RemoveLayoutFromViewport(LocalPlayer, LayoutInfo->RootLayout);
 		LayoutInfo->bIsAddedToViewport = false;
@@ -83,7 +83,7 @@ void UWitchPT_GameUIPolicy::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
 void UWitchPT_GameUIPolicy::AddContext(const ULocalPlayer* LocalPlayer,
 	UWitchPT_GameUIContextBase* NewContext)
 {
-	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	if (FRootViewportLayoutInfoLegacy* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
 	{
 		if (UObject* ExistingContext = GetContext(LocalPlayer, NewContext->GetClass()))
 		{
@@ -99,7 +99,7 @@ void UWitchPT_GameUIPolicy::AddContext(const ULocalPlayer* LocalPlayer,
 void UWitchPT_GameUIPolicy::RemoveContext(const ULocalPlayer* LocalPlayer,
 	TSubclassOf<UWitchPT_GameUIContextBase> ContextClass)
 {
-	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	if (FRootViewportLayoutInfoLegacy* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
 	{
 		int32 FoundContextIndex = INDEX_NONE;
 		for ( int32 i = 0; i < LayoutInfo->Contexts.Num(); i++)
@@ -118,7 +118,7 @@ void UWitchPT_GameUIPolicy::RemoveContext(const ULocalPlayer* LocalPlayer,
 UWitchPT_GameUIContextBase* UWitchPT_GameUIPolicy::GetContext(const ULocalPlayer* LocalPlayer,
                                                               TSubclassOf<UWitchPT_GameUIContextBase> ContextClass)
 {
-	if (const FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	if (const FRootViewportLayoutInfoLegacy* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
 	{
 		for (int32 i = 0; i < LayoutInfo->Contexts.Num(); i++)
 		{

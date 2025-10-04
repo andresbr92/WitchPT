@@ -10,7 +10,7 @@
 class UWitchPT_GameUIContextBase;
 
 USTRUCT()
-struct FRootViewportLayoutInfo
+struct FRootViewportLayoutInfoLegacy
 {
 	GENERATED_BODY()
 	/**
@@ -41,14 +41,14 @@ struct FRootViewportLayoutInfo
 	/**
 	 * Default constructor.
 	 */
-	FRootViewportLayoutInfo(){}
+	FRootViewportLayoutInfoLegacy(){}
 	/**
 	 * Constructor with parameters.
 	 * @param InLocalPlayer The local player associated with the layout.
 	 * @param InRootLayout The root layout for the local player.
 	 * @param bInIsAddedToViewport Indicates if the layout is added to the viewport.
 	 */
-	FRootViewportLayoutInfo(ULocalPlayer* InLocalPlayer, class UWitchPTPrimaryLayout* InRootLayout, bool bInIsAddedToViewport)
+	FRootViewportLayoutInfoLegacy(ULocalPlayer* InLocalPlayer, class UWitchPTPrimaryLayout* InRootLayout, bool bInIsAddedToViewport)
 		: LocalPlayer(InLocalPlayer), RootLayout(InRootLayout), bIsAddedToViewport(bInIsAddedToViewport) {}
 
 	/**
@@ -101,7 +101,7 @@ protected:
 private:
 	
 	UPROPERTY(Transient)
-	TArray<FRootViewportLayoutInfo> RootViewportLayouts;
+	TArray<FRootViewportLayoutInfoLegacy> RootViewportLayouts;
 
 	
 	friend class UUIManagerSubsystem;
