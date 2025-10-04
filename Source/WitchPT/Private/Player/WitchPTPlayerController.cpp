@@ -73,7 +73,13 @@ void AWitchPTPlayerController::BeginPlay()
 			UIManagerSubsystem->AddPlayer(LocalPlayer);
 		}
 	}
-	// Initialize Inventory Component
+
+	if (InventoryComponentClass)
+	{
+		InventoryComponent = Cast<UInv_InventoryComponent>(GetComponentByClass(InventoryComponentClass));
+	}
+	
+	
 	
 }
 

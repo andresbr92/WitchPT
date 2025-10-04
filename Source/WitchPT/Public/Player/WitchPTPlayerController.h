@@ -43,7 +43,8 @@ public:
 	UPROPERTY()
 	TObjectPtr<UInv_InventoryComponent> InventoryComponent;
 
-
+	UInv_InventoryComponent* GetInventoryComponent() { return InventoryComponent; }
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
