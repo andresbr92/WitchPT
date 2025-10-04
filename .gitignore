@@ -7,6 +7,7 @@ Content/CauldronFX_VDB
 Plugins/*
 !/Plugins/AndresD3v_InventorySystem
 !/Plugins/AndresD3v_InteractionSystem
+!/Plugins/AndresD3v_UIManagerSystem
 Content/WitchHag
 Content/BattleWitch
 Content/UltraDynamicSky
