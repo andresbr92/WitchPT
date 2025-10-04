@@ -4,10 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "InventoryManagement/FastArray/Inv_FastArray.h"
 #include "Inv_InventoryComponent.generated.h"
 
 class UInv_ItemComponent;
 class UInv_InventoryItem;
+class UInv_InventoryBase;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryItemChange, UInv_InventoryItem*, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNoRoomInInventory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStackChange, const FInv_SlotAvailabilityResult&, Result);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemEquipStatusChanged, UInv_InventoryItem*, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryMenuToggled, bool, bOpen);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class ANDRESD3V_INVENTORYSYSTEM_API UInv_InventoryComponent : public UActorComponent
@@ -40,4 +48,50 @@ public:
 	void Multicast_EquipSlotClicked(UInv_InventoryItem* ItemToEquip, UInv_InventoryItem* ItemToUnequip);
 
 
+	void AddRepSubObj(UObject* SubObj);
+	void SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount);
+	UInv_InventoryBase* GetInventoryMenu() const { return InventoryMenu; }
+	bool IsMenuOpen() const { return bInventoryMenuOpen; }
+
+	FInventoryItemChange OnItemAdded;
+	FInventoryItemChange OnItemRemoved;
+	FNoRoomInInventory NoRoomInInventory;
+	FStackChange OnStackChange;
+	FItemEquipStatusChanged OnItemEquipped;
+	FItemEquipStatusChanged OnItemUnequipped;
+	FInventoryMenuToggled OnInventoryMenuToggled;
+protected:
+	virtual void BeginPlay() override;
+
+private:
+
+	TWeakObjectPtr<APlayerController> OwningController;
+	
+	void ConstructInventory();
+
+	UPROPERTY(Replicated)
+	FInv_InventoryFastArray InventoryList;
+
+	UPROPERTY()
+	TObjectPtr<UInv_InventoryBase> InventoryMenu;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
+
+	bool bInventoryMenuOpen;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float DropSpawnAngleMin = -85.f;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float DropSpawnAngleMax = 85.f;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float DropSpawnDistanceMin = 10.f;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float DropSpawnDistanceMax = 50.f;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float RelativeSpawnElevation = 70.f;
 };
