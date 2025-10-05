@@ -54,6 +54,7 @@ public:
 
 	FInventoryItemChange OnItemAdded;
 	FInventoryItemChange OnItemRemoved;
+	UPROPERTY(BlueprintAssignable)
 	FNoRoomInInventory NoRoomInInventory;
 	FStackChange OnStackChange;
 	FItemEquipStatusChanged OnItemEquipped;
