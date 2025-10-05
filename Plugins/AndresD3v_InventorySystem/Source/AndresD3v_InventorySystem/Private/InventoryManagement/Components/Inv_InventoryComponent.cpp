@@ -28,28 +28,29 @@ void UInv_InventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 {
 	FInv_SlotAvailabilityResult Result = InventoryMenu->HasRoomForItem(ItemComponent);
-
-	UInv_InventoryItem* FoundItem = InventoryList.FindFirstItemByType(ItemComponent->GetItemManifest().GetItemType());
-	Result.Item = FoundItem;
-
-	if (Result.TotalRoomToFill == 0)
-	{
-		NoRoomInInventory.Broadcast();
-		return;
-	}
-	
-	if (Result.Item.IsValid() && Result.bStackable)
-	{
-		// Add stacks to an item that already exists in the inventory. We only want to update the stack count,
-		// not create a new item of this type.
-		OnStackChange.Broadcast(Result);
-		Server_AddStacksToItem(ItemComponent, Result.TotalRoomToFill, Result.Remainder);
-	}
-	else if (Result.TotalRoomToFill > 0)
-	{
-		// This item type doesn't exist in the inventory. Create a new one and update all pertinent slots.
-		Server_AddNewItem(ItemComponent, Result.bStackable ? Result.TotalRoomToFill : 0, Result.Remainder);
-	}
+	//
+	// UInv_InventoryItem* FoundItem = InventoryList.FindFirstItemByType(ItemComponent->GetItemManifest().GetItemType());
+	// Result.Item = FoundItem;
+	//
+	// if (Result.TotalRoomToFill == 0)
+	// {
+	// 	NoRoomInInventory.Broadcast();
+	// 	return;
+	// }
+	//
+	// if (Result.Item.IsValid() && Result.bStackable)
+	// {
+	// 	// Add stacks to an item that already exists in the inventory. We only want to update the stack count,
+	// 	// not create a new item of this type.
+	// 	OnStackChange.Broadcast(Result);
+	// 	Server_AddStacksToItem(ItemComponent, Result.TotalRoomToFill, Result.Remainder);
+	// }
+	// else if (Result.TotalRoomToFill > 0)
+	// {
+	// 	// This item type doesn't exist in the inventory. Create a new one and update all pertinent slots.
+	// 	Server_AddNewItem(ItemComponent, Result.bStackable ? Result.TotalRoomToFill : 0, Result.Remainder);
+	// }
+	NoRoomInInventory.Broadcast();
 }
 
 void UInv_InventoryComponent::Server_AddNewItem_Implementation(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder)
