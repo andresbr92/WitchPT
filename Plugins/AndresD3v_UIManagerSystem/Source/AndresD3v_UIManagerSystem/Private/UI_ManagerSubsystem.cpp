@@ -58,6 +58,22 @@ UUserWidget* UUI_ManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerCon
 
 }
 
+void UUI_ManagerSubsystem::PushTemporalContentToLayer_ForPlayer(const APlayerController* PlayerController,
+	FGameplayTag LayerTag, TSubclassOf<UUserWidget> WidgetClass, float Duration)
+{
+	PushContentToLayer_ForPlayer(PlayerController, LayerTag, WidgetClass);
+	
+	if (PlayerController) 
+	{
+		FTimerHandle TimerHandle;
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindUFunction(this, FName("PopContentFromLayer_ForPlayer"), PlayerController, LayerTag, 1);
+		
+		PlayerController->GetWorldTimerManager().SetTimer(TimerHandle, TimerDelegate, Duration, false);
+	}
+	
+}
+
 void UUI_ManagerSubsystem::PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, FGameplayTag LayerTag, int32 RemainNum)
 {
 	if (LayerTag.IsValid() && ensure(PlayerController))

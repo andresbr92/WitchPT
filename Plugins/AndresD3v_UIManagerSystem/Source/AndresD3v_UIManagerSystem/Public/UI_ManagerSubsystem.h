@@ -25,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category="UI Manager", meta=(DynamicOutputParam="ReturnValue", DeterminesOutputType="WidgetClass"))
 	UUserWidget* PushContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass);
 
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UI Manager")
+	void PushTemporalContentToLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UUserWidget> WidgetClass, float Duration);
+
 	UFUNCTION(BlueprintCallable, Category = "UI Manager")
 	void PopContentFromLayer_ForPlayer(const APlayerController* PlayerController, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerTag, int32 RemainNum = -1);
 
