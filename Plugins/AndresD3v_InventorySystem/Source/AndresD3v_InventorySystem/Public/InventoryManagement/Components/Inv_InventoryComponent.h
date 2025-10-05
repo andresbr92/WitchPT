@@ -26,9 +26,6 @@ public:
 	UInv_InventoryComponent();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	UInv_InventoryBase* ConstructInventoryWidget();
-
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Inventory")
 	void TryAddItem(UInv_ItemComponent* ItemComponent);
 
@@ -54,7 +51,6 @@ public:
 	void AddRepSubObj(UObject* SubObj);
 	void SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount);
 	UInv_InventoryBase* GetInventoryMenu() const { return InventoryMenu; }
-	bool IsMenuOpen() const { return bInventoryMenuOpen; }
 
 	FInventoryItemChange OnItemAdded;
 	FInventoryItemChange OnItemRemoved;
@@ -65,23 +61,22 @@ public:
 	FInventoryMenuToggled OnInventoryMenuToggled;
 protected:
 	virtual void BeginPlay() override;
-
-private:
-
-	TWeakObjectPtr<APlayerController> OwningController;
 	
-	
-
-	UPROPERTY(Replicated)
-	FInv_InventoryFastArray InventoryList;
-
-	UPROPERTY()
-	TObjectPtr<UInv_InventoryBase> InventoryMenu;
-
-	UPROPERTY(EditAnywhere, Category = "Inventory")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory")
 	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
 
-	bool bInventoryMenuOpen;
+	UPROPERTY(BlueprintSetter=SetInventoryMenu, Category = "Inventory")
+	TObjectPtr<UInv_InventoryBase> InventoryMenu;
+
+	UFUNCTION(BlueprintSetter)
+	void SetInventoryMenu(UInv_InventoryBase* NewInventoryMenu) { InventoryMenu = NewInventoryMenu; }
+	
+private:
+	TWeakObjectPtr<APlayerController> OwningController;
+	
+	UPROPERTY(Replicated)
+	FInv_InventoryFastArray InventoryList;
+	
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	float DropSpawnAngleMin = -85.f;

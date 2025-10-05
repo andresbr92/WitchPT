@@ -15,7 +15,6 @@ UInv_InventoryComponent::UInv_InventoryComponent() : InventoryList(this)
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
 	bReplicateUsingRegisteredSubObjectList = true;
-	bInventoryMenuOpen = false;
 }
 
 void UInv_InventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -166,21 +165,6 @@ void UInv_InventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	ConstructInventoryWidget();
 }
 
-UInv_InventoryBase* UInv_InventoryComponent::ConstructInventoryWidget()
-{
-	OwningController = Cast<APlayerController>(GetOwner());
-	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
-	if (!OwningController->IsLocalController()) return nullptr;
 
-	if (InventoryMenuClass)
-	{
-		InventoryMenu = CreateWidget<UInv_InventoryBase>(OwningController.Get(), InventoryMenuClass);
-		return InventoryMenu;
-		
-	}
-	UE_LOG(LogTemp, Warning, TEXT("InventoryMenuClass is not set in %s. Please set it in the InventoryComponent details panel."), *GetName());
-	return nullptr;
-}
