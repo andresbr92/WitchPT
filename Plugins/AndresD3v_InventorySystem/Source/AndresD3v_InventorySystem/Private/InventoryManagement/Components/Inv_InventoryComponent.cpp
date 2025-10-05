@@ -166,19 +166,21 @@ void UInv_InventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	ConstructInventory();
+	ConstructInventoryWidget();
 }
 
-void UInv_InventoryComponent::ConstructInventory()
+UInv_InventoryBase* UInv_InventoryComponent::ConstructInventoryWidget()
 {
 	OwningController = Cast<APlayerController>(GetOwner());
 	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
-	if (!OwningController->IsLocalController()) return;
+	if (!OwningController->IsLocalController()) return nullptr;
 
 	if (InventoryMenuClass)
 	{
 		InventoryMenu = CreateWidget<UInv_InventoryBase>(OwningController.Get(), InventoryMenuClass);
-		InventoryMenu->AddToViewport();
+		return InventoryMenu;
+		
 	}
-
+	UE_LOG(LogTemp, Warning, TEXT("InventoryMenuClass is not set in %s. Please set it in the InventoryComponent details panel."), *GetName());
+	return nullptr;
 }

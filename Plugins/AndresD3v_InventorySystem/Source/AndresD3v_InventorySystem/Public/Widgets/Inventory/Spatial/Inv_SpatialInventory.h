@@ -40,26 +40,26 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> CanvasPanel;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UWidgetSwitcher> Switcher;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UInv_InventoryGrid> Grid_Equippables;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UInv_InventoryGrid> Grid_Consumables;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UInv_InventoryGrid> Grid_Craftables;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Button_Equippables;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Button_Consumables;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Button_Craftables;
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UWidgetSwitcher> Switcher;
+	//
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UInv_InventoryGrid> Grid_Equippables;
+	//
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UInv_InventoryGrid> Grid_Consumables;
+	//
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UInv_InventoryGrid> Grid_Craftables;
+	//
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UButton> Button_Equippables;
+	//
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UButton> Button_Consumables;
+	//
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UButton> Button_Craftables;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_ItemDescription> ItemDescriptionClass;

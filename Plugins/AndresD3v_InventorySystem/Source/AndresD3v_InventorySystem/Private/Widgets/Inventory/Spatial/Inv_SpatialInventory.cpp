@@ -24,13 +24,13 @@ void UInv_SpatialInventory::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	Button_Equippables->OnClicked.AddDynamic(this, &ThisClass::ShowEquippables);
-	Button_Consumables->OnClicked.AddDynamic(this, &ThisClass::ShowConsumables);
-	Button_Craftables->OnClicked.AddDynamic(this, &ThisClass::ShowCraftables);
-
-	Grid_Equippables->SetOwningCanvas(CanvasPanel);
-	Grid_Consumables->SetOwningCanvas(CanvasPanel);
-	Grid_Craftables->SetOwningCanvas(CanvasPanel);
+	// Button_Equippables->OnClicked.AddDynamic(this, &ThisClass::ShowEquippables);
+	// Button_Consumables->OnClicked.AddDynamic(this, &ThisClass::ShowConsumables);
+	// Button_Craftables->OnClicked.AddDynamic(this, &ThisClass::ShowCraftables);
+	//
+	// Grid_Equippables->SetOwningCanvas(CanvasPanel);
+	// Grid_Consumables->SetOwningCanvas(CanvasPanel);
+	// Grid_Craftables->SetOwningCanvas(CanvasPanel);
 
 	ShowEquippables();
 
@@ -68,7 +68,7 @@ void UInv_SpatialInventory::EquippedGridSlotClicked(UInv_EquippedGridSlot* Equip
 	InventoryComponent->Server_EquipSlotClicked(HoverItem->GetInventoryItem(), nullptr);
 	
 	// Clear the Hover Item
-	Grid_Equippables->ClearHoverItem();
+	// Grid_Equippables->ClearHoverItem();
 }
 
 void UInv_SpatialInventory::EquippedSlottedItemClicked(UInv_EquippedSlottedItem* EquippedSlottedItem)
@@ -91,7 +91,7 @@ void UInv_SpatialInventory::EquippedSlottedItemClicked(UInv_EquippedSlottedItem*
 	ClearSlotOfItem(EquippedGridSlot);
 
 	// Assign previously equipped item as the hover item
-	Grid_Equippables->AssignHoverItem(ItemToUnequip);
+	// Grid_Equippables->AssignHoverItem(ItemToUnequip);
 	
 	// Remove of the equipped slotted item from the equipped grid slot
 	RemoveEquippedSlottedItem(EquippedSlottedItem);
@@ -219,18 +219,19 @@ void UInv_SpatialInventory::BroadcastSlotClickedDelegates(UInv_InventoryItem* It
 
 FInv_SlotAvailabilityResult UInv_SpatialInventory::HasRoomForItem(UInv_ItemComponent* ItemComponent) const
 {
-	switch (UInv_InventoryStatics::GetItemCategoryFromItemComp(ItemComponent))
-	{
-		case EInv_ItemCategory::Equippable:
-			return Grid_Equippables->HasRoomForItem(ItemComponent);
-		case EInv_ItemCategory::Consumable:
-			return Grid_Consumables->HasRoomForItem(ItemComponent);
-		case EInv_ItemCategory::Craftable:
-			return Grid_Craftables->HasRoomForItem(ItemComponent);
-		default:
-			UE_LOG(LogInventory, Error, TEXT("ItemComponent doesn't have a valid Item Category."))
-			return FInv_SlotAvailabilityResult();
-	}
+	// switch (UInv_InventoryStatics::GetItemCategoryFromItemComp(ItemComponent))
+	// {
+	// 	case EInv_ItemCategory::Equippable:
+	// 		return Grid_Equippables->HasRoomForItem(ItemComponent);
+	// 	case EInv_ItemCategory::Consumable:
+	// 		return Grid_Consumables->HasRoomForItem(ItemComponent);
+	// 	case EInv_ItemCategory::Craftable:
+	// 		return Grid_Craftables->HasRoomForItem(ItemComponent);
+	// 	default:
+	// 		UE_LOG(LogInventory, Error, TEXT("ItemComponent doesn't have a valid Item Category."))
+	// 		return FInv_SlotAvailabilityResult();
+	// }
+	return ActiveGrid->HasRoomForItem(ItemComponent);
 }
 
 void UInv_SpatialInventory::OnItemHovered(UInv_InventoryItem* Item)
@@ -267,9 +268,9 @@ void UInv_SpatialInventory::OnItemUnHovered()
 
 bool UInv_SpatialInventory::HasHoverItem() const
 {
-	if (Grid_Equippables->HasHoverItem()) return true;
-	if (Grid_Consumables->HasHoverItem()) return true;
-	if (Grid_Craftables->HasHoverItem()) return true;
+	// if (Grid_Equippables->HasHoverItem()) return true;
+	// if (Grid_Consumables->HasHoverItem()) return true;
+	// if (Grid_Craftables->HasHoverItem()) return true;
 	return false;
 }
 
@@ -281,7 +282,8 @@ UInv_HoverItem* UInv_SpatialInventory::GetHoverItem() const
 
 float UInv_SpatialInventory::GetTileSize() const
 {
-	return Grid_Equippables->GetTileSize();
+	// return Grid_Equippables->GetTileSize();
+	return 0.f;
 }
 
 void UInv_SpatialInventory::ShowEquippedItemDescription(UInv_InventoryItem* Item)
@@ -342,24 +344,24 @@ UInv_ItemDescription* UInv_SpatialInventory::GetEquippedItemDescription()
 
 void UInv_SpatialInventory::ShowEquippables()
 {
-	SetActiveGrid(Grid_Equippables, Button_Equippables);
+	// SetActiveGrid(Grid_Equippables, Button_Equippables);
 }
 
 void UInv_SpatialInventory::ShowConsumables()
 {
-	SetActiveGrid(Grid_Consumables, Button_Consumables);
+	// SetActiveGrid(Grid_Consumables, Button_Consumables);
 }
 
 void UInv_SpatialInventory::ShowCraftables()
 {
-	SetActiveGrid(Grid_Craftables, Button_Craftables);
+	// SetActiveGrid(Grid_Craftables, Button_Craftables);
 }
 
 void UInv_SpatialInventory::DisableButton(UButton* Button)
 {
-	Button_Equippables->SetIsEnabled(true);
-	Button_Consumables->SetIsEnabled(true);
-	Button_Craftables->SetIsEnabled(true);
+	// Button_Equippables->SetIsEnabled(true);
+	// Button_Consumables->SetIsEnabled(true);
+	// Button_Craftables->SetIsEnabled(true);
 	Button->SetIsEnabled(false);
 }
 
@@ -373,6 +375,6 @@ void UInv_SpatialInventory::SetActiveGrid(UInv_InventoryGrid* Grid, UButton* But
 	ActiveGrid = Grid;
 	if (ActiveGrid.IsValid()) ActiveGrid->ShowCursor();
 	DisableButton(Button);
-	Switcher->SetActiveWidget(Grid);
+	// Switcher->SetActiveWidget(Grid);
 }
 

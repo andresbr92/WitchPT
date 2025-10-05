@@ -25,6 +25,9 @@ class ANDRESD3V_INVENTORYSYSTEM_API UInv_InventoryComponent : public UActorCompo
 public:
 	UInv_InventoryComponent();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UInv_InventoryBase* ConstructInventoryWidget();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Inventory")
 	void TryAddItem(UInv_ItemComponent* ItemComponent);
@@ -67,7 +70,7 @@ private:
 
 	TWeakObjectPtr<APlayerController> OwningController;
 	
-	void ConstructInventory();
+	
 
 	UPROPERTY(Replicated)
 	FInv_InventoryFastArray InventoryList;
