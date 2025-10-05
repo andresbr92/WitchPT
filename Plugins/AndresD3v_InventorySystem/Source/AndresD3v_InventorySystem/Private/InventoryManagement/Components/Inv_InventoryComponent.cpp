@@ -15,6 +15,7 @@ UInv_InventoryComponent::UInv_InventoryComponent() : InventoryList(this)
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
 	bReplicateUsingRegisteredSubObjectList = true;
+	bIsInventoryOpen = false;
 }
 
 void UInv_InventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

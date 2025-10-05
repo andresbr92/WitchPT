@@ -71,11 +71,26 @@ protected:
 	UFUNCTION(BlueprintSetter)
 	void SetInventoryMenu(UInv_InventoryBase* NewInventoryMenu) { InventoryMenu = NewInventoryMenu; }
 	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetInventoryOpen(bool bOpen) 
+	{ 
+		if (bIsInventoryOpen != bOpen)
+		{
+			bIsInventoryOpen = bOpen; 
+			OnInventoryMenuToggled.Broadcast(bIsInventoryOpen);
+		}
+	}
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool IsInventoryOpen() const { return bIsInventoryOpen; }
+	
+	
 private:
 	TWeakObjectPtr<APlayerController> OwningController;
 	
 	UPROPERTY(Replicated)
 	FInv_InventoryFastArray InventoryList;
+	
+	bool bIsInventoryOpen;
 	
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
