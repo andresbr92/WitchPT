@@ -24,7 +24,7 @@ void UInv_InventoryGrid::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	// ConstructGrid();
+	ConstructGrid();
 	//
 	// InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
 	// InventoryComponent->OnItemAdded.AddDynamic(this, &ThisClass::AddItem);
@@ -748,31 +748,31 @@ void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 // 	SlottedItem->SetImageBrush(Brush);
 // }
 //
-// void UInv_InventoryGrid::ConstructGrid()
-// {
-// 	GridSlots.Reserve(Rows * Columns);
-//
-// 	for (int32 j = 0; j < Rows; ++j)
-// 	{
-// 		for (int32 i = 0; i < Columns; ++i)
-// 		{
-// 			UInv_GridSlot* GridSlot = CreateWidget<UInv_GridSlot>(this, GridSlotClass);
-// 			CanvasPanel->AddChild(GridSlot);
-//
-// 			const FIntPoint TilePosition(i, j);
-// 			GridSlot->SetTileIndex(UInv_WidgetUtils::GetIndexFromPosition(TilePosition, Columns));
-//
-// 			UCanvasPanelSlot* GridCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(GridSlot);
-// 			GridCPS->SetSize(FVector2D(TileSize));
-// 			GridCPS->SetPosition(TilePosition * TileSize);
-//
-// 			GridSlots.Add(GridSlot);
-// 			GridSlot->GridSlotClicked.AddDynamic(this, &ThisClass::OnGridSlotClicked);
-// 			GridSlot->GridSlotHovered.AddDynamic(this, &ThisClass::OnGridSlotHovered);
-// 			GridSlot->GridSlotUnhovered.AddDynamic(this, &ThisClass::OnGridSlotUnhovered);
-// 		}
-// 	}
-// }
+void UInv_InventoryGrid::ConstructGrid()
+{
+	GridSlots.Reserve(Rows * Columns);
+
+	for (int32 j = 0; j < Rows; ++j)
+	{
+		for (int32 i = 0; i < Columns; ++i)
+		{
+			UInv_GridSlot* GridSlot = CreateWidget<UInv_GridSlot>(this, GridSlotClass);
+			CanvasPanel->AddChild(GridSlot);
+
+			const FIntPoint TilePosition(i, j);
+			GridSlot->SetTileIndex(UInv_WidgetUtils::GetIndexFromPosition(TilePosition, Columns));
+
+			UCanvasPanelSlot* GridCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(GridSlot);
+			GridCPS->SetSize(FVector2D(TileSize));
+			GridCPS->SetPosition(TilePosition * TileSize);
+
+			GridSlots.Add(GridSlot);
+			// GridSlot->GridSlotClicked.AddDynamic(this, &ThisClass::OnGridSlotClicked);
+			// GridSlot->GridSlotHovered.AddDynamic(this, &ThisClass::OnGridSlotHovered);
+			// GridSlot->GridSlotUnhovered.AddDynamic(this, &ThisClass::OnGridSlotUnhovered);
+		}
+	}
+}
 //
 // void UInv_InventoryGrid::OnGridSlotClicked(int32 GridIndex, const FPointerEvent& MouseEvent)
 // {
