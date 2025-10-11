@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Item/Item.h"
-#include "AbilitySystem/Interaction/InteractionOption.h"
 #include "GameplayTagContainer.h" // Added for FGameplayTag
 #include "MechanicsInterface.h"
 #include "BaseInteractionPosition.generated.h"
@@ -34,9 +33,7 @@ public:
     virtual void BeginPlay() override;
     //~ End AActor Interface
 
-    //~ Begin IInteraction Interface (from AItem presumably)
-    virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
-    //~ End IInteraction Interface
+
 
     //~ Getters
 

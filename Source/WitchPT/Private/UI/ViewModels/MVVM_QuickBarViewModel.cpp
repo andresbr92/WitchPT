@@ -3,7 +3,6 @@
 
 #include "UI/ViewModels/MVVM_QuickBarViewModel.h"
 
-#include "Equipment/WitchPTQuickBarComponent.h"
 #include "Player/WitchPTPlayerController.h"
 
 void UMVVM_QuickBarViewModel::BindCallbacksToDependencies()

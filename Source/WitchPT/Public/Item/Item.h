@@ -3,12 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
 UCLASS()
-class WITCHPT_API AItem : public AActor, public IInteractableTarget
+class WITCHPT_API AItem : public AActor
 {
 	GENERATED_BODY()
 
@@ -19,11 +18,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	UPROPERTY(EditAnywhere)
-	FInteractionOption Option;
 
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
 };

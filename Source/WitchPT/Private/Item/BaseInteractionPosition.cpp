@@ -34,11 +34,7 @@ void ABaseInteractionPosition::BeginPlay()
     // Additional initialization could go here if needed
 }
 
-void ABaseInteractionPosition::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
-{
-    // This should be overridden by derived classes
-    Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
-}
+
 
 bool ABaseInteractionPosition::IsOccupied() const
 {

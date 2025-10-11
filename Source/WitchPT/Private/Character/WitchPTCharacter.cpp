@@ -7,7 +7,6 @@
 #include "AbilitySystem/WitchPTAbilitySystemComponent.h"
 #include "AbilitySystem/WitchPTAttributeSet.h"
 #include "Character/Components/WitchPTMechanicComponent.h"
-#include "Equipment/WitchPTEquipmentManagerComponent.h"
 #include "Item/RitualAltar.h"
 #include "Item/RitualPosition.h"
 #include "Player/WitchPTPlayerController.h"
@@ -24,7 +23,7 @@ AWitchPTCharacter::AWitchPTCharacter(const class FObjectInitializer& ObjectIniti
 	// Initialize the MechanicComponent
 	MechanicComponent = CreateDefaultSubobject<UWitchPTMechanicComponent>(TEXT("MechanicComponent"));
 	// Initialize the EquipmentManagerComponent
-	EquipmentManagerComponent = CreateDefaultSubobject<UWitchPTEquipmentManagerComponent>(TEXT("EquipmentManagerComponent"));
+	
 	
 }
 

@@ -4,24 +4,15 @@
 #include "Item/CauldronPosition.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
-#include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "FWitchPTGameplayTags.h"
 #include "Engine/ActorChannel.h"
-#include "Inventory/WitchPTInventoryItemDefinition.h"
-#include "Inventory/WitchPTInventoryItemInstance.h"
-#include "Inventory/WitchPTInventoryManagerComponent.h"
-#include "Inventory/Fragments/InventoryFragment_UIDetails.h"
-#include "Inventory/Fragments/InventoryFragment_IngredientCraftingProperties.h"
-#include "Item/Components/CraftComponent.h"
 #include "Player/WitchPTPlayerController.h"
 #include "UI/HUD/WitchPTHUD.h"
-#include "UI/Widgets/CauldronUserWidget.h"
 
 // Sets default values
 ACauldronAltar::ACauldronAltar()
@@ -42,17 +33,6 @@ ACauldronAltar::ACauldronAltar()
     
 }
 
-void ACauldronAltar::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
-{
-    // Set up the interaction option based on the cauldron state
-    FInteractionOption InteractionOption = Option;
-    
-    // Configure the interaction option to support hold interaction
-    InteractionOption.bSupportsHoldInteraction = true;
-    
-    // Add the interaction option to the builder
-    OptionBuilder.AddInteractionOption(InteractionOption);
-}
 
 void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -61,7 +41,6 @@ void ACauldronAltar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
     DOREPLIFETIME(ACauldronAltar, CauldronPhysicState);
     DOREPLIFETIME(ACauldronAltar, CarryingCharacter);
     DOREPLIFETIME(ACauldronAltar, CurrentPlacementState);
-    DOREPLIFETIME(ACauldronAltar, CraftComponent);
 }
 
 void ACauldronAltar::OnRep_CauldronPhysicState()
@@ -102,26 +81,13 @@ void ACauldronAltar::StartBrewingPotion(ACharacter* InteractingCharacter)
 
 void ACauldronAltar::TryAddIngredient(const ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance)
 {
-    if (!CraftComponent)
-    {
-        UE_LOG(LogTemp, Error, TEXT("ACauldronAltar::TrySetIngredientInSlot: CauldronCraftComponent is null"));
-        return;
-    }
-
-    if (CauldronPhysicState != ECauldronPhysicState::Static)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ACauldronAltar::TrySetIngredientInSlot: Cauldron is not in a static state"));
-        return;
-    }
-
-    // Delegate to the craft component
-    CraftComponent->TryAddIngredient(RequestingCharacter, IngredientInstance);
+   
 }
 
 void ACauldronAltar::BeginPlay()
 {
     Super::BeginPlay();
-    CraftComponent = GetComponentByClass<UCraftComponent>();
+   
     SetReplicateMovement(true);
 }
 
@@ -131,10 +97,7 @@ bool ACauldronAltar::ReplicateSubobjects(class UActorChannel* Channel, class FOu
     bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
     
     // Replicate the CauldronCraftComponent
-    if (CraftComponent)
-    {
-        bWroteSomething |= Channel->ReplicateSubobject(CraftComponent, *Bunch, *RepFlags);
-    }
+  
     
     return bWroteSomething;
 }

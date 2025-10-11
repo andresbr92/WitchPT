@@ -6,7 +6,6 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
 #include "Item/RitualAltar.h"
-#include "Item/Components/CraftComponent.h"
 
 // Sets default values for this component's properties
 UWitchPTMechanicComponent::UWitchPTMechanicComponent()
@@ -140,7 +139,7 @@ void UWitchPTMechanicComponent::RequestUnOccupyPositionInCauldron_Implementation
 	}
 }
 
-void UWitchPTMechanicComponent::RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
+/*void UWitchPTMechanicComponent::RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
 	UWitchPTInventoryItemInstance* IngredientInstance)
 {
 	if (!TargetAltar) return;
@@ -153,12 +152,12 @@ void UWitchPTMechanicComponent::RequestSetIngredientInSlot_Implementation(ACauld
 	}
 	else
 	{
-		Server_RequestSetIngredientInSlot(TargetAltar, IngredientInstance);
+		// Server_RequestSetIngredientInSlot(TargetAltar, IngredientInstance);
 	}
 
 	
 	
-}
+}*/
 
 void UWitchPTMechanicComponent::RequestPrintDebugData_Implementation(ACauldronAltar* TargetAltar)
 {
@@ -186,15 +185,15 @@ void UWitchPTMechanicComponent::RequestCraftPotion_Implementation(ACauldronAltar
 	
 }
 
-void UWitchPTMechanicComponent::Server_RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
-                                                                                 UWitchPTInventoryItemInstance* IngredientInstance)
-{
-	if (!TargetAltar) return;
-	ACharacter* Character = Cast<ACharacter>(GetOwner());
-	
-	TargetAltar->TryAddIngredient(Character, IngredientInstance);
-	
-}
+// void UWitchPTMechanicComponent::Server_RequestSetIngredientInSlot_Implementation(ACauldronAltar* TargetAltar,
+//                                                                                  UWitchPTInventoryItemInstance* IngredientInstance)
+// {
+// 	if (!TargetAltar) return;
+// 	ACharacter* Character = Cast<ACharacter>(GetOwner());
+// 	
+// 	TargetAltar->TryAddIngredient(Character, IngredientInstance);
+// 	
+// }
 
 void UWitchPTMechanicComponent::RequestOccupyPosition_Implementation(ARitualAltar* TargetAltar, ABaseInteractionPosition* Position)
 {

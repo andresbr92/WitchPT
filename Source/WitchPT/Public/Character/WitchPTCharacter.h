@@ -4,10 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "WitchPTCharacterBase.h"
-#include "Item/CauldronAltar.h"
-#include "Item/MechanicsInterface.h"
-#include "Blueprint/UserWidget.h"
-#include "Components/WidgetComponent.h" // Necesitas un Widget Component
 #include "UObject/ConstructorHelpers.h"
 #include "WitchPTCharacter.generated.h"
 
@@ -27,14 +23,11 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 
-	UWitchPTEquipmentManagerComponent* GetEquipmentManager() const { return EquipmentManagerComponent; }
+	
 	
 	
 	virtual void InitAbilityActorInfo() override;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UWitchPTMechanicComponent> MechanicComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UWitchPTEquipmentManagerComponent> EquipmentManagerComponent;
 	
-
 };

@@ -6,7 +6,6 @@
 #include "Item/BaseInteractableAltar.h"
 #include "GameplayTagContainer.h" // Include for FGameplayTag
 #include "MechanicsInterface.h"
-#include "AbilitySystem/Interaction/IInteractableTarget.h"
 #include "CauldronAltar.generated.h"
 
 class UCraftComponent;
@@ -62,7 +61,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterPositioned, bool, bWasSu
  * Cauldron altar allows players to add ingredients in any order (unlike ritual's sequential inputs)
  */
 UCLASS()
-class WITCHPT_API ACauldronAltar : public ABaseInteractableAltar, public IInteractableTarget, public IMechanicsInterface
+class WITCHPT_API ACauldronAltar : public ABaseInteractableAltar, public IMechanicsInterface
 {
     GENERATED_BODY()
 
@@ -73,23 +72,17 @@ public:
     // Overrides
     virtual void BeginPlay() override;
     virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
-    virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
     virtual void UnoccupyPosition(ACharacter* Character, ABaseInteractionPosition* Position) override;
     
-    // Core Properties
-    UPROPERTY(EditAnywhere)
-    FInteractionOption Option;
+
     
     UPROPERTY(ReplicatedUsing = OnRep_CauldronPhysicState, BlueprintReadWrite, VisibleAnywhere, Category = "Cauldron")
     TEnumAsByte<ECauldronPhysicState> CauldronPhysicState;
 
-    UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite)
-    TObjectPtr<UCraftComponent> CraftComponent;
 
-    // Base potion definition template used for generating crafted potions
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Potion Crafting")
-    TSubclassOf<UWitchPTInventoryItemDefinition> BasePotionItemDefinition;
+
+
     
     
     // ----------------------------------- DELEGATES  ---------------------------------------------- //

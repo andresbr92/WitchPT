@@ -31,10 +31,7 @@ public:
     //~ Begin AActor Interface
     virtual void BeginPlay() override;
     //~ End AActor Interface
-
-    //~ Begin IInteraction Interface (from AItem)
-    virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
-    //~ End IInteraction Interface
+    
 
     //~ Getters
     UFUNCTION(BlueprintPure, Category = "Cauldron")

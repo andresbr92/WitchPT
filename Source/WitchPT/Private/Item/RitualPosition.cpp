@@ -45,46 +45,7 @@ void ARitualPosition::BeginPlay()
 }
 
 
-void ARitualPosition::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
-{
-	Super::GatherInteractionOptions(InteractQuery, OptionBuilder);
-	
-	// Ritual-specific interaction options
-	
-	// ACharacter* InteractingCharacterPtr = Cast<ACharacter>(InteractQuery.User);
-	//
-	// // If no player is occupying the position, let a player take the position
-	// if (!IsOccupied() && InteractingCharacterPtr)
-	// {
-	// 	OptionBuilder.AddDefaultInteraction(
-	// 		FText::FromString("Take Position"), // Text for the interaction
-	// 		[this, InteractingCharacterPtr](const FInteractionExecuteContext& Context)
-	// 		{
-	// 			HandleInteraction(InteractingCharacterPtr);
-	// 		}
-	// 	);
-	// }
-	//
-	// // Special case: if the character is standing at a position and we're in Inactive state, they can initiate the ritual
-	// if (IsOccupied() && RitualAltar && GetOccupyingCharacter() == InteractingCharacterPtr)
-	// {
-	// 	// Check ritual state
-	// 	if (RitualAltar->GetCurrentState() == EInteractionState::Inactive)
-	// 	{
-	// 		OptionBuilder.AddDefaultInteraction(
-	// 			FText::FromString("Start Ritual"), // Text for the interaction
-	// 			[this, InteractingCharacterPtr](const FInteractionExecuteContext& Context)
-	// 			{
-	// 				if (RitualAltar)
-	// 				{
-	// 					// Cast to the appropriate start ritual function
-	// 					RitualAltar->StartRitual(InteractingCharacterPtr);
-	// 				}
-	// 			}
-	// 		);
-	// 	}
-	// }
-}
+
 
 ARitualAltar* ARitualPosition::GetRitualAltarActor_Implementation() const
 {

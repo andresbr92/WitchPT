@@ -217,22 +217,21 @@ void UInv_SpatialInventory::BroadcastSlotClickedDelegates(UInv_InventoryItem* It
 	InventoryComponent->Server_EquipSlotClicked(ItemToEquip, ItemToUnequip);
 }
 
-// FInv_SlotAvailabilityResult UInv_SpatialInventory::HasRoomForItem(UInv_ItemComponent* ItemComponent) const
-// {
-// 	// switch (UInv_InventoryStatics::GetItemCategoryFromItemComp(ItemComponent))
-// 	// {
-// 	// 	case EInv_ItemCategory::Equippable:
-// 	// 		return Grid_Equippables->HasRoomForItem(ItemComponent);
-// 	// 	case EInv_ItemCategory::Consumable:
-// 	// 		return Grid_Consumables->HasRoomForItem(ItemComponent);
-// 	// 	case EInv_ItemCategory::Craftable:
-// 	// 		return Grid_Craftables->HasRoomForItem(ItemComponent);
-// 	// 	default:
-// 	// 		UE_LOG(LogInventory, Error, TEXT("ItemComponent doesn't have a valid Item Category."))
-// 	// 		return FInv_SlotAvailabilityResult();
-// 	// }
-// 	return ActiveGrid->HasRoomForItem(ItemComponent);
-// }
+FInv_SlotAvailabilityResult UInv_SpatialInventory::HasRoomForItem(UInv_ItemComponent* ItemComponent) const
+{
+	switch (UInv_InventoryStatics::GetItemCategoryFromItemComp(ItemComponent))
+	{
+		case EInv_ItemCategory::Equippable:
+			return Grid_Equippables->HasRoomForItem(ItemComponent);
+		case EInv_ItemCategory::Consumable:
+			return Grid_Consumables->HasRoomForItem(ItemComponent);
+		case EInv_ItemCategory::Craftable:
+			return Grid_Craftables->HasRoomForItem(ItemComponent);
+		default:
+			UE_LOG(LogInventory, Error, TEXT("ItemComponent doesn't have a valid Item Category."))
+			return FInv_SlotAvailabilityResult();
+	}
+}
 
 void UInv_SpatialInventory::OnItemHovered(UInv_InventoryItem* Item)
 {

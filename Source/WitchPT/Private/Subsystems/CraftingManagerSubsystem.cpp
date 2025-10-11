@@ -4,9 +4,6 @@
 #include "Subsystems/CraftingManagerSubsystem.h"
 
 #include "Game/WitchPT_GameInstance.h"
-#include "Inventory/WitchPTInventoryItemDefinition.h"
-#include "Inventory/WitchPTInventoryItemInstance.h"
-#include "Inventory/Fragments/InventoryFragment_IngredientCraftingProperties.h"
 #include "Subsystems/CMS_Settings.h"
 
 void UCraftingManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -34,9 +31,7 @@ FCalculatedPotionStats UCraftingManagerSubsystem::CalculatePotionResult(UWitchPT
 	UWitchPTInventoryItemInstance* PrincipalIngredient, UWitchPTInventoryItemInstance* ModifierIngredient) const
 {
 	//First, validate that the recipe exist in the table for the given ingredients
-	const UInventoryFragment_IngredientCraftingProperties* BaseCraftingProps = nullptr;
-	const UInventoryFragment_IngredientCraftingProperties* PrincipalCraftingProps = nullptr;
-	const UInventoryFragment_IngredientCraftingProperties* ModifierCraftingProps = nullptr;
+
 	FCalculatedPotionStats ResultPotionStats;
 	FGameplayTagContainer CombinedEffectTags;
 	FGameplayTag BaseTag;
@@ -46,22 +41,22 @@ FCalculatedPotionStats UCraftingManagerSubsystem::CalculatePotionResult(UWitchPT
 	// Extract the fragment data from each ingredient
 	if (BaseIngredient)
 	{
-		BaseCraftingProps = BaseIngredient->FindFragmentByClass<UInventoryFragment_IngredientCraftingProperties>();
+		/*BaseCraftingProps = BaseIngredient->FindFragmentByClass<UInventoryFragment_IngredientCraftingProperties>();
 		BaseTag = BaseCraftingProps->IngredientTypeTag;
-		CombinedEffectTags.AppendTags(BaseCraftingProps->GrantedEffectTags);
+		CombinedEffectTags.AppendTags(BaseCraftingProps->GrantedEffectTags);*/
 	}
 	if (PrincipalIngredient)
 	{
-		PrincipalCraftingProps = PrincipalIngredient->FindFragmentByClass<UInventoryFragment_IngredientCraftingProperties>();
+		/*PrincipalCraftingProps = PrincipalIngredient->FindFragmentByClass<UInventoryFragment_IngredientCraftingProperties>();
 		PrincipalTag = PrincipalCraftingProps->IngredientTypeTag;
-		CombinedEffectTags.AppendTags(PrincipalCraftingProps->GrantedEffectTags);
+		CombinedEffectTags.AppendTags(PrincipalCraftingProps->GrantedEffectTags);*/
 	}
 	if (ModifierIngredient)
 	{
 		
-		ModifierCraftingProps = ModifierIngredient->FindFragmentByClass<UInventoryFragment_IngredientCraftingProperties>();
+		/*ModifierCraftingProps = ModifierIngredient->FindFragmentByClass<UInventoryFragment_IngredientCraftingProperties>();
 		ModifierTag = ModifierCraftingProps->IngredientTypeTag;
-		CombinedEffectTags.AppendTags(ModifierCraftingProps->GrantedEffectTags);
+		CombinedEffectTags.AppendTags(ModifierCraftingProps->GrantedEffectTags);*/
 	}
 	// LOG the tags for debugging
 	UE_LOG(LogTemp, Log, TEXT("BaseTag: %s, PrincipalTag: %s, ModifierTag: %s"), *BaseTag.ToString(), *PrincipalTag.ToString(), *ModifierTag.ToString());

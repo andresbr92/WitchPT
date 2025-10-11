@@ -26,14 +26,14 @@ private:
 	UPROPERTY()
 	TObjectPtr<ACauldronAltar> CauldronAltar;
 	
-	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
-	UWitchPTInventoryItemInstance* BaseIngredient;
-
-	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
-	UWitchPTInventoryItemInstance* PrincipalIngredient;
-
-	UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
-	UWitchPTInventoryItemInstance* ModifierIngredient;
+	// UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	// UWitchPTInventoryItemInstance* BaseIngredient;
+	//
+	// UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	// UWitchPTInventoryItemInstance* PrincipalIngredient;
+	//
+	// UPROPERTY(BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess))
+	// UWitchPTInventoryItemInstance* ModifierIngredient;
 
 
 
@@ -43,14 +43,14 @@ public:
 	
 	void SetCauldronAltar(ACauldronAltar* InCauldronAltar);
 
-	void SetBaseIngredient(UWitchPTInventoryItemInstance* InBaseIngredient);
-	UWitchPTInventoryItemInstance* GetBaseIngredient() const { return BaseIngredient; }
-
-	void SetPrincipalIngredient(UWitchPTInventoryItemInstance* InPrincipalIngredient);
-	UWitchPTInventoryItemInstance* GetPrincipalIngredient() const { return PrincipalIngredient; }
-
-	void SetModifierIngredient(UWitchPTInventoryItemInstance* InModifierIngredient);
-	UWitchPTInventoryItemInstance* GetModifierIngredient() const { return ModifierIngredient; }
+	// void SetBaseIngredient(UWitchPTInventoryItemInstance* InBaseIngredient);
+	// UWitchPTInventoryItemInstance* GetBaseIngredient() const { return BaseIngredient; }
+	//
+	// void SetPrincipalIngredient(UWitchPTInventoryItemInstance* InPrincipalIngredient);
+	// UWitchPTInventoryItemInstance* GetPrincipalIngredient() const { return PrincipalIngredient; }
+	//
+	// void SetModifierIngredient(UWitchPTInventoryItemInstance* InModifierIngredient);
+	// UWitchPTInventoryItemInstance* GetModifierIngredient() const { return ModifierIngredient; }
 	
 
 	
@@ -62,8 +62,8 @@ public:
 	
 	// -------------------- Callbacks ----------------------------------
 	// -------------------- MVVM -> Model Functions --------------------
-	UFUNCTION(BlueprintCallable, Category = "Cauldron|ViewModel", CallInEditor, meta = (DisplayName = "Try Set Ingredient In Slot"))
-	void TryAddIngredient(const ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
+	// UFUNCTION(BlueprintCallable, Category = "Cauldron|ViewModel", CallInEditor, meta = (DisplayName = "Try Set Ingredient In Slot"))
+	// void TryAddIngredient(const ACharacter* RequestingCharacter, UWitchPTInventoryItemInstance* IngredientInstance);
 	UFUNCTION(BlueprintCallable, Category = "Cauldron|ViewModel", CallInEditor, meta = (DisplayName = "Craft Potion"))
 	void CraftPotion(const ACharacter* RequestingCharacter);
 	

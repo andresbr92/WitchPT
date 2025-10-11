@@ -32,7 +32,7 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
-	// FInv_SlotAvailabilityResult HasRoomForItem(const UInv_ItemComponent* ItemComponent);
+	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_ItemComponent* ItemComponent);
 	// void ShowCursor();
 	// void HideCursor();
 	// void SetOwningCanvas(UCanvasPanel* OwningCanvas);
@@ -45,7 +45,7 @@ public:
 	// void OnHide();
 	//
 	// UFUNCTION()
-	// void AddItem(UInv_InventoryItem* Item);
+	void AddItem(UInv_InventoryItem* Item);
 
 private:
 
@@ -53,10 +53,10 @@ private:
 	TWeakObjectPtr<UCanvasPanel> OwningCanvasPanel;
 
 	void ConstructGrid();
-	// FInv_SlotAvailabilityResult HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride = -1);
-	// FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& Manifest, const int32 StackAmountOverride = -1);
-	// void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
-	// bool MatchesCategory(const UInv_InventoryItem* Item) const;
+	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride = -1);
+	FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& Manifest, const int32 StackAmountOverride = -1);
+	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
+	bool MatchesCategory(const UInv_InventoryItem* Item) const;
 	// FVector2D GetDrawSize(const FInv_GridFragment* GridFragment) const;
 	// void SetSlottedItemImage(const UInv_SlottedItem* SlottedItem, const FInv_GridFragment* GridFragment, const FInv_ImageFragment* ImageFragment) const;
 	// void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);

@@ -31,10 +31,6 @@ public:
 	//~ Begin AActor Interface
 	virtual void BeginPlay() override;
 	//~ End AActor Interface
-
-	//~ Begin IInteraction Interface (from AItem)
-	virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder) override;
-	//~ End IInteraction Interface
 	
 	// Still part of IMechanicsInterface if these are general queries
 	virtual ARitualAltar* GetRitualAltarActor_Implementation() const override;

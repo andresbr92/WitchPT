@@ -245,78 +245,78 @@ void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 // 	return HoveredTileQuadrant;
 // }
 
-// FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const UInv_ItemComponent* ItemComponent)
-// {
-// 	return HasRoomForItem(ItemComponent->GetItemManifest());
-// }
-//
-// FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride)
-// {
-// 	return HasRoomForItem(Item->GetItemManifest(), StackAmountOverride);
-// }
-//
-// FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const FInv_ItemManifest& Manifest, const int32 StackAmountOverride)
-// {
-// 	FInv_SlotAvailabilityResult Result;
-//
-// 	// Determine if the item is stackable.
-// 	const FInv_StackableFragment* StackableFragment = Manifest.GetFragmentOfType<FInv_StackableFragment>();
-// 	Result.bStackable = StackableFragment != nullptr;
-// 	
-// 	// Determine how many stacks to add.
-// 	const int32 MaxStackSize = StackableFragment ? StackableFragment->GetMaxStackSize() : 1;
-// 	int32 AmountToFill = StackableFragment ? StackableFragment->GetStackCount() : 1;
-// 	if (StackAmountOverride != -1 && Result.bStackable)
-// 	{
-// 		AmountToFill = StackAmountOverride;
-// 	}
-//
-// 	TSet<int32> CheckedIndices;
-// 	// For each Grid Slot:
-// 	for (const auto& GridSlot : GridSlots)
-// 	{
-// 		// If we don't have anymore to fill, break out of the loop early.
-// 		if (AmountToFill == 0) break;
-// 		
-// 		// Is this index claimed yet?
-// 		if (IsIndexClaimed(CheckedIndices, GridSlot->GetIndex())) continue;
-//
-// 		// Is the item in grid bounds?
-// 		if (!IsInGridBounds(GridSlot->GetIndex(), GetItemDimensions(Manifest))) continue;
-// 		
-// 		// Can the item fit here? (i.e. is it out of grid bounds?)
-// 		TSet<int32> TentativelyClaimed;
-// 		if (!HasRoomAtIndex(GridSlot, GetItemDimensions(Manifest), CheckedIndices, TentativelyClaimed, Manifest.GetItemType(), MaxStackSize))
-// 		{
-// 			continue;
-// 		}
-// 		
-// 		// How much to fill?
-// 		const int32 AmountToFillInSlot = DetermineFillAmountForSlot(Result.bStackable, MaxStackSize, AmountToFill, GridSlot);
-// 		if (AmountToFillInSlot == 0) continue;
-//
-// 		CheckedIndices.Append(TentativelyClaimed);
-// 		
-// 		// Update the amount left to fill
-// 		Result.TotalRoomToFill += AmountToFillInSlot;
-// 		Result.SlotAvailabilities.Emplace(
-// 			FInv_SlotAvailability{
-// 				HasValidItem(GridSlot) ? GridSlot->GetUpperLeftIndex() : GridSlot->GetIndex(),
-// 				Result.bStackable ? AmountToFillInSlot : 0,
-// 				HasValidItem(GridSlot)
-// 			}
-// 		);
-//
-// 		AmountToFill -= AmountToFillInSlot;
-//
-// 		// How much is the Remainder?
-// 		Result.Remainder = AmountToFill;
-// 		
-// 		if (AmountToFill == 0) return Result;
-// 	}
-// 	
-// 	return Result;
-// }
+FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const UInv_ItemComponent* ItemComponent)
+{
+	return HasRoomForItem(ItemComponent->GetItemManifest());
+}
+
+FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride)
+{
+	return HasRoomForItem(Item->GetItemManifest(), StackAmountOverride);
+}
+
+FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const FInv_ItemManifest& Manifest, const int32 StackAmountOverride)
+{
+	FInv_SlotAvailabilityResult Result;
+
+	// // Determine if the item is stackable.
+	// const FInv_StackableFragment* StackableFragment = Manifest.GetFragmentOfType<FInv_StackableFragment>();
+	// Result.bStackable = StackableFragment != nullptr;
+	//
+	// // Determine how many stacks to add.
+	// const int32 MaxStackSize = StackableFragment ? StackableFragment->GetMaxStackSize() : 1;
+	// int32 AmountToFill = StackableFragment ? StackableFragment->GetStackCount() : 1;
+	// if (StackAmountOverride != -1 && Result.bStackable)
+	// {
+	// 	AmountToFill = StackAmountOverride;
+	// }
+	//
+	// TSet<int32> CheckedIndices;
+	// // For each Grid Slot:
+	// for (const auto& GridSlot : GridSlots)
+	// {
+	// 	// If we don't have anymore to fill, break out of the loop early.
+	// 	if (AmountToFill == 0) break;
+	// 	
+	// 	// Is this index claimed yet?
+	// 	if (IsIndexClaimed(CheckedIndices, GridSlot->GetIndex())) continue;
+	//
+	// 	// Is the item in grid bounds?
+	// 	if (!IsInGridBounds(GridSlot->GetIndex(), GetItemDimensions(Manifest))) continue;
+	// 	
+	// 	// Can the item fit here? (i.e. is it out of grid bounds?)
+	// 	TSet<int32> TentativelyClaimed;
+	// 	if (!HasRoomAtIndex(GridSlot, GetItemDimensions(Manifest), CheckedIndices, TentativelyClaimed, Manifest.GetItemType(), MaxStackSize))
+	// 	{
+	// 		continue;
+	// 	}
+	// 	
+	// 	// How much to fill?
+	// 	const int32 AmountToFillInSlot = DetermineFillAmountForSlot(Result.bStackable, MaxStackSize, AmountToFill, GridSlot);
+	// 	if (AmountToFillInSlot == 0) continue;
+	//
+	// 	CheckedIndices.Append(TentativelyClaimed);
+	// 	
+	// 	// Update the amount left to fill
+	// 	Result.TotalRoomToFill += AmountToFillInSlot;
+	// 	Result.SlotAvailabilities.Emplace(
+	// 		FInv_SlotAvailability{
+	// 			HasValidItem(GridSlot) ? GridSlot->GetUpperLeftIndex() : GridSlot->GetIndex(),
+	// 			Result.bStackable ? AmountToFillInSlot : 0,
+	// 			HasValidItem(GridSlot)
+	// 		}
+	// 	);
+	//
+	// 	AmountToFill -= AmountToFillInSlot;
+	//
+	// 	// How much is the Remainder?
+	// 	Result.Remainder = AmountToFill;
+	// 	
+	// 	if (AmountToFill == 0) return Result;
+	// }
+	
+	return Result;
+}
 //
 // bool UInv_InventoryGrid::HasRoomAtIndex(const UInv_GridSlot* GridSlot,
 // 										const FIntPoint& Dimensions,
@@ -654,22 +654,22 @@ void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 // 	return HoverItem;
 // }
 //
-// void UInv_InventoryGrid::AddItem(UInv_InventoryItem* Item)
-// {
-// 	if (!MatchesCategory(Item)) return;
-//
-// 	FInv_SlotAvailabilityResult Result = HasRoomForItem(Item);
-// 	AddItemToIndices(Result, Item);	
-// }
-//
-// void UInv_InventoryGrid::AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem)
-// {
-// 	for (const auto& Availability : Result.SlotAvailabilities)
-// 	{
-// 		AddItemAtIndex(NewItem, Availability.Index, Result.bStackable, Availability.AmountToFill);
-// 		UpdateGridSlots(NewItem, Availability.Index, Result.bStackable, Availability.AmountToFill);
-// 	}
-// }
+void UInv_InventoryGrid::AddItem(UInv_InventoryItem* Item)
+{
+	if (!MatchesCategory(Item)) return;
+
+	FInv_SlotAvailabilityResult Result = HasRoomForItem(Item);
+	AddItemToIndices(Result, Item);	
+}
+
+void UInv_InventoryGrid::AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem)
+{
+	for (const auto& Availability : Result.SlotAvailabilities)
+	{
+		// AddItemAtIndex(NewItem, Availability.Index, Result.bStackable, Availability.AmountToFill);
+		// UpdateGridSlots(NewItem, Availability.Index, Result.bStackable, Availability.AmountToFill);
+	}
+}
 //
 // void UInv_InventoryGrid::AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount)
 // {
@@ -1006,7 +1006,7 @@ void UInv_InventoryGrid::ConstructGrid()
 // 	}
 // }
 
-// bool UInv_InventoryGrid::MatchesCategory(const UInv_InventoryItem* Item) const
-// {
-// 	return Item->GetItemManifest().GetItemCategory() == ItemCategory;
-// }
+bool UInv_InventoryGrid::MatchesCategory(const UInv_InventoryItem* Item) const
+{
+	return Item->GetItemManifest().GetItemCategory() == ItemCategory;
+}

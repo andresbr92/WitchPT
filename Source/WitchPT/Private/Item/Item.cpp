@@ -24,8 +24,4 @@ void AItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AItem::GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& OptionBuilder)
-{
-	OptionBuilder.AddInteractionOption(Option);
-}
 

@@ -70,8 +70,8 @@ public:
 	void RequestUnOccupyPositionInCauldron(ACauldronAltar* TargetCauldron);
 
 	// ----------------------------------- CAULDRON INGREDIENT IMPLEMENTATION ---------------------------------
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
-	void RequestSetIngredientInSlot(ACauldronAltar* TargetAltar, UWitchPTInventoryItemInstance* IngredientInstance);
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
+	// void RequestSetIngredientInSlot(ACauldronAltar* TargetAltar, UWitchPTInventoryItemInstance* IngredientInstance);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
 	void RequestPrintDebugData(ACauldronAltar* TargetAltar);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mechanics|Cauldron")
