@@ -3,11 +3,14 @@
 
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
 
+#include "MVVMGameSubsystem.h"
 #include "Items/Components/Inv_ItemComponent.h"
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Items/Inv_InventoryItem.h"
 #include "Items/Fragments/Inv_ItemFragment.h"
+#include "Widgets/Inv_InventoryWidgetController.h"
+#include "Widgets/MVVM_Inv_Inventory.h"
 
 
 UInv_InventoryComponent::UInv_InventoryComponent() : InventoryList(this)
@@ -168,6 +171,8 @@ void UInv_InventoryComponent::BeginPlay()
 	Super::BeginPlay();
 	InventoryList.OwnerComponent = this;
 
+	InitializeInventoryWidgetController();
+
 	ConstructInventory();
 	
 	
@@ -185,6 +190,20 @@ void UInv_InventoryComponent::ConstructInventory()
 	if (!OwningController->IsLocalController()) return;
 
 	InventoryMenu = CreateWidget<UInv_InventoryBase>(OwningController.Get(), InventoryMenuClass);
+}
+
+void UInv_InventoryComponent::InitializeInventoryWidgetController()
+{
+	// Initialize the Widget Controller
+	if (IsValid(WidgetControllerClass))
+	{
+		WidgetController = NewObject<UInv_InventoryWidgetController>(this, WidgetControllerClass);
+		if (IsValid(WidgetController))
+		{
+			WidgetController->SetInventoryComponent(this);
+		}
+		
+	}
 }
 
 

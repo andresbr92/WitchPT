@@ -7,6 +7,7 @@
 #include "InventoryManagement/FastArray/Inv_FastArray.h"
 #include "Inv_InventoryComponent.generated.h"
 
+class UInv_InventoryWidgetController;
 class UInv_ItemComponent;
 class UInv_InventoryItem;
 class UInv_InventoryBase;
@@ -46,6 +47,13 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_EquipSlotClicked(UInv_InventoryItem* ItemToEquip, UInv_InventoryItem* ItemToUnequip);
+
+	TArray<UInv_InventoryItem*> GetAllItems() const { return InventoryList.GetAllItems(); }
+
+	UPROPERTY()
+	TObjectPtr<UInv_InventoryWidgetController> WidgetController;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UInv_InventoryWidgetController> WidgetControllerClass;
 
 
 	void AddRepSubObj(UObject* SubObj);
@@ -90,6 +98,7 @@ private:
 	TWeakObjectPtr<APlayerController> OwningController;
 
 	void ConstructInventory();
+	void InitializeInventoryWidgetController();
 	
 	UPROPERTY(Replicated)
 	FInv_InventoryFastArray InventoryList;

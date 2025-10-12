@@ -27,7 +27,8 @@ public class AndresD3v_InventorySystem : ModuleRules
 			{
 				"Core",
 				"NetCore",
-				"GameplayTags"
+				"GameplayTags",
+				"ModelViewViewModel"
 				// ... add other public dependencies that you statically link with here ...
 			}
 		);

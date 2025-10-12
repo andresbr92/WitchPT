@@ -34,7 +34,7 @@ public:
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
 	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_ItemComponent* ItemComponent);
 	void ShowCursor();
-	void HideCursor();
+	// void HideCursor();
 	void SetOwningCanvas(UCanvasPanel* OwningCanvas);
 	void DropItem();
 	bool HasHoverItem() const;
@@ -104,8 +104,8 @@ private:
 	void UnHighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void ChangeHoverType(const int32 Index, const FIntPoint& Dimensions, EInv_GridSlotState GridSlotState);
 	void PutDownOnIndex(const int32 Index);
-	UUserWidget* GetVisibleCursorWidget();
-	UUserWidget* GetHiddenCursorWidget();
+	// UUserWidget* GetVisibleCursorWidget();
+	// UUserWidget* GetHiddenCursorWidget();
 	bool IsSameStackable(const UInv_InventoryItem* ClickedInventoryItem) const;
 	void SwapWithHoverItem(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
 	bool ShouldSwapStackCounts(const int32 RoomInClickedSlot, const int32 HoveredStackCount, const int32 MaxStackSize) const;
@@ -123,11 +123,11 @@ private:
 	UPROPERTY()
 	TObjectPtr<UInv_ItemPopUp> ItemPopUp;
 
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	TSubclassOf<UUserWidget> VisibleCursorWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	TSubclassOf<UUserWidget> HiddenCursorWidgetClass;
+	// UPROPERTY(EditAnywhere, Category = "Inventory")
+	// TSubclassOf<UUserWidget> VisibleCursorWidgetClass;
+	//
+	// UPROPERTY(EditAnywhere, Category = "Inventory")
+	// TSubclassOf<UUserWidget> HiddenCursorWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> VisibleCursorWidget;

@@ -816,25 +816,25 @@ void UInv_InventoryGrid::ClearHoverItem()
 	ShowCursor();
 }
 
-UUserWidget* UInv_InventoryGrid::GetVisibleCursorWidget()
-{
-	if (!IsValid(GetOwningPlayer())) return nullptr;
-	if (!IsValid(VisibleCursorWidget))
-	{
-		VisibleCursorWidget = CreateWidget<UUserWidget>(GetOwningPlayer(), VisibleCursorWidgetClass);
-	}
-	return VisibleCursorWidget;
-}
+// UUserWidget* UInv_InventoryGrid::GetVisibleCursorWidget()
+// {
+// 	if (!IsValid(GetOwningPlayer())) return nullptr;
+// 	if (!IsValid(VisibleCursorWidget))
+// 	{
+// 		VisibleCursorWidget = CreateWidget<UUserWidget>(GetOwningPlayer(), VisibleCursorWidgetClass);
+// 	}
+// 	return VisibleCursorWidget;
+// }
 
-UUserWidget* UInv_InventoryGrid::GetHiddenCursorWidget()
-{
-	if (!IsValid(GetOwningPlayer())) return nullptr;
-	if (!IsValid(HiddenCursorWidget))
-	{
-		HiddenCursorWidget = CreateWidget<UUserWidget>(GetOwningPlayer(), HiddenCursorWidgetClass);
-	}
-	return HiddenCursorWidget;
-}
+// UUserWidget* UInv_InventoryGrid::GetHiddenCursorWidget()
+// {
+// 	if (!IsValid(GetOwningPlayer())) return nullptr;
+// 	if (!IsValid(HiddenCursorWidget))
+// 	{
+// 		HiddenCursorWidget = CreateWidget<UUserWidget>(GetOwningPlayer(), HiddenCursorWidgetClass);
+// 	}
+// 	return HiddenCursorWidget;
+// }
 
 bool UInv_InventoryGrid::IsSameStackable(const UInv_InventoryItem* ClickedInventoryItem) const
 {
@@ -915,14 +915,14 @@ void UInv_InventoryGrid::FillInStack(const int32 FillAmount, const int32 Remaind
 void UInv_InventoryGrid::ShowCursor()
 {
 	if (!IsValid(GetOwningPlayer())) return;
-	GetOwningPlayer()->SetMouseCursorWidget(EMouseCursor::Default, GetVisibleCursorWidget());
+	// GetOwningPlayer()->SetMouseCursorWidget(EMouseCursor::Default, );
 }
 
-void UInv_InventoryGrid::HideCursor()
-{
-	if (!IsValid(GetOwningPlayer())) return;
-	GetOwningPlayer()->SetMouseCursorWidget(EMouseCursor::Default, GetHiddenCursorWidget());
-}
+// void UInv_InventoryGrid::HideCursor()
+// {
+// 	if (!IsValid(GetOwningPlayer())) return;
+// 	GetOwningPlayer()->SetShowMouseCursor(EMouseCursor::Default);
+// }
 
 void UInv_InventoryGrid::SetOwningCanvas(UCanvasPanel* OwningCanvas)
 {
