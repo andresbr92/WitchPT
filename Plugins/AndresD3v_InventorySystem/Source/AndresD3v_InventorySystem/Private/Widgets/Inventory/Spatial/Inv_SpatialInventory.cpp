@@ -28,9 +28,9 @@ void UInv_SpatialInventory::NativeOnInitialized()
 	Button_Consumables->OnClicked.AddDynamic(this, &ThisClass::ShowConsumables);
 	Button_Craftables->OnClicked.AddDynamic(this, &ThisClass::ShowCraftables);
 	
-	// Grid_Equippables->SetOwningCanvas(CanvasPanel);
-	// Grid_Consumables->SetOwningCanvas(CanvasPanel);
-	// Grid_Craftables->SetOwningCanvas(CanvasPanel);
+	Grid_Equippables->SetOwningCanvas(CanvasPanel);
+	Grid_Consumables->SetOwningCanvas(CanvasPanel);
+	Grid_Craftables->SetOwningCanvas(CanvasPanel);
 
 	ShowEquippables();
 
@@ -68,7 +68,7 @@ void UInv_SpatialInventory::EquippedGridSlotClicked(UInv_EquippedGridSlot* Equip
 	InventoryComponent->Server_EquipSlotClicked(HoverItem->GetInventoryItem(), nullptr);
 	
 	// Clear the Hover Item
-	// Grid_Equippables->ClearHoverItem();
+	Grid_Equippables->ClearHoverItem();
 }
 
 void UInv_SpatialInventory::EquippedSlottedItemClicked(UInv_EquippedSlottedItem* EquippedSlottedItem)
@@ -103,11 +103,11 @@ void UInv_SpatialInventory::EquippedSlottedItemClicked(UInv_EquippedSlottedItem*
 	BroadcastSlotClickedDelegates(ItemToEquip, ItemToUnequip);
 }
 
-// FReply UInv_SpatialInventory::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
-// {
-// 	ActiveGrid->DropItem();
-// 	return FReply::Handled();
-// }
+FReply UInv_SpatialInventory::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	ActiveGrid->DropItem();
+	return FReply::Handled();
+}
 
 void UInv_SpatialInventory::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
@@ -261,23 +261,23 @@ void UInv_SpatialInventory::OnItemUnHovered()
 {
 	GetItemDescription()->SetVisibility(ESlateVisibility::Collapsed);
 	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);
-	GetEquippedItemDescription()->SetVisibility(ESlateVisibility::Collapsed);
+	// GetEquippedItemDescription()->SetVisibility(ESlateVisibility::Collapsed);
 	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(EquippedDescriptionTimer);
 }
 
 bool UInv_SpatialInventory::HasHoverItem() const
 {
-	// if (Grid_Equippables->HasHoverItem()) return true;
-	// if (Grid_Consumables->HasHoverItem()) return true;
-	// if (Grid_Craftables->HasHoverItem()) return true;
+	if (Grid_Equippables->HasHoverItem()) return true;
+	if (Grid_Consumables->HasHoverItem()) return true;
+	if (Grid_Craftables->HasHoverItem()) return true;
 	return false;
 }
 
-// UInv_HoverItem* UInv_SpatialInventory::GetHoverItem() const
-// {
-// 	if (!ActiveGrid.IsValid()) return nullptr;
-// 	return ActiveGrid->GetHoverItem();
-// }
+UInv_HoverItem* UInv_SpatialInventory::GetHoverItem() const
+{
+	if (!ActiveGrid.IsValid()) return nullptr;
+	return ActiveGrid->GetHoverItem();
+}
 
 float UInv_SpatialInventory::GetTileSize() const
 {
@@ -368,11 +368,11 @@ void UInv_SpatialInventory::SetActiveGrid(UInv_InventoryGrid* Grid, UButton* But
 {
 	if (ActiveGrid.IsValid())
 	{
-		// ActiveGrid->HideCursor();
-		// ActiveGrid->OnHide();
+		ActiveGrid->HideCursor();
+		ActiveGrid->OnHide();
 	}
 	ActiveGrid = Grid;
-	// if (ActiveGrid.IsValid()) ActiveGrid->ShowCursor();
+	if (ActiveGrid.IsValid()) ActiveGrid->ShowCursor();
 	DisableButton(Button);
 	Switcher->SetActiveWidget(Grid);
 }

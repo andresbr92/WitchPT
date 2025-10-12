@@ -49,8 +49,8 @@ UUserWidget* UUI_ManagerSubsystem::PushContentToLayer_ForPlayer(const APlayerCon
 	{
 		if (UUI_GameUILayout* RootLayout = CurrentPolicy->GetRootLayout(LocalPlayer))
 		{
-			
-			return RootLayout->PushContentToLayer(LayerTag, WidgetClass);
+			UUserWidget* NewWidget = RootLayout->PushContentToLayer(LayerTag, WidgetClass);
+			return NewWidget;
 			
 		}
 	}

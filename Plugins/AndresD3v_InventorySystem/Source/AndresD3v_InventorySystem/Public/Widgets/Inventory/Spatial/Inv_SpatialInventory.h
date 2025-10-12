@@ -23,14 +23,14 @@ class ANDRESD3V_INVENTORYSYSTEM_API UInv_SpatialInventory : public UInv_Inventor
 	GENERATED_BODY()
 public:
 	virtual void NativeOnInitialized() override;
-	// virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const override;
 	virtual void OnItemHovered(UInv_InventoryItem* Item) override;
 	virtual void OnItemUnHovered() override;
 	virtual bool HasHoverItem() const override;
-	// virtual UInv_HoverItem* GetHoverItem() const override;
+	virtual UInv_HoverItem* GetHoverItem() const override;
 	virtual float GetTileSize() const override;
 private:
 

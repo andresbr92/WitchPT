@@ -166,7 +166,25 @@ void UInv_InventoryComponent::AddRepSubObj(UObject* SubObj)
 void UInv_InventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	InventoryList.OwnerComponent = this;
+
+	ConstructInventory();
 	
+	
+}
+
+void UInv_InventoryComponent::SetInventoryMenu(UInv_InventoryBase* NewInventoryMenu)
+{
+	InventoryMenu = NewInventoryMenu;
+}
+
+void UInv_InventoryComponent::ConstructInventory()
+{
+	OwningController = Cast<APlayerController>(GetOwner());
+	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
+	if (!OwningController->IsLocalController()) return;
+
+	InventoryMenu = CreateWidget<UInv_InventoryBase>(OwningController.Get(), InventoryMenuClass);
 }
 
 

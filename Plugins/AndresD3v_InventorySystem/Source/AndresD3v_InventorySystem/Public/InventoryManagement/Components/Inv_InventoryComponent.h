@@ -50,6 +50,7 @@ public:
 
 	void AddRepSubObj(UObject* SubObj);
 	void SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	UInv_InventoryBase* GetInventoryMenu() const { return InventoryMenu; }
 
 	FInventoryItemChange OnItemAdded;
@@ -66,11 +67,11 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory")
 	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
 
-	UPROPERTY(BlueprintSetter=SetInventoryMenu, Category = "Inventory")
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	TObjectPtr<UInv_InventoryBase> InventoryMenu;
 
-	UFUNCTION(BlueprintSetter)
-	void SetInventoryMenu(UInv_InventoryBase* NewInventoryMenu) { InventoryMenu = NewInventoryMenu; }
+	UFUNCTION(BlueprintCallable)
+	void SetInventoryMenu(UInv_InventoryBase* NewInventoryMenu);
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SetInventoryOpen(bool bOpen) 
@@ -87,6 +88,8 @@ protected:
 	
 private:
 	TWeakObjectPtr<APlayerController> OwningController;
+
+	void ConstructInventory();
 	
 	UPROPERTY(Replicated)
 	FInv_InventoryFastArray InventoryList;

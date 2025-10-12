@@ -22,7 +22,7 @@ struct ANDRESD3V_INVENTORYSYSTEM_API FInv_ItemManifest
 	GENERATED_BODY()
 
 	TArray<TInstancedStruct<FInv_ItemFragment>>& GetFragmentsMutable() { return Fragments; }
-	UInv_InventoryItem* CreateInventoryItemByManifest(UObject* NewOuter);
+	UInv_InventoryItem* Manifest(UObject* NewOuter);
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
 	FGameplayTag GetItemType() const { return ItemType; }
 	void AssimilateInventoryFragments(UInv_CompositeBase* Composite) const;
