@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Inv_InventoryList.generated.h"
 
+class UInv_ItemSlot;
 class UInv_InventoryWidgetController;
 class UMVVMViewModelBase;
 class UGridPanel;
@@ -32,11 +33,14 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UGridPanel> GridPanel;
 
+	/*UPROPERTY(meta = (BindWidget))
+	TObjectPtr<> */
+
 	UPROPERTY()
-	TArray<TObjectPtr<UUserWidget>> GridSlots;
+	TArray<TObjectPtr<UInv_ItemSlot>> GridSlots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	TSubclassOf<UUserWidget> ItemWidgetClass; 
+	TSubclassOf<UInv_ItemSlot> ItemWidgetClass; 
 
 	UFUNCTION()
 	void OnInventoryListChanged();
@@ -46,4 +50,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	int32 Columns = 8;
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	float ImageSize = 64.f;
 };

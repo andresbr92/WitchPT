@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Types/Inv_GridTypes.h"
 #include "UObject/Object.h"
 #include "Inv_InventoryWidgetController.generated.h"
 
@@ -20,8 +21,9 @@ class ANDRESD3V_INVENTORYSYSTEM_API UInv_InventoryWidgetController : public UObj
 public:
 	void Activate();
 	void Deactivate();
-	
-	
+
+
+	UFUNCTION()
 	void SetInventoryComponent(UInv_InventoryComponent* InInventoryComponent);
 
 	UPROPERTY(BlueprintAssignable, Category = "WidgetController")
@@ -43,5 +45,7 @@ protected:
 	void OnItemAdded(UInv_InventoryItem* Item);
 	UFUNCTION()
 	void OnItemRemoved(UInv_InventoryItem* Item);
+	UFUNCTION()
+	void OnStackChanged(const FInv_SlotAvailabilityResult& Result);
 	
 };

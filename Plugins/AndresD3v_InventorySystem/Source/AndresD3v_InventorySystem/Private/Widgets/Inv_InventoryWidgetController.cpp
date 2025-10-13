@@ -29,6 +29,7 @@ void UInv_InventoryWidgetController::SetInventoryComponent(UInv_InventoryCompone
 	{
 		InventoryComponent->OnItemAdded.AddDynamic(this, &UInv_InventoryWidgetController::OnItemAdded);
 		InventoryComponent->OnItemRemoved.AddDynamic(this, &UInv_InventoryWidgetController::OnItemRemoved);
+		InventoryComponent->OnStackChange.AddDynamic(this, &UInv_InventoryWidgetController::OnStackChanged);
 		
 		BroadcastInitialValues();
 	}
@@ -76,5 +77,11 @@ void UInv_InventoryWidgetController::OnItemAdded(UInv_InventoryItem* Item)
 void UInv_InventoryWidgetController::OnItemRemoved(UInv_InventoryItem* Item)
 {
 	UE_LOG(LogInventory, Warning, TEXT("OnItemRemoved"));
+	BroadcastInitialValues();
+}
+
+void UInv_InventoryWidgetController::OnStackChanged(const FInv_SlotAvailabilityResult& Result)
+{
+	UE_LOG(LogInventory, Warning, TEXT("OnStackChanged"));
 	BroadcastInitialValues();
 }
